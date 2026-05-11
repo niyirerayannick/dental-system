@@ -1,0 +1,7 @@
+<section class="overflow-hidden rounded-2xl bg-white shadow-sm">
+    <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+        <h2 class="text-lg font-bold text-gray-900">{{ title }}</h2>
+        {% if action_label %}<a href="{{ action_url|default:'#' }}" class="text-sm font-semibold text-green-600 hover:text-green-700">{{ action_label }}</a>{% endif %}
+    </div>
+    {% block table_content %}{% endblock %}
+</section>

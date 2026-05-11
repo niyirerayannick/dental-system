@@ -1,0 +1,29 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block dashboard_content %}
+<div>
+    <p class="text-sm font-semibold uppercase tracking-wide text-teal-700">Records</p>
+    <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">{{ title }}</h1>
+    <p class="mt-2 text-sm text-slate-600">Browse the latest saved records in this section.</p>
+</div>
+
+<div class="mt-8 overflow-hidden rounded-2xl border border-teal-100 bg-white shadow-sm">
+    <div class="bg-slate-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Name</div>
+    <div class="divide-y divide-slate-100">
+        {% for item in items %}
+            <div class="flex items-center justify-between gap-4 px-5 py-4 hover:bg-slate-50">
+                <p class="font-medium text-slate-950">{{ item }}</p>
+                <span class="hidden rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700 sm:inline-flex">Active</span>
+            </div>
+        {% empty %}
+            <div class="px-5 py-12 text-center">
+                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-50 text-lg font-bold text-teal-700">0</div>
+                <p class="mt-4 font-semibold text-slate-950">No {{ title|lower }} records yet</p>
+                <p class="mt-1 text-sm text-slate-600">Use the dashboard or Django admin to create the first record.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

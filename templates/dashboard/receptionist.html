@@ -1,0 +1,105 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Receptionist Dashboard{% endblock %}
+
+{% block dashboard_content %}
+<div>
+    <p class="text-sm font-semibold uppercase tracking-wide text-teal-700">Receptionist</p>
+    <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">Front desk workspace</h1>
+    <p class="mt-2 max-w-2xl text-sm text-slate-600">Register patients, coordinate bookings, and keep invoice visibility close at hand.</p>
+</div>
+
+<div class="mt-8 grid gap-6 xl:grid-cols-12">
+    <div class="space-y-6 xl:col-span-5">
+        <section class="rounded-2xl border border-teal-100 bg-white p-5 shadow-sm">
+            <h2 class="text-lg font-semibold text-slate-950">Register patient</h2>
+            <form method="post" class="mt-5 space-y-4">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="patient">
+                {% include "partials/form_fields.html" with form=patient_form %}
+                <button class="w-full rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-800">Register patient</button>
+            </form>
+        </section>
+
+        <section class="rounded-2xl border border-teal-100 bg-white p-5 shadow-sm">
+            <h2 class="text-lg font-semibold text-slate-950">Manage appointment</h2>
+            <form method="post" class="mt-5 space-y-4">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="appointment">
+                {% include "partials/form_fields.html" with form=appointment_form %}
+                <button class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-800 hover:bg-slate-100">Save appointment</button>
+            </form>
+        </section>
+    </div>
+
+    <div class="space-y-6 xl:col-span-7">
+        <section class="overflow-hidden rounded-2xl border border-teal-100 bg-white shadow-sm">
+            <div class="border-b border-slate-200 px-5 py-4">
+                <h2 class="text-lg font-semibold text-slate-950">Appointments</h2>
+            </div>
+            <div class="hidden grid-cols-5 gap-4 bg-slate-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 lg:grid">
+                <span>Patient and dentist</span>
+                <span>Schedule</span>
+                <span>Status</span>
+                <span class="lg:col-span-2">Actions</span>
+            </div>
+            <div class="divide-y divide-slate-100">
+                {% for appointment in appointments %}
+                    <div class="grid gap-4 px-5 py-4 lg:grid-cols-5 lg:items-center">
+                        <p class="font-medium text-slate-950">{{ appointment.patient }} with {{ appointment.dentist }}</p>
+                        <p class="text-sm text-slate-600">{{ appointment.appointment_date }} at {{ appointment.appointment_time }}</p>
+                        <div>{% include "partials/appointment_status_badge.html" with appointment=appointment %}</div>
+                        {% if appointment.status != "cancelled" and appointment.status != "completed" %}
+                            <div class="flex flex-wrap gap-2 lg:col-span-2">
+                                {% if appointment.status == "pending" %}
+                                    <form method="post" action="{% url 'dashboard:dentist_appointment_status' appointment.pk 'approved' %}">
+                                        {% csrf_token %}
+                                        <button class="rounded-xl bg-teal-700 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-teal-800">Approve</button>
+                                    </form>
+                                {% endif %}
+                                <form method="post" action="{% url 'dashboard:dentist_appointment_status' appointment.pk 'cancelled' %}">
+                                    {% csrf_token %}
+                                    <button class="rounded-xl border border-rose-200 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50">Cancel</button>
+                                </form>
+                                <form method="post" action="{% url 'dashboard:dentist_appointment_status' appointment.pk 'completed' %}">
+                                    {% csrf_token %}
+                                    <button class="rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100">Complete</button>
+                                </form>
+                            </div>
+                        {% else %}
+                            <span class="text-sm text-slate-400 lg:col-span-2">No actions</span>
+                        {% endif %}
+                    </div>
+                {% empty %}
+                    <div class="px-5 py-12 text-center">
+                        <p class="font-semibold text-slate-950">No appointments yet</p>
+                        <p class="mt-1 text-sm text-slate-600">Appointments created by patients or reception will appear here.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="overflow-hidden rounded-2xl border border-teal-100 bg-white shadow-sm">
+            <div class="border-b border-slate-200 px-5 py-4">
+                <h2 class="text-lg font-semibold text-slate-950">Invoices</h2>
+            </div>
+            <div class="divide-y divide-slate-100">
+                {% for invoice in invoices %}
+                    <div class="flex items-center justify-between px-5 py-4">
+                        <div>
+                            <p class="font-medium text-slate-950">{{ invoice.patient }}</p>
+                            <p class="mt-1 text-sm text-slate-600">{{ invoice.created_at|date:"Y-m-d" }} - {{ invoice.get_status_display }}</p>
+                        </div>
+                        <p class="text-lg font-bold text-slate-950">{{ invoice.amount }}</p>
+                    </div>
+                {% empty %}
+                    <div class="px-5 py-12 text-center">
+                        <p class="font-semibold text-slate-950">No invoices yet</p>
+                        <p class="mt-1 text-sm text-slate-600">Billing records will appear here once invoices are created.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block site_header %}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <div data-sidebar-backdrop class="fixed inset-0 z-30 hidden bg-gray-900 bg-opacity-40 lg:hidden"></div>
+    {% include "components/sidebar.html" %}
+    <div class="lg:pl-64">
+        {% include "components/navbar.html" %}
+        <main class="px-4 py-6 sm:px-6 lg:px-8">
+            {% block dashboard_content %}{% endblock %}
+        </main>
+    </div>
+</div>
+<script>
+    const sidebar = document.getElementById("dashboardSidebar");
+    const backdrop = document.querySelector("[data-sidebar-backdrop]");
+    const openButton = document.querySelector("[data-sidebar-open]");
+    const closeButton = document.querySelector("[data-sidebar-close]");
+
+    function openSidebar() {
+        sidebar.classList.remove("hidden");
+        backdrop.classList.remove("hidden");
+    }
+
+    function closeSidebar() {
+        sidebar.classList.add("hidden");
+        backdrop.classList.add("hidden");
+    }
+
+    if (openButton) openButton.addEventListener("click", openSidebar);
+    if (closeButton) closeButton.addEventListener("click", closeSidebar);
+    if (backdrop) backdrop.addEventListener("click", closeSidebar);
+</script>
+{% endblock %}

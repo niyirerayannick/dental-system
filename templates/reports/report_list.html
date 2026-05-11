@@ -1,0 +1,265 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Reports{% endblock %}
+{% block dashboard_content %}
+
+<div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+  <div>
+    <p class="text-sm font-semibold uppercase tracking-wide text-green-600">Analytics &amp; Reporting</p>
+    <h1 class="mt-1 text-3xl font-bold text-gray-900">Reports</h1>
+    <p class="mt-2 text-sm text-gray-500">View clinic performance, appointments, revenue, and treatment analytics</p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <a href="{% url 'reports:export_pdf' %}?{{ request.GET.urlencode }}" class="inline-flex items-center gap-2 rounded-2xl border border-green-200 bg-white px-4 py-2.5 text-sm font-semibold text-green-700 shadow-sm hover:bg-green-50"><span class="material-symbols-rounded text-lg">picture_as_pdf</span> Export PDF</a>
+    <a href="{% url 'reports:export_excel' %}?{{ request.GET.urlencode }}" class="inline-flex items-center gap-2 rounded-2xl border border-green-200 bg-white px-4 py-2.5 text-sm font-semibold text-green-700 shadow-sm hover:bg-green-50"><span class="material-symbols-rounded text-lg">table_view</span> Export Excel</a>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  {% for stat in kpis %}
+  <div class="rounded-2xl bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-rounded flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-green-50 text-green-600">{{ stat.icon }}</span>
+      <div>
+        <p class="text-2xl font-bold leading-7 text-gray-900">{{ stat.value }}</p>
+        <p class="mt-0.5 text-xs font-semibold uppercase tracking-wide text-gray-400">{{ stat.label }}</p>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<section class="mt-6 rounded-2xl bg-white p-5 shadow-sm">
+  <form method="get" class="grid gap-4 lg:grid-cols-12 lg:items-end">
+    <div class="lg:col-span-2">
+      <label class="block text-sm font-semibold text-gray-700">Date From</label>
+      <input class="mt-2" type="date" name="date_from" value="{{ request.GET.date_from }}">
+    </div>
+    <div class="lg:col-span-2">
+      <label class="block text-sm font-semibold text-gray-700">Date To</label>
+      <input class="mt-2" type="date" name="date_to" value="{{ request.GET.date_to }}">
+    </div>
+    <div class="lg:col-span-3">
+      <label class="block text-sm font-semibold text-gray-700">Dentist</label>
+      <select class="mt-2" name="dentist">
+        <option value="">All dentists</option>
+        {% for dentist in dentists %}
+        <option value="{{ dentist.pk }}" {% if request.GET.dentist == dentist.pk|stringformat:"s" %}selected{% endif %}>{{ dentist }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="lg:col-span-2">
+      <label class="block text-sm font-semibold text-gray-700">Appointment Status</label>
+      <select class="mt-2" name="status">
+        <option value="">All statuses</option>
+        {% for v, l in status_choices %}
+        <option value="{{ v }}" {% if request.GET.status == v %}selected{% endif %}>{{ l }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="lg:col-span-2">
+      <label class="block text-sm font-semibold text-gray-700">Report Type</label>
+      <select class="mt-2" name="report_type">
+        <option value="">All Reports</option>
+        <option value="appointments" {% if request.GET.report_type == "appointments" %}selected{% endif %}>Appointments</option>
+        <option value="revenue" {% if request.GET.report_type == "revenue" %}selected{% endif %}>Revenue</option>
+        <option value="treatments" {% if request.GET.report_type == "treatments" %}selected{% endif %}>Treatments</option>
+      </select>
+    </div>
+    <div>
+      <button class="w-full rounded-2xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-700">Filter</button>
+    </div>
+  </form>
+</section>
+
+<div class="mt-6 grid gap-6 xl:grid-cols-12">
+  <section class="rounded-2xl bg-white p-5 shadow-sm xl:col-span-8">
+    <div class="mb-4 flex items-center justify-between">
+      <div>
+        <h2 class="text-lg font-bold text-gray-900">Monthly Appointments</h2>
+        <p class="text-sm text-gray-400">Booking trends over the last 12 months</p>
+      </div>
+      <span class="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">All Time</span>
+    </div>
+    <canvas id="monthlyAppointmentsChart" height="110"></canvas>
+  </section>
+  <section class="rounded-2xl bg-white p-5 shadow-sm xl:col-span-4">
+    <div class="mb-2">
+      <h2 class="text-lg font-bold text-gray-900">Appointment Status</h2>
+      <p class="text-sm text-gray-400">Status breakdown (all time)</p>
+    </div>
+    <canvas id="statusChart" height="230"></canvas>
+  </section>
+</div>
+
+<div class="mt-6 grid gap-6 xl:grid-cols-12">
+  <section class="rounded-2xl bg-white p-5 shadow-sm xl:col-span-8">
+    <div class="mb-4 flex items-center justify-between">
+      <div>
+        <h2 class="text-lg font-bold text-gray-900">Revenue Trend</h2>
+        <p class="text-sm text-gray-400">Monthly paid revenue over the last 12 months</p>
+      </div>
+      <span class="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">Paid Only</span>
+    </div>
+    <canvas id="revenueTrendChart" height="110"></canvas>
+  </section>
+  <section class="rounded-2xl bg-white p-5 shadow-sm xl:col-span-4">
+    <div class="mb-2">
+      <h2 class="text-lg font-bold text-gray-900">Treatment Summary</h2>
+      <p class="text-sm text-gray-400">Treatments by dentist</p>
+    </div>
+    <canvas id="treatmentChart" height="230"></canvas>
+  </section>
+</div>
+
+<div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+  <div class="rounded-2xl border border-green-100 bg-green-50 p-4">
+    <div class="flex items-center gap-2 text-green-700"><span class="material-symbols-rounded text-lg">trending_up</span><span class="text-xs font-semibold uppercase tracking-wide">Patient Growth</span></div>
+    <p class="mt-2 text-2xl font-bold text-green-800">{{ kpis.0.value }}</p>
+    <p class="text-xs text-green-600">Total registered patients</p>
+  </div>
+  <div class="rounded-2xl border border-blue-100 bg-blue-50 p-4">
+    <div class="flex items-center gap-2 text-blue-700"><span class="material-symbols-rounded text-lg">calendar_month</span><span class="text-xs font-semibold uppercase tracking-wide">Appointment Performance</span></div>
+    <p class="mt-2 text-2xl font-bold text-blue-800">{{ kpis.1.value }}</p>
+    <p class="text-xs text-blue-600">In selected period</p>
+  </div>
+  <div class="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
+    <div class="flex items-center gap-2 text-emerald-700"><span class="material-symbols-rounded text-lg">payments</span><span class="text-xs font-semibold uppercase tracking-wide">Revenue Report</span></div>
+    <p class="mt-2 text-2xl font-bold text-emerald-800">{{ kpis.2.value }}</p>
+    <p class="text-xs text-emerald-600">Total paid revenue</p>
+  </div>
+  <div class="rounded-2xl border border-purple-100 bg-purple-50 p-4">
+    <div class="flex items-center gap-2 text-purple-700"><span class="material-symbols-rounded text-lg">healing</span><span class="text-xs font-semibold uppercase tracking-wide">Treatment Report</span></div>
+    <p class="mt-2 text-2xl font-bold text-purple-800">{{ kpis.3.value }}</p>
+    <p class="text-xs text-purple-600">Treatment records</p>
+  </div>
+  <div class="rounded-2xl border border-orange-100 bg-orange-50 p-4">
+    <div class="flex items-center gap-2 text-orange-700"><span class="material-symbols-rounded text-lg">medical_services</span><span class="text-xs font-semibold uppercase tracking-wide">Dentist Performance</span></div>
+    <p class="mt-2 text-2xl font-bold text-orange-800">{{ dentists.count }}</p>
+    <p class="text-xs text-orange-600">Active practitioners</p>
+  </div>
+</div>
+
+<section class="mt-6 overflow-hidden rounded-2xl bg-white shadow-sm {% if request.GET.report_type == 'revenue' or request.GET.report_type == 'treatments' %}hidden{% endif %}">
+  <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+    <div>
+      <h2 class="text-lg font-bold text-gray-900">Appointment Performance Report</h2>
+      <p class="text-sm text-gray-400">Patient bookings and dentist schedule data</p>
+    </div>
+    <span class="material-symbols-rounded text-green-600">calendar_month</span>
+  </div>
+  <div class="hidden grid-cols-5 gap-4 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 xl:grid">
+    <span>Patient</span><span>Dentist</span><span>Date</span><span>Time</span><span>Status</span>
+  </div>
+  <div class="divide-y divide-gray-100">
+    {% for appointment in appointments %}
+    <div class="grid gap-4 px-5 py-4 hover:bg-green-50 xl:grid-cols-5 xl:items-center">
+      <p class="font-semibold text-gray-900">{{ appointment.patient }}</p>
+      <p class="text-sm text-gray-600">{{ appointment.dentist }}</p>
+      <p class="text-sm text-gray-600">{{ appointment.appointment_date }}</p>
+      <p class="text-sm text-gray-600">{{ appointment.appointment_time }}</p>
+      <div>{% include "partials/appointment_status_badge.html" with appointment=appointment %}</div>
+    </div>
+    {% empty %}
+    {% include "components/empty_state.html" with title="No appointments found" message="Adjust the filters to see appointment data." %}
+    {% endfor %}
+  </div>
+</section>
+
+<section class="mt-6 overflow-hidden rounded-2xl bg-white shadow-sm {% if request.GET.report_type == 'appointments' or request.GET.report_type == 'treatments' %}hidden{% endif %}">
+  <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+    <div>
+      <h2 class="text-lg font-bold text-gray-900">Revenue Report</h2>
+      <p class="text-sm text-gray-400">Invoice and payment analytics</p>
+    </div>
+    <span class="material-symbols-rounded text-green-600">paid</span>
+  </div>
+  <div class="hidden grid-cols-5 gap-4 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 xl:grid">
+    <span>Invoice No</span><span>Patient</span><span>Amount</span><span>Status</span><span>Date</span>
+  </div>
+  <div class="divide-y divide-gray-100">
+    {% for invoice in invoices %}
+    <div class="grid gap-4 px-5 py-4 hover:bg-green-50 xl:grid-cols-5 xl:items-center">
+      <p class="font-semibold text-gray-900">INV-{{ invoice.pk|stringformat:"05d" }}</p>
+      <p class="text-sm text-gray-600">{{ invoice.patient }}</p>
+      <p class="font-semibold text-gray-900">{{ invoice.amount }}</p>
+      <p><span class="rounded-full px-3 py-1 text-xs font-bold {% if invoice.status == 'paid' %}bg-green-50 text-green-700{% elif invoice.status == 'unpaid' %}bg-amber-50 text-amber-700{% else %}bg-gray-100 text-gray-600{% endif %}">{{ invoice.get_status_display }}</span></p>
+      <p class="text-sm text-gray-600">{{ invoice.created_at|date:"Y-m-d" }}</p>
+    </div>
+    {% empty %}
+    {% include "components/empty_state.html" with title="No invoices found" message="Adjust the filters to see revenue data." %}
+    {% endfor %}
+  </div>
+</section>
+
+<section class="mt-6 overflow-hidden rounded-2xl bg-white shadow-sm {% if request.GET.report_type == 'appointments' or request.GET.report_type == 'revenue' %}hidden{% endif %}">
+  <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+    <div>
+      <h2 class="text-lg font-bold text-gray-900">Treatment Report</h2>
+      <p class="text-sm text-gray-400">Diagnosis and treatment records</p>
+    </div>
+    <span class="material-symbols-rounded text-green-600">healing</span>
+  </div>
+  <div class="hidden grid-cols-4 gap-4 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 xl:grid">
+    <span>Patient</span><span>Dentist</span><span>Diagnosis</span><span>Treatment Date</span>
+  </div>
+  <div class="divide-y divide-gray-100">
+    {% for treatment in treatments %}
+    <div class="grid gap-4 px-5 py-4 hover:bg-green-50 xl:grid-cols-4 xl:items-center">
+      <p class="font-semibold text-gray-900">{{ treatment.patient }}</p>
+      <p class="text-sm text-gray-600">{{ treatment.dentist }}</p>
+      <p class="text-sm text-gray-600">{{ treatment.diagnosis|truncatechars:80 }}</p>
+      <p class="text-sm text-gray-600">{{ treatment.treatment_date }}</p>
+    </div>
+    {% empty %}
+    {% include "components/empty_state.html" with title="No treatments found" message="Adjust the filters to see treatment data." %}
+    {% endfor %}
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const monthLabels = {{ month_labels|safe }};
+const monthAppts = {{ month_appts|safe }};
+const monthRevenue = {{ month_revenue|safe }};
+const statusLabels = {{ status_labels|safe }};
+const statusValues = {{ status_values|safe }};
+const treatmentLabels = {{ treatment_labels|safe }};
+const treatmentCounts = {{ treatment_counts|safe }};
+
+new Chart(document.getElementById('monthlyAppointmentsChart'), {
+  type: 'bar',
+  data: {
+    labels: monthLabels,
+    datasets: [{label: 'Appointments', data: monthAppts, backgroundColor: 'rgba(22,163,74,0.15)', borderColor: 'rgb(22,163,74)', borderWidth: 2, borderRadius: 6}]
+  },
+  options: {responsive: true, plugins: {legend: {display: false}}, scales: {y: {beginAtZero: true, ticks: {stepSize: 1}}, x: {grid: {display: false}}}}
+});
+
+new Chart(document.getElementById('revenueTrendChart'), {
+  type: 'line',
+  data: {
+    labels: monthLabels,
+    datasets: [{label: 'Revenue', data: monthRevenue, backgroundColor: 'rgba(22,163,74,0.08)', borderColor: 'rgb(22,163,74)', borderWidth: 2, fill: true, tension: 0.4, pointBackgroundColor: 'rgb(22,163,74)'}]
+  },
+  options: {responsive: true, plugins: {legend: {display: false}}, scales: {y: {beginAtZero: true}, x: {grid: {display: false}}}}
+});
+
+new Chart(document.getElementById('statusChart'), {
+  type: 'doughnut',
+  data: {
+    labels: statusLabels,
+    datasets: [{data: statusValues, backgroundColor: ['#fbbf24', '#60a5fa', '#22c55e', '#f87171'], borderWidth: 0}]
+  },
+  options: {responsive: true, plugins: {legend: {position: 'bottom', labels: {boxWidth: 12, padding: 14}}}, cutout: '70%'}
+});
+
+new Chart(document.getElementById('treatmentChart'), {
+  type: 'bar',
+  data: {
+    labels: treatmentLabels.length ? treatmentLabels : ['No data'],
+    datasets: [{label: 'Treatments', data: treatmentCounts.length ? treatmentCounts : [0], backgroundColor: 'rgba(22,163,74,0.15)', borderColor: 'rgb(22,163,74)', borderWidth: 2, borderRadius: 6}]
+  },
+  options: {indexAxis: 'y', responsive: true, plugins: {legend: {display: false}}, scales: {x: {beginAtZero: true, ticks: {stepSize: 1}}, y: {grid: {display: false}}}}
+});
+</script>
+{% endblock %}

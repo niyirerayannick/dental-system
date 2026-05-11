@@ -1,0 +1,104 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Patient Dashboard{% endblock %}
+
+{% block dashboard_content %}
+<div>
+    <p class="text-sm font-semibold uppercase tracking-wide text-teal-700">Patient</p>
+    <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">My dental care</h1>
+    <p class="mt-2 max-w-2xl text-sm text-slate-600">Book visits, track your care history, and review billing from a simple patient portal.</p>
+</div>
+
+<div class="mt-8 grid gap-6 xl:grid-cols-12">
+    <div class="space-y-6 xl:col-span-5">
+        <section class="rounded-2xl border border-teal-100 bg-white p-5 shadow-sm">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-slate-950">Book appointment</h2>
+                <span class="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">Pending approval</span>
+            </div>
+            <form method="post" class="mt-5 space-y-4">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="booking">
+                {% include "partials/form_fields.html" with form=booking_form %}
+                <button class="w-full rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-800">Request appointment</button>
+            </form>
+        </section>
+
+        <section class="rounded-2xl border border-teal-100 bg-white p-5 shadow-sm">
+            <h2 class="text-lg font-semibold text-slate-950">Profile details</h2>
+            <form method="post" class="mt-5 space-y-4">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="profile">
+                {% include "partials/form_fields.html" with form=profile_form %}
+                <button class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-800 hover:bg-slate-100">Save profile</button>
+            </form>
+        </section>
+    </div>
+
+    <div class="space-y-6 xl:col-span-7">
+        <section class="overflow-hidden rounded-2xl border border-teal-100 bg-white shadow-sm">
+            <div class="border-b border-slate-200 px-5 py-4">
+                <h2 class="text-lg font-semibold text-slate-950">My appointments</h2>
+            </div>
+            <div class="divide-y divide-slate-100">
+                {% for appointment in appointments %}
+                    <div class="grid gap-3 px-5 py-4 md:grid-cols-4 md:items-center">
+                        <div class="md:col-span-2">
+                            <p class="font-medium text-slate-950">{{ appointment.dentist }}</p>
+                            {% if appointment.reason %}<p class="mt-1 text-sm text-slate-600">{{ appointment.reason }}</p>{% endif %}
+                        </div>
+                        <p class="text-sm text-slate-600">{{ appointment.appointment_date }} at {{ appointment.appointment_time }}</p>
+                        <div>{% include "partials/appointment_status_badge.html" with appointment=appointment %}</div>
+                    </div>
+                {% empty %}
+                    <div class="px-5 py-12 text-center">
+                        <p class="font-semibold text-slate-950">No appointments booked yet</p>
+                        <p class="mt-1 text-sm text-slate-600">Use the booking form to request your first appointment.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="overflow-hidden rounded-2xl border border-teal-100 bg-white shadow-sm">
+            <div class="border-b border-slate-200 px-5 py-4">
+                <h2 class="text-lg font-semibold text-slate-950">Treatment history</h2>
+            </div>
+            <div class="divide-y divide-slate-100">
+                {% for treatment in treatments %}
+                    <div class="px-5 py-4">
+                        <p class="font-medium text-slate-950">{{ treatment.treatment_date }} - {{ treatment.dentist }}</p>
+                        <p class="mt-1 text-sm text-slate-600">{{ treatment.diagnosis|truncatechars:140 }}</p>
+                    </div>
+                {% empty %}
+                    <div class="px-5 py-12 text-center">
+                        <p class="font-semibold text-slate-950">No treatment records yet</p>
+                        <p class="mt-1 text-sm text-slate-600">Completed treatment notes will appear here.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="overflow-hidden rounded-2xl border border-teal-100 bg-white shadow-sm">
+            <div class="border-b border-slate-200 px-5 py-4">
+                <h2 class="text-lg font-semibold text-slate-950">Invoices</h2>
+            </div>
+            <div class="divide-y divide-slate-100">
+                {% for invoice in invoices %}
+                    <div class="flex items-center justify-between gap-4 px-5 py-4">
+                        <div>
+                            <p class="font-medium text-slate-950">{{ invoice.created_at|date:"Y-m-d" }}</p>
+                            <p class="mt-1 text-sm text-slate-600">{{ invoice.get_status_display }}</p>
+                        </div>
+                        <p class="text-lg font-bold text-slate-950">{{ invoice.amount }}</p>
+                    </div>
+                {% empty %}
+                    <div class="px-5 py-12 text-center">
+                        <p class="font-semibold text-slate-950">No invoices yet</p>
+                        <p class="mt-1 text-sm text-slate-600">Invoice records will be shown after billing is created.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

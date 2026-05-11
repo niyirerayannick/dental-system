@@ -1,0 +1,47 @@
+{% load static %}
+<!doctype html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}DentalCare{% endblock %}</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body class="min-h-full bg-gradient-to-br from-slate-50 via-white to-teal-50 text-slate-900 antialiased">
+    {% block site_header %}
+    <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
+        <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+            <a href="{% url 'home' %}" class="flex items-center gap-3 text-lg font-bold tracking-tight text-slate-950">
+                <span class="material-symbols-rounded flex h-10 w-10 items-center justify-center rounded-xl bg-teal-700 text-white shadow-sm">dentistry</span>
+                <span><span class="text-teal-700">Dental</span>Care</span>
+            </a>
+            <div class="flex items-center gap-2 text-sm font-medium sm:gap-3">
+                {% if request.user.is_authenticated %}
+                    <a href="{% url 'dashboard:redirect' %}" class="hidden text-slate-700 hover:text-teal-700 sm:inline">Dashboard</a>
+                    <form method="post" action="{% url 'accounts:logout' %}">
+                        {% csrf_token %}
+                        <button class="rounded-lg bg-slate-900 px-3 py-2 text-white shadow-sm hover:bg-slate-700">Logout</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}" class="text-slate-700 hover:text-teal-700">Login</a>
+                    <a href="{% url 'accounts:register' %}" class="rounded-lg bg-teal-700 px-3 py-2 text-white shadow-sm hover:bg-teal-800">Register</a>
+                {% endif %}
+            </div>
+        </nav>
+    </header>
+    {% endblock %}
+
+    {% if messages %}
+        <div class="mx-auto mt-4 max-w-7xl px-4 sm:px-6 lg:px-8">
+            {% for message in messages %}
+                <div class="rounded-xl border {% if message.tags == 'error' %}border-rose-200 bg-rose-50 text-rose-900{% else %}border-teal-200 bg-teal-50 text-teal-900{% endif %} px-4 py-3 text-sm shadow-sm">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

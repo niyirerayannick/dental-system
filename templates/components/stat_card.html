@@ -1,0 +1,13 @@
+<div class="rounded-2xl bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+    <div class="flex items-start justify-between">
+        <div>
+            <p class="text-sm font-medium text-gray-400">{{ stat.label }}</p>
+            <p class="mt-2 text-3xl font-bold text-gray-900">{{ stat.value }}</p>
+        </div>
+        <span class="material-symbols-rounded flex h-11 w-11 items-center justify-center rounded-2xl bg-green-50 text-green-600">{{ stat.icon|default:"monitoring" }}</span>
+    </div>
+    <div class="mt-5 flex items-center justify-between">
+        <span class="{% if stat.tone == 'amber' %}text-yellow-600 bg-yellow-50{% else %}text-green-600 bg-green-50{% endif %} rounded-full px-2 py-1 text-xs font-bold">{{ stat.change }}</span>
+        <a href="#" class="rounded-lg border border-green-200 px-3 py-1.5 text-xs font-semibold text-green-600 transition hover:bg-green-50">View report</a>
+    </div>
+</div>

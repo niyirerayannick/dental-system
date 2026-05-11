@@ -1,0 +1,36 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+        <p class="text-sm font-semibold uppercase tracking-wide text-green-600">Patient profile</p>
+        <h1 class="mt-1 text-3xl font-bold text-gray-900">{{ title }}</h1>
+        <p class="mt-2 text-sm text-gray-500">Capture patient contact details and medical profile information.</p>
+    </div>
+        <a href="{% url 'patients:list' %}" class="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50"><span class="material-symbols-rounded text-lg text-green-600">arrow_back</span> Back to Patients</a>
+</div>
+
+<section class="rounded-2xl bg-white p-6 shadow-sm">
+    <form method="post" class="grid gap-5 md:grid-cols-2">
+        {% csrf_token %}
+        {% for field in form %}
+            <div {% if field.name in "address medical_history allergies" %}class="md:col-span-2"{% endif %}>
+                <label for="{{ field.id_for_label }}" class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-lg text-green-600">edit_note</span> {{ field.label }}</label>
+                <div class="mt-2">{{ field }}</div>
+                {% for error in field.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endfor %}
+        {% if form.non_field_errors %}
+            <div class="md:col-span-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <div class="flex flex-wrap gap-3 md:col-span-2">
+            <button class="inline-flex items-center gap-2 rounded-2xl bg-green-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-green-700"><span class="material-symbols-rounded text-lg">save</span> Save Patient</button>
+            <a href="{% url 'patients:list' %}" class="rounded-2xl border border-gray-200 px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

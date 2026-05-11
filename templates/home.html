@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Dental Appointment Booking{% endblock %}
+
+{% block content %}
+<section class="bg-white">
+    <div class="mx-auto grid max-w-7xl gap-12 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-24">
+        <div class="flex flex-col justify-center">
+            <p class="text-sm font-semibold uppercase tracking-wide text-teal-700">Dental appointment booking</p>
+            <h1 class="mt-4 text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">Manage patients, appointments, treatments, and billing in one calm workspace.</h1>
+            <p class="mt-6 max-w-xl text-lg leading-8 text-slate-600">A clean Django starter for dental practices that need dependable booking, patient records, treatment tracking, and invoices without a JavaScript-heavy frontend.</p>
+            <div class="mt-8 flex flex-wrap gap-3">
+                <a href="{% url 'accounts:register' %}" class="rounded-md bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-teal-800">Create account</a>
+                <a href="{% url 'accounts:login' %}" class="rounded-md border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-100">Staff login</a>
+            </div>
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-slate-50 p-6 shadow-sm">
+            <div class="grid gap-4">
+                <div class="rounded-md bg-white p-4 shadow-sm">
+                    <p class="text-sm font-medium text-slate-500">Next appointment</p>
+                    <p class="mt-2 text-xl font-semibold text-slate-950">09:30 - Cleaning and checkup</p>
+                    <p class="mt-1 text-sm text-slate-600">Patient: Amina Patel with Dr. Mokoena</p>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="rounded-md bg-white p-4 shadow-sm">
+                        <p class="text-2xl font-bold text-teal-700">24</p>
+                        <p class="text-sm text-slate-600">Today bookings</p>
+                    </div>
+                    <div class="rounded-md bg-white p-4 shadow-sm">
+                        <p class="text-2xl font-bold text-teal-700">8</p>
+                        <p class="text-sm text-slate-600">Open invoices</p>
+                    </div>
+                </div>
+                <div class="rounded-md bg-white p-4 shadow-sm">
+                    <p class="text-sm font-medium text-slate-500">Care notes</p>
+                    <p class="mt-2 text-sm leading-6 text-slate-700">Record patient history, treatment notes, and billing status from the same dashboard.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block dashboard_content %}
+<div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+        <p class="text-sm font-semibold uppercase tracking-wide text-teal-700">Admin</p>
+        <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">Practice dashboard</h1>
+        <p class="mt-2 max-w-2xl text-sm text-slate-600">Monitor patient activity, appointment demand, and billing status from one clinical command center.</p>
+    </div>
+    <a href="/admin/" class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-700">Django admin</a>
+</div>
+
+<div class="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    {% for stat in stats %}
+        <div class="rounded-2xl border border-teal-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-slate-500">{{ stat.label }}</p>
+                <span class="material-symbols-rounded flex h-9 w-9 items-center justify-center rounded-xl bg-teal-50 text-teal-700">{{ stat.icon|default:"monitoring" }}</span>
+            </div>
+            <p class="mt-3 text-3xl font-bold text-slate-950">{{ stat.value }}</p>
+        </div>
+    {% endfor %}
+</div>
+
+<div class="mt-8 grid gap-6 lg:grid-cols-12">
+    <section class="rounded-2xl border border-teal-100 bg-white p-5 shadow-sm lg:col-span-4">
+        <h2 class="text-lg font-semibold text-slate-950">Invoices</h2>
+        <div class="mt-5 grid gap-3">
+            <div class="flex items-center justify-between rounded-md bg-emerald-50 px-4 py-3">
+                <span class="text-sm font-medium text-emerald-900">Paid</span>
+                <span class="text-xl font-bold text-emerald-800">{{ invoice_stats.paid|default:0 }}</span>
+            </div>
+            <div class="flex items-center justify-between rounded-md bg-amber-50 px-4 py-3">
+                <span class="text-sm font-medium text-amber-900">Unpaid</span>
+                <span class="text-xl font-bold text-amber-800">{{ invoice_stats.unpaid|default:0 }}</span>
+            </div>
+            <div class="flex items-center justify-between rounded-md bg-slate-100 px-4 py-3">
+                <span class="text-sm font-medium text-slate-700">Cancelled</span>
+                <span class="text-xl font-bold text-slate-800">{{ invoice_stats.cancelled|default:0 }}</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="overflow-hidden rounded-2xl border border-teal-100 bg-white shadow-sm lg:col-span-8">
+        <div class="border-b border-slate-200 px-5 py-4">
+            <h2 class="text-lg font-semibold text-slate-950">Recent appointments</h2>
+        </div>
+        <div class="hidden grid-cols-4 gap-4 bg-slate-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 md:grid">
+            <span class="md:col-span-2">Patient and dentist</span>
+            <span>Date and time</span>
+            <span>Status</span>
+        </div>
+        <div class="divide-y divide-slate-100">
+            {% for appointment in appointments %}
+                <div class="grid gap-3 px-5 py-4 md:grid-cols-4 md:items-center">
+                    <p class="font-medium text-slate-950 md:col-span-2">{{ appointment.patient }} with {{ appointment.dentist }}</p>
+                    <p class="text-sm text-slate-600">{{ appointment.appointment_date }} at {{ appointment.appointment_time }}</p>
+                    <div>{% include "partials/appointment_status_badge.html" with appointment=appointment %}</div>
+                </div>
+            {% empty %}
+                <div class="px-5 py-10 text-center">
+                    <p class="font-semibold text-slate-900">No appointments yet</p>
+                    <p class="mt-1 text-sm text-slate-600">Booked appointments will appear here once patients or reception add them.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

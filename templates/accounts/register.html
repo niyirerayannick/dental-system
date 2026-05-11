@@ -1,0 +1,37 @@
+{% extends "accounts/auth_base.html" %}
+
+{% block title %}Register{% endblock %}
+
+{% block auth_content %}
+<h1 class="text-2xl font-bold tracking-tight text-slate-950">Signup</h1>
+
+<form method="post" class="mt-6 space-y-4">
+    {% csrf_token %}
+    {% if request.GET.next %}
+        <input type="hidden" name="next" value="{{ request.GET.next }}">
+    {% endif %}
+
+    {% for field in form %}
+        <div>
+            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-slate-950">
+                {% if field.name == "first_name" %}Your first name{% elif field.name == "last_name" %}Your last name{% elif field.name == "email" %}Your email{% elif field.name == "phone" %}Your phone{% elif field.name == "password1" %}Your password{% elif field.name == "password2" %}Confirm password{% else %}{{ field.label }}{% endif %}
+                {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+            </label>
+            <div class="mt-2">{{ field }}</div>
+            {% if field.name == "password1" %}
+                <p class="mt-2 text-sm text-slate-600">Your password must be strong and secure.</p>
+            {% endif %}
+            {% for error in field.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+            {% endfor %}
+        </div>
+    {% endfor %}
+
+    {% if form.non_field_errors %}
+        <div class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <button class="w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">Signup</button>
+    <a href="{% url 'accounts:login' %}" class="block w-full rounded-lg bg-slate-200 px-4 py-2.5 text-center text-sm font-medium text-slate-950 shadow-sm hover:bg-slate-300">Already have an account? Login</a>
+</form>
+{% endblock %}

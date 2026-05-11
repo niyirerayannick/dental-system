@@ -1,0 +1,206 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Patients{% endblock %}
+
+{% block dashboard_content %}
+<div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <div>
+        <p class="text-sm font-semibold uppercase tracking-wide text-green-600">Patient management</p>
+        <h1 class="mt-1 text-3xl font-bold text-gray-900">Patients</h1>
+        <p class="mt-2 text-sm text-gray-500">Manage patient records and medical profiles</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+        <a href="{% url 'patients:export_pdf' %}?{{ request.GET.urlencode }}" class="inline-flex items-center gap-2 rounded-2xl border border-green-200 bg-white px-4 py-2.5 text-sm font-semibold text-green-700 shadow-sm transition hover:bg-green-50"><span class="material-symbols-rounded text-lg">picture_as_pdf</span> Export PDF</a>
+        <a href="{% url 'patients:export_excel' %}?{{ request.GET.urlencode }}" class="inline-flex items-center gap-2 rounded-2xl border border-green-200 bg-white px-4 py-2.5 text-sm font-semibold text-green-700 shadow-sm transition hover:bg-green-50"><span class="material-symbols-rounded text-lg">table_view</span> Export Excel</a>
+        <button type="button" onclick="openModal()" class="inline-flex items-center gap-2 rounded-2xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-700"><span class="material-symbols-rounded text-lg">add_circle</span> Add New Patient</button>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    {% for stat in kpis %}
+        <div class="rounded-2xl bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-rounded flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-green-50 text-green-600">{{ stat.icon }}</span>
+                <div class="min-w-0">
+                    <p class="text-2xl font-bold leading-7 text-gray-900">{{ stat.value }}</p>
+                    <p class="mt-0.5 truncate text-xs font-semibold uppercase tracking-wide text-gray-400">{{ stat.label }}</p>
+                </div>
+            </div>
+            {% if stat.change %}
+                <span class="mt-3 inline-flex rounded-full bg-green-50 px-2 py-0.5 text-xs font-bold text-green-600">{{ stat.change }}</span>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
+
+<section class="mt-6 rounded-2xl bg-white p-5 shadow-sm">
+    <form method="get" class="grid gap-4 lg:grid-cols-12 lg:items-end">
+        <div class="lg:col-span-4">
+            <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-lg text-green-600">search</span> Search</label>
+            <input type="search" name="q" value="{{ filters.q }}" placeholder="Name, phone, or email" class="mt-2">
+        </div>
+        <div class="lg:col-span-2">
+            <label class="block text-sm font-semibold text-gray-700">Gender</label>
+            <select name="gender" class="mt-2">
+                <option value="">All genders</option>
+                {% for value,label in gender_choices %}
+                    <option value="{{ value }}" {% if filters.gender == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="lg:col-span-2">
+            <label class="block text-sm font-semibold text-gray-700">Status</label>
+            <select name="status" class="mt-2">
+                <option value="">All</option>
+                <option value="active" {% if filters.status == "active" %}selected{% endif %}>Active</option>
+                <option value="inactive" {% if filters.status == "inactive" %}selected{% endif %}>Inactive</option>
+            </select>
+        </div>
+        <div class="lg:col-span-2">
+            <label class="block text-sm font-semibold text-gray-700">Appointment</label>
+            <select name="appointment_status" class="mt-2">
+                <option value="">All</option>
+                {% for value,label in appointment_status_choices %}
+                    <option value="{{ value }}" {% if filters.appointment_status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="flex gap-2 lg:col-span-2">
+            <button class="flex-1 rounded-2xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700">Filter</button>
+            <a href="{% url 'patients:list' %}" class="rounded-2xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-50">Clear</a>
+        </div>
+    </form>
+</section>
+
+<section class="mt-6 overflow-hidden rounded-2xl bg-white shadow-sm">
+    <div class="hidden grid-cols-9 gap-4 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 xl:grid">
+        <span class="col-span-2">Patient</span>
+        <span>Phone</span>
+        <span>Email</span>
+        <span>Gender</span>
+        <span>Age</span>
+        <span>Last Visit</span>
+        <span>Next</span>
+        <span>Actions</span>
+    </div>
+    <div class="divide-y divide-gray-100">
+        {% for row in patient_rows %}
+            <div class="grid gap-4 px-5 py-4 transition hover:bg-green-50 xl:grid-cols-9 xl:items-center">
+                <div class="xl:col-span-2">
+                    <p class="font-semibold text-gray-900">{{ row.profile }}</p>
+                    <div class="mt-2">
+                        {% if row.status == "Active" %}
+                            <span class="rounded-full bg-green-50 px-3 py-1 text-xs font-bold text-green-700">Active</span>
+                        {% else %}
+                            <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-600">Inactive</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <p class="text-sm text-gray-600">{{ row.profile.user.phone|default:"-" }}</p>
+                <p class="break-all text-sm text-gray-600">{{ row.profile.user.email }}</p>
+                <p class="text-sm text-gray-600">{{ row.profile.get_gender_display|default:"-" }}</p>
+                <p class="text-sm text-gray-600">{{ row.age }}</p>
+                <p class="text-sm text-gray-600">{% if row.last_visit %}{{ row.last_visit.appointment_date }}{% else %}-{% endif %}</p>
+                <p class="text-sm text-gray-600">{% if row.next_appointment %}{{ row.next_appointment.appointment_date }}{% else %}-{% endif %}</p>
+                <div class="flex flex-wrap gap-2">
+                    <a href="{% url 'patients:detail' row.profile.pk %}" class="inline-flex items-center gap-1 rounded-xl border border-green-200 px-3 py-2 text-xs font-bold text-green-700 hover:bg-green-50"><span class="material-symbols-rounded text-base">visibility</span> View</a>
+                    <a href="{% url 'patients:edit' row.profile.pk %}" class="inline-flex items-center gap-1 rounded-xl border border-gray-200 px-3 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50"><span class="material-symbols-rounded text-base">edit</span> Edit</a>
+                    <form method="post" action="{% url 'patients:delete' row.profile.pk %}">
+                        {% csrf_token %}
+                        <button class="inline-flex items-center gap-1 rounded-xl border border-red-200 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50"><span class="material-symbols-rounded text-base">delete</span> Delete</button>
+                    </form>
+                </div>
+            </div>
+        {% empty %}
+            {% include "components/empty_state.html" with title="No patients found" message="Try clearing filters or add a new patient profile." %}
+        {% endfor %}
+    </div>
+</section>
+
+<div id="patientModal" class="{% if not modal_open %}hidden{% endif %} fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
+    <div id="patientModalBackdrop" class="absolute inset-0 bg-gray-900 bg-opacity-60 transition-opacity"></div>
+    <div class="no-scrollbar relative z-10 max-h-full w-full max-w-3xl transform overflow-y-auto rounded-2xl bg-white shadow-xl transition-all">
+        <div class="sticky top-0 z-10 flex items-start justify-between border-b border-gray-100 bg-white px-6 py-5">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Add New Patient</h2>
+                <p class="mt-1 text-sm text-gray-500">Fill patient information</p>
+            </div>
+            <button type="button" onclick="closeModal()" class="rounded-xl px-3 py-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"><span class="material-symbols-rounded">close</span></button>
+        </div>
+
+        <form method="post" id="patientModalForm" class="grid gap-5 px-6 py-6 md:grid-cols-2">
+            {% csrf_token %}
+            {% for field in patient_form %}
+                <div {% if field.name in "address medical_history allergies" %}class="md:col-span-2"{% endif %}>
+                    <label for="{{ field.id_for_label }}" class="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                        {% if field.name == "email" %}
+                            <span class="material-symbols-rounded text-lg text-green-600">mail</span>
+                        {% elif field.name == "phone" %}
+                            <span class="material-symbols-rounded text-lg text-green-600">call</span>
+                        {% elif field.name == "address" %}
+                            <span class="material-symbols-rounded text-lg text-green-600">location_on</span>
+                        {% elif field.name == "date_of_birth" %}
+                            <span class="material-symbols-rounded text-lg text-green-600">calendar_today</span>
+                        {% else %}
+                            <span class="material-symbols-rounded text-lg text-green-600">edit_note</span>
+                        {% endif %}
+                        {{ field.label }}
+                    </label>
+                    <div class="mt-2 rounded-2xl border border-transparent transition focus-within:border-green-200 focus-within:ring-4 focus-within:ring-green-50">{{ field }}</div>
+                    {% for error in field.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            {% if patient_form.non_field_errors %}
+                <div class="md:col-span-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ patient_form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="sticky bottom-0 -mx-6 flex flex-col gap-3 border-t border-gray-100 bg-white px-6 py-4 sm:flex-row sm:justify-end md:col-span-2">
+                <button type="button" onclick="closeModal()" class="rounded-2xl border border-gray-200 px-5 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Cancel</button>
+                <button id="patientSubmitButton" class="rounded-2xl bg-green-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-green-700">Save Patient</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const modal = document.getElementById("patientModal");
+    const modalBackdrop = document.getElementById("patientModalBackdrop");
+    const modalForm = document.getElementById("patientModalForm");
+    const submitButton = document.getElementById("patientSubmitButton");
+
+    function openModal() {
+        modal.classList.remove("hidden");
+        document.body.classList.add("overflow-hidden");
+    }
+
+    function closeModal() {
+        modal.classList.add("hidden");
+        document.body.classList.remove("overflow-hidden");
+    }
+
+    if (modalBackdrop) {
+        modalBackdrop.addEventListener("click", closeModal);
+    }
+
+    document.addEventListener("keydown", function(event) {
+        if (event.key === "Escape" && !modal.classList.contains("hidden")) {
+            closeModal();
+        }
+    });
+
+    if (modalForm) {
+        modalForm.addEventListener("submit", function() {
+            submitButton.disabled = true;
+            submitButton.textContent = "Saving...";
+            submitButton.classList.add("opacity-75", "cursor-wait");
+        });
+    }
+
+    {% if modal_open %}
+        openModal();
+    {% endif %}
+</script>
+{% endblock %}

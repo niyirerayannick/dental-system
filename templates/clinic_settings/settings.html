@@ -1,0 +1,348 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Settings{% endblock %}
+{% block dashboard_content %}
+
+<div class="mb-6 flex flex-col gap-4">
+  <div>
+    <p class="text-sm font-semibold uppercase tracking-wide text-green-600">System Configuration</p>
+    <h1 class="mt-1 text-3xl font-bold text-gray-900">Settings</h1>
+    <p class="mt-2 text-sm text-gray-500">Manage clinic profile, system preferences, and account settings</p>
+  </div>
+</div>
+
+<div class="flex flex-wrap gap-2 border-b border-gray-100 pb-4 mb-6">
+  <a href="?tab=clinic" class="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold {% if active_tab == 'clinic' %}bg-green-600 text-white shadow-sm{% else %}border border-gray-200 bg-white text-gray-600 hover:bg-green-50 hover:text-green-700{% endif %}">
+    <span class="material-symbols-rounded text-base">business</span> Clinic Profile
+  </a>
+  <a href="?tab=appointment" class="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold {% if active_tab == 'appointment' %}bg-green-600 text-white shadow-sm{% else %}border border-gray-200 bg-white text-gray-600 hover:bg-green-50 hover:text-green-700{% endif %}">
+    <span class="material-symbols-rounded text-base">calendar_month</span> Appointments
+  </a>
+  <a href="?tab=notification" class="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold {% if active_tab == 'notification' %}bg-green-600 text-white shadow-sm{% else %}border border-gray-200 bg-white text-gray-600 hover:bg-green-50 hover:text-green-700{% endif %}">
+    <span class="material-symbols-rounded text-base">notifications</span> Notifications
+  </a>
+  <a href="?tab=billing" class="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold {% if active_tab == 'billing' %}bg-green-600 text-white shadow-sm{% else %}border border-gray-200 bg-white text-gray-600 hover:bg-green-50 hover:text-green-700{% endif %}">
+    <span class="material-symbols-rounded text-base">payments</span> Billing
+  </a>
+  <a href="?tab=security" class="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold {% if active_tab == 'security' %}bg-green-600 text-white shadow-sm{% else %}border border-gray-200 bg-white text-gray-600 hover:bg-green-50 hover:text-green-700{% endif %}">
+    <span class="material-symbols-rounded text-base">security</span> Security
+  </a>
+  <a href="?tab=account" class="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold {% if active_tab == 'account' %}bg-green-600 text-white shadow-sm{% else %}border border-gray-200 bg-white text-gray-600 hover:bg-green-50 hover:text-green-700{% endif %}">
+    <span class="material-symbols-rounded text-base">manage_accounts</span> Account
+  </a>
+</div>
+
+{% if active_tab == 'clinic' %}
+<div class="rounded-2xl bg-white p-6 shadow-sm">
+  <div class="mb-5 flex items-center gap-3">
+    <span class="material-symbols-rounded flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 text-green-600">business</span>
+    <div>
+      <h2 class="text-lg font-bold text-gray-900">Clinic Profile</h2>
+      <p class="text-sm text-gray-500">Basic information about your dental clinic</p>
+    </div>
+  </div>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="section" value="clinic">
+    <div class="grid gap-5 md:grid-cols-2">
+      <div>
+        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-base text-green-600">business</span> Clinic Name</label>
+        <div class="mt-2">{{ forms.clinic.clinic_name }}</div>
+        {% for error in forms.clinic.clinic_name.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+      </div>
+      <div>
+        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-base text-green-600">email</span> Clinic Email</label>
+        <div class="mt-2">{{ forms.clinic.clinic_email }}</div>
+        {% for error in forms.clinic.clinic_email.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+      </div>
+      <div>
+        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-base text-green-600">phone</span> Clinic Phone</label>
+        <div class="mt-2">{{ forms.clinic.clinic_phone }}</div>
+        {% for error in forms.clinic.clinic_phone.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+      </div>
+      <div>
+        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-base text-green-600">language</span> Website</label>
+        <div class="mt-2">{{ forms.clinic.website }}</div>
+        {% for error in forms.clinic.website.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+      </div>
+      <div class="md:col-span-2">
+        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-base text-green-600">location_on</span> Clinic Address</label>
+        <div class="mt-2">{{ forms.clinic.clinic_address }}</div>
+        {% for error in forms.clinic.clinic_address.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+      </div>
+      <div>
+        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-base text-green-600">image</span> Clinic Logo</label>
+        <div class="mt-2">{{ forms.clinic.logo }}</div>
+        {% if clinic.logo %}<p class="mt-1 text-xs text-gray-500">Current: {{ clinic.logo.name }}</p>{% endif %}
+        {% for error in forms.clinic.logo.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+      </div>
+    </div>
+    <div class="mt-6 flex justify-end">
+      <button type="submit" class="inline-flex items-center gap-2 rounded-2xl bg-green-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-green-700">
+        <span class="material-symbols-rounded text-lg">save</span> Save Clinic Profile
+      </button>
+    </div>
+  </form>
+</div>
+{% endif %}
+
+{% if active_tab == 'appointment' %}
+<div class="rounded-2xl bg-white p-6 shadow-sm">
+  <div class="mb-5 flex items-center gap-3">
+    <span class="material-symbols-rounded flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 text-green-600">calendar_month</span>
+    <div>
+      <h2 class="text-lg font-bold text-gray-900">Appointment Settings</h2>
+      <p class="text-sm text-gray-500">Configure booking hours, duration, and approval preferences</p>
+    </div>
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="section" value="appointment">
+    <div class="grid gap-5 md:grid-cols-2">
+      <div>
+        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-base text-green-600">schedule</span> Opening Time</label>
+        <div class="mt-2">{{ forms.appointment.opening_time }}</div>
+        {% for error in forms.appointment.opening_time.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+      </div>
+      <div>
+        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-base text-green-600">schedule</span> Closing Time</label>
+        <div class="mt-2">{{ forms.appointment.closing_time }}</div>
+        {% for error in forms.appointment.closing_time.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+      </div>
+      <div>
+        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-base text-green-600">timer</span> Appointment Duration (minutes)</label>
+        <div class="mt-2">{{ forms.appointment.appointment_duration }}</div>
+        {% for error in forms.appointment.appointment_duration.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+      </div>
+      <div class="flex flex-col justify-center gap-4 pt-1">
+        <label class="flex items-center gap-3 cursor-pointer">
+          <span class="mt-2 inline-block">{{ forms.appointment.allow_online_booking }}</span>
+          <span class="text-sm font-semibold text-gray-700">Allow Online Booking</span>
+        </label>
+        <label class="flex items-center gap-3 cursor-pointer">
+          <span class="inline-block">{{ forms.appointment.auto_approve_appointments }}</span>
+          <span class="text-sm font-semibold text-gray-700">Auto-approve Appointments</span>
+        </label>
+      </div>
+    </div>
+    <div class="mt-6 flex justify-end">
+      <button type="submit" class="inline-flex items-center gap-2 rounded-2xl bg-green-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-green-700">
+        <span class="material-symbols-rounded text-lg">save</span> Save Appointment Settings
+      </button>
+    </div>
+  </form>
+</div>
+{% endif %}
+
+{% if active_tab == 'notification' %}
+<div class="rounded-2xl bg-white p-6 shadow-sm">
+  <div class="mb-5 flex items-center gap-3">
+    <span class="material-symbols-rounded flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 text-green-600">notifications</span>
+    <div>
+      <h2 class="text-lg font-bold text-gray-900">Notification Settings</h2>
+      <p class="text-sm text-gray-500">Manage how and when notifications are sent</p>
+    </div>
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="section" value="notification">
+    <div class="grid gap-5 md:grid-cols-2">
+      <div class="flex flex-col gap-5">
+        <label class="flex items-start gap-3 cursor-pointer">
+          <span class="mt-0.5 inline-block">{{ forms.notification.enable_email_notifications }}</span>
+          <div>
+            <p class="text-sm font-semibold text-gray-700">Email Notifications</p>
+            <p class="text-xs text-gray-400">Send appointment reminders via email</p>
+          </div>
+        </label>
+        <label class="flex items-start gap-3 cursor-pointer">
+          <span class="mt-0.5 inline-block">{{ forms.notification.enable_sms_notifications }}</span>
+          <div>
+            <p class="text-sm font-semibold text-gray-700">SMS Notifications</p>
+            <p class="text-xs text-gray-400">Send appointment reminders via SMS</p>
+          </div>
+        </label>
+      </div>
+      <div class="flex flex-col gap-5">
+        <div>
+          <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-base text-green-600">timer</span> Reminder Time (hours before)</label>
+          <div class="mt-2">{{ forms.notification.appointment_reminder_time }}</div>
+          {% for error in forms.notification.appointment_reminder_time.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+        </div>
+        <div>
+          <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-base text-green-600">alternate_email</span> Admin Email</label>
+          <div class="mt-2">{{ forms.notification.admin_email }}</div>
+          {% for error in forms.notification.admin_email.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+        </div>
+      </div>
+    </div>
+    <div class="mt-6 flex justify-end">
+      <button type="submit" class="inline-flex items-center gap-2 rounded-2xl bg-green-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-green-700">
+        <span class="material-symbols-rounded text-lg">save</span> Save Notification Settings
+      </button>
+    </div>
+  </form>
+</div>
+{% endif %}
+
+{% if active_tab == 'billing' %}
+<div class="rounded-2xl bg-white p-6 shadow-sm">
+  <div class="mb-5 flex items-center gap-3">
+    <span class="material-symbols-rounded flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 text-green-600">payments</span>
+    <div>
+      <h2 class="text-lg font-bold text-gray-900">Billing Settings</h2>
+      <p class="text-sm text-gray-500">Configure currency, tax, and payment preferences</p>
+    </div>
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="section" value="billing_settings">
+    <div class="grid gap-5 md:grid-cols-2">
+      <div>
+        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-base text-green-600">currency_exchange</span> Currency</label>
+        <div class="mt-2">{{ forms.billing.currency }}</div>
+        {% for error in forms.billing.currency.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+      </div>
+      <div>
+        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-base text-green-600">percent</span> Tax Percentage (%)</label>
+        <div class="mt-2">{{ forms.billing.tax_percentage }}</div>
+        {% for error in forms.billing.tax_percentage.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+      </div>
+      <div>
+        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-base text-green-600">receipt</span> Invoice Prefix</label>
+        <div class="mt-2">{{ forms.billing.invoice_prefix }}</div>
+        {% for error in forms.billing.invoice_prefix.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+      </div>
+      <div>
+        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-base text-green-600">credit_card</span> Payment Methods</label>
+        <div class="mt-2">{{ forms.billing.payment_methods }}</div>
+        <p class="mt-1 text-xs text-gray-400">Comma-separated: Cash,Card,Bank Transfer</p>
+        {% for error in forms.billing.payment_methods.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+      </div>
+    </div>
+    <div class="mt-6 flex justify-end">
+      <button type="submit" class="inline-flex items-center gap-2 rounded-2xl bg-green-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-green-700">
+        <span class="material-symbols-rounded text-lg">save</span> Save Billing Settings
+      </button>
+    </div>
+  </form>
+</div>
+{% endif %}
+
+{% if active_tab == 'security' %}
+<div class="rounded-2xl bg-white p-6 shadow-sm">
+  <div class="mb-5 flex items-center gap-3">
+    <span class="material-symbols-rounded flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 text-green-600">security</span>
+    <div>
+      <h2 class="text-lg font-bold text-gray-900">Security Settings</h2>
+      <p class="text-sm text-gray-500">Configure authentication and session security</p>
+    </div>
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="section" value="security">
+    <div class="grid gap-5 md:grid-cols-2">
+      <div>
+        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-base text-green-600">timer</span> Session Timeout (minutes)</label>
+        <div class="mt-2">{{ forms.security.session_timeout }}</div>
+        {% for error in forms.security.session_timeout.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+      </div>
+      <div class="flex flex-col justify-center gap-5 pt-1">
+        <label class="flex items-start gap-3 cursor-pointer">
+          <span class="mt-0.5 inline-block">{{ forms.security.require_strong_password }}</span>
+          <div>
+            <p class="text-sm font-semibold text-gray-700">Require Strong Password</p>
+            <p class="text-xs text-gray-400">Enforce complex password requirements</p>
+          </div>
+        </label>
+        <label class="flex items-start gap-3 cursor-pointer">
+          <span class="mt-0.5 inline-block">{{ forms.security.enable_two_factor_auth }}</span>
+          <div>
+            <p class="text-sm font-semibold text-gray-700">Two-Factor Authentication</p>
+            <p class="text-xs text-gray-400">Enable 2FA for admin accounts</p>
+          </div>
+        </label>
+      </div>
+    </div>
+    <div class="mt-6 flex justify-end">
+      <button type="submit" class="inline-flex items-center gap-2 rounded-2xl bg-green-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-green-700">
+        <span class="material-symbols-rounded text-lg">save</span> Save Security Settings
+      </button>
+    </div>
+  </form>
+</div>
+{% endif %}
+
+{% if active_tab == 'account' %}
+<div class="grid gap-6">
+  <div class="rounded-2xl bg-white p-6 shadow-sm">
+    <div class="mb-5 flex items-center gap-3">
+      <span class="material-symbols-rounded flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 text-green-600">manage_accounts</span>
+      <div>
+        <h2 class="text-lg font-bold text-gray-900">Account Settings</h2>
+        <p class="text-sm text-gray-500">Update your personal information</p>
+      </div>
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="account">
+      <div class="grid gap-5 md:grid-cols-2">
+        <div>
+          <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-base text-green-600">person</span> First Name</label>
+          <div class="mt-2">{{ forms.account.first_name }}</div>
+          {% for error in forms.account.first_name.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+        </div>
+        <div>
+          <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-base text-green-600">person</span> Last Name</label>
+          <div class="mt-2">{{ forms.account.last_name }}</div>
+          {% for error in forms.account.last_name.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+        </div>
+        <div>
+          <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-base text-green-600">phone</span> Phone</label>
+          <div class="mt-2">{{ forms.account.phone }}</div>
+          {% for error in forms.account.phone.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+        </div>
+        <div>
+          <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-base text-green-600">email</span> Email Address</label>
+          <input class="mt-2 cursor-not-allowed bg-gray-50 text-gray-500" type="email" value="{{ request.user.email }}" disabled>
+          <p class="mt-1 text-xs text-gray-400">Email cannot be changed here</p>
+        </div>
+      </div>
+      <div class="mt-6 flex justify-end">
+        <button type="submit" class="inline-flex items-center gap-2 rounded-2xl bg-green-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-green-700">
+          <span class="material-symbols-rounded text-lg">save</span> Save Account Settings
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="rounded-2xl bg-white p-6 shadow-sm">
+    <div class="mb-5 flex items-center gap-3">
+      <span class="material-symbols-rounded flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600">lock</span>
+      <div>
+        <h2 class="text-lg font-bold text-gray-900">Change Password</h2>
+        <p class="text-sm text-gray-500">Update your account password securely</p>
+      </div>
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="password">
+      <div class="grid gap-5 md:grid-cols-2">
+        {% for field in forms.password %}
+        <div {% if forloop.last %}class="md:col-span-2"{% endif %}>
+          <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-base text-amber-500">lock</span>{{ field.label }}</label>
+          <div class="mt-2">{{ field }}</div>
+          {% for error in field.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+      <div class="mt-6 flex justify-end">
+        <button type="submit" class="inline-flex items-center gap-2 rounded-2xl bg-amber-500 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-amber-600">
+          <span class="material-symbols-rounded text-lg">lock_reset</span> Change Password
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Dentist Dashboard{% endblock %}
+
+{% block dashboard_content %}
+<div>
+    <p class="text-sm font-semibold uppercase tracking-wide text-teal-700">Dentist</p>
+    <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">Clinical workspace</h1>
+    <p class="mt-2 max-w-2xl text-sm text-slate-600">Review assigned appointments, update visit status, and record treatment notes.</p>
+</div>
+
+{% if not dentist %}
+    <div class="mt-8 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900 shadow-sm">
+        Your account does not have a dentist profile yet. Ask an admin to create one before managing appointments.
+    </div>
+{% endif %}
+
+<div class="mt-8 grid gap-6 xl:grid-cols-12">
+    <section class="overflow-hidden rounded-2xl border border-teal-100 bg-white shadow-sm xl:col-span-8">
+        <div class="border-b border-slate-200 px-5 py-4">
+            <h2 class="text-lg font-semibold text-slate-950">Assigned appointments</h2>
+        </div>
+        <div class="hidden grid-cols-5 gap-4 bg-slate-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 lg:grid">
+            <span>Patient</span>
+            <span>Schedule</span>
+            <span>Status</span>
+            <span class="lg:col-span-2">Actions</span>
+        </div>
+        <div class="divide-y divide-slate-100">
+            {% for appointment in appointments %}
+                <div class="grid gap-4 px-5 py-4 lg:grid-cols-5 lg:items-center">
+                        <div>
+                            <p class="font-medium text-slate-950">{{ appointment.patient }}</p>
+                            {% if appointment.reason %}<p class="mt-2 text-sm text-slate-700">{{ appointment.reason }}</p>{% endif %}
+                        </div>
+                        <p class="text-sm text-slate-600">{{ appointment.appointment_date }} at {{ appointment.appointment_time }}</p>
+                        <div>{% include "partials/appointment_status_badge.html" with appointment=appointment %}</div>
+                        <div class="flex flex-wrap gap-2 lg:col-span-2">
+                            {% if appointment.status == "pending" %}
+                                <form method="post" action="{% url 'dashboard:dentist_appointment_status' appointment.pk 'approved' %}">
+                                    {% csrf_token %}
+                                    <button class="rounded-xl bg-teal-700 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-teal-800">Approve</button>
+                                </form>
+                            {% endif %}
+                            {% if appointment.status != "cancelled" and appointment.status != "completed" %}
+                                <form method="post" action="{% url 'dashboard:dentist_appointment_status' appointment.pk 'cancelled' %}">
+                                    {% csrf_token %}
+                                    <button class="rounded-xl border border-rose-200 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50">Cancel</button>
+                                </form>
+                                <form method="post" action="{% url 'dashboard:dentist_appointment_status' appointment.pk 'completed' %}">
+                                    {% csrf_token %}
+                                    <button class="rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100">Complete</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                </div>
+            {% empty %}
+                <div class="px-5 py-12 text-center">
+                    <p class="font-semibold text-slate-950">No assigned appointments yet</p>
+                    <p class="mt-1 text-sm text-slate-600">Appointments assigned to your profile will appear here.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="rounded-2xl border border-teal-100 bg-white p-5 shadow-sm xl:col-span-4">
+        <h2 class="text-lg font-semibold text-slate-950">Add treatment record</h2>
+        <form method="post" class="mt-5 space-y-4">
+            {% csrf_token %}
+            {% include "partials/form_fields.html" with form=treatment_form %}
+            <button class="w-full rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-teal-800">Save treatment</button>
+        </form>
+    </section>
+</div>
+{% endblock %}
