@@ -6,7 +6,7 @@ from .models import User
 
 class LoginForm(AuthenticationForm):
     username = forms.EmailField(label="Email address", widget=forms.EmailInput(attrs={"placeholder": "you@example.com", "class": "pl-10"}))
-    password = forms.CharField(widget=forms.PasswordInput(attrs={"placeholder": "••••••••", "class": "pl-10"}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={"placeholder": "••••••••", "class": "pl-10 pr-10"}))
 
     def clean_username(self):
         return User.objects.normalize_email(self.cleaned_data["username"]).lower()
@@ -24,8 +24,8 @@ class RegisterForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["password1"].widget.attrs.update({"placeholder": "••••••••", "class": "pl-10"})
-        self.fields["password2"].widget.attrs.update({"placeholder": "••••••••", "class": "pl-10"})
+        self.fields["password1"].widget.attrs.update({"placeholder": "••••••••", "class": "pl-10 pr-10"})
+        self.fields["password2"].widget.attrs.update({"placeholder": "••••••••", "class": "pl-10 pr-10"})
 
     def clean_email(self):
         email = User.objects.normalize_email(self.cleaned_data["email"]).lower()

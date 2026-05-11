@@ -3,65 +3,82 @@
 {% block title %}Sign In{% endblock %}
 
 {% block auth_content %}
-<div class="mb-7">
+
+<div class="mb-6">
     <h1 class="text-2xl font-bold tracking-tight text-slate-900">Welcome back</h1>
-    <p class="mt-1 text-sm text-slate-500">Sign in to your DentalCare account to continue</p>
+    <p class="mt-1 text-sm text-slate-500">Sign in to continue to DentalCare</p>
 </div>
 
-<form method="post" class="space-y-5">
+<form method="post" class="space-y-5" novalidate>
     {% csrf_token %}
     {% if request.GET.next %}
         <input type="hidden" name="next" value="{{ request.GET.next }}">
     {% endif %}
 
     {% if form.non_field_errors %}
-        <div class="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
-            <span class="material-symbols-rounded mt-0.5 text-base leading-none text-rose-500">error</span>
+        <div class="flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <span class="material-symbols-rounded mt-px text-base leading-none text-rose-500">error</span>
             <span>{{ form.non_field_errors }}</span>
         </div>
     {% endif %}
 
     <!-- Email -->
-    <div class="space-y-1.5">
-        <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-slate-700">
+    <div>
+        <label for="{{ form.username.id_for_label }}" class="mb-1.5 block text-sm font-medium text-slate-700">
             Email address
         </label>
         <div class="relative">
-            <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 select-none text-lg leading-none text-slate-400">mail</span>
+            <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg leading-none text-slate-400">mail</span>
             {{ form.username }}
         </div>
         {% for error in form.username.errors %}
-            <p class="text-xs text-rose-600">{{ error }}</p>
+            <p class="mt-1 text-xs text-rose-600">{{ error }}</p>
         {% endfor %}
     </div>
 
     <!-- Password -->
-    <div class="space-y-1.5">
-        <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-slate-700">
+    <div>
+        <label for="{{ form.password.id_for_label }}" class="mb-1.5 block text-sm font-medium text-slate-700">
             Password
         </label>
         <div class="relative">
-            <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 select-none text-lg leading-none text-slate-400">lock</span>
+            <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg leading-none text-slate-400">lock</span>
             {{ form.password }}
+            <button type="button"
+                    onclick="togglePassword(this)"
+                    aria-label="Toggle password visibility"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600">
+                <span class="material-symbols-rounded text-lg leading-none">visibility</span>
+            </button>
         </div>
         {% for error in form.password.errors %}
-            <p class="text-xs text-rose-600">{{ error }}</p>
+            <p class="mt-1 text-xs text-rose-600">{{ error }}</p>
         {% endfor %}
     </div>
 
-    <!-- Remember me -->
-    <div class="flex items-center gap-2">
-        <input type="checkbox" name="remember_me" id="remember_me"
-               class="h-4 w-4 cursor-pointer rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
-        <label for="remember_me" class="cursor-pointer text-sm text-slate-600">Remember me for 30 days</label>
+    <!-- Remember me + Forgot password -->
+    <div class="flex items-center justify-between">
+        <label class="flex cursor-pointer items-center gap-2">
+            <input type="checkbox" name="remember_me" id="remember_me"
+                   class="h-4 w-4 cursor-pointer rounded border-slate-300 text-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-0">
+            <span class="text-sm text-slate-600">Remember me</span>
+        </label>
+        <span class="text-sm text-slate-400">Forgot password?</span>
     </div>
 
-    <!-- Submit -->
+    <!-- Submit button -->
     <button type="submit"
-            class="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-emerald-600/20 transition hover:bg-emerald-700 active:scale-[0.99]">
-        <span class="material-symbols-rounded text-base leading-none">login</span>
+            class="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white shadow-sm transition duration-150 hover:bg-emerald-700 active:scale-[0.99]">
         Sign in
+        <span class="material-symbols-rounded text-base leading-none">arrow_forward</span>
     </button>
+
+    <!-- Divider -->
+    <div class="flex items-center gap-3">
+        <div class="h-px flex-1 bg-slate-100"></div>
+        <span class="text-xs text-slate-400">or</span>
+        <div class="h-px flex-1 bg-slate-100"></div>
+    </div>
 
     <!-- Register link -->
     <p class="text-center text-sm text-slate-500">
@@ -70,5 +87,17 @@
             Create one free
         </a>
     </p>
+
 </form>
+
+<script>
+function togglePassword(btn) {
+    const input = document.getElementById('id_password');
+    const icon = btn.querySelector('.material-symbols-rounded');
+    const hidden = input.type === 'password';
+    input.type = hidden ? 'text' : 'password';
+    icon.textContent = hidden ? 'visibility_off' : 'visibility';
+}
+</script>
+
 {% endblock %}
