@@ -1,37 +1,114 @@
 {% extends "accounts/auth_base.html" %}
 
-{% block title %}Register{% endblock %}
+{% block title %}Create Account{% endblock %}
 
 {% block auth_content %}
-<h1 class="text-2xl font-bold tracking-tight text-slate-950">Signup</h1>
+<div class="mb-7">
+    <h1 class="text-2xl font-bold tracking-tight text-slate-900">Create account</h1>
+    <p class="mt-1 text-sm text-slate-500">Join DentalCare — it only takes a minute</p>
+</div>
 
-<form method="post" class="mt-6 space-y-4">
+<form method="post" class="space-y-5">
     {% csrf_token %}
     {% if request.GET.next %}
         <input type="hidden" name="next" value="{{ request.GET.next }}">
     {% endif %}
 
-    {% for field in form %}
-        <div>
-            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-slate-950">
-                {% if field.name == "first_name" %}Your first name{% elif field.name == "last_name" %}Your last name{% elif field.name == "email" %}Your email{% elif field.name == "phone" %}Your phone{% elif field.name == "password1" %}Your password{% elif field.name == "password2" %}Confirm password{% else %}{{ field.label }}{% endif %}
-                {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
-            </label>
-            <div class="mt-2">{{ field }}</div>
-            {% if field.name == "password1" %}
-                <p class="mt-2 text-sm text-slate-600">Your password must be strong and secure.</p>
-            {% endif %}
-            {% for error in field.errors %}
-                <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-            {% endfor %}
-        </div>
-    {% endfor %}
-
     {% if form.non_field_errors %}
-        <div class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{{ form.non_field_errors }}</div>
+        <div class="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+            <span class="material-symbols-rounded mt-0.5 text-base leading-none text-rose-500">error</span>
+            <span>{{ form.non_field_errors }}</span>
+        </div>
     {% endif %}
 
-    <button class="w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">Signup</button>
-    <a href="{% url 'accounts:login' %}" class="block w-full rounded-lg bg-slate-200 px-4 py-2.5 text-center text-sm font-medium text-slate-950 shadow-sm hover:bg-slate-300">Already have an account? Login</a>
+    <!-- First name + Last name -->
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="space-y-1.5">
+            <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-medium text-slate-700">First name</label>
+            <div class="relative">
+                <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 select-none text-lg leading-none text-slate-400">person</span>
+                {{ form.first_name }}
+            </div>
+            {% for error in form.first_name.errors %}
+                <p class="text-xs text-rose-600">{{ error }}</p>
+            {% endfor %}
+        </div>
+        <div class="space-y-1.5">
+            <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-medium text-slate-700">Last name</label>
+            <div class="relative">
+                <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 select-none text-lg leading-none text-slate-400">person</span>
+                {{ form.last_name }}
+            </div>
+            {% for error in form.last_name.errors %}
+                <p class="text-xs text-rose-600">{{ error }}</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Email -->
+    <div class="space-y-1.5">
+        <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-slate-700">Email address</label>
+        <div class="relative">
+            <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 select-none text-lg leading-none text-slate-400">mail</span>
+            {{ form.email }}
+        </div>
+        {% for error in form.email.errors %}
+            <p class="text-xs text-rose-600">{{ error }}</p>
+        {% endfor %}
+    </div>
+
+    <!-- Phone -->
+    <div class="space-y-1.5">
+        <label for="{{ form.phone.id_for_label }}" class="block text-sm font-medium text-slate-700">
+            Phone <span class="font-normal text-slate-400">(optional)</span>
+        </label>
+        <div class="relative">
+            <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 select-none text-lg leading-none text-slate-400">call</span>
+            {{ form.phone }}
+        </div>
+        {% for error in form.phone.errors %}
+            <p class="text-xs text-rose-600">{{ error }}</p>
+        {% endfor %}
+    </div>
+
+    <!-- Password -->
+    <div class="space-y-1.5">
+        <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium text-slate-700">Password</label>
+        <div class="relative">
+            <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 select-none text-lg leading-none text-slate-400">lock</span>
+            {{ form.password1 }}
+        </div>
+        <p class="text-xs text-slate-400">Use a mix of letters, numbers, and symbols.</p>
+        {% for error in form.password1.errors %}
+            <p class="text-xs text-rose-600">{{ error }}</p>
+        {% endfor %}
+    </div>
+
+    <!-- Confirm Password -->
+    <div class="space-y-1.5">
+        <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium text-slate-700">Confirm password</label>
+        <div class="relative">
+            <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 select-none text-lg leading-none text-slate-400">lock</span>
+            {{ form.password2 }}
+        </div>
+        {% for error in form.password2.errors %}
+            <p class="text-xs text-rose-600">{{ error }}</p>
+        {% endfor %}
+    </div>
+
+    <!-- Submit -->
+    <button type="submit"
+            class="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-emerald-600/20 transition hover:bg-emerald-700 active:scale-[0.99]">
+        <span class="material-symbols-rounded text-base leading-none">person_add</span>
+        Create account
+    </button>
+
+    <!-- Login link -->
+    <p class="text-center text-sm text-slate-500">
+        Already have an account?
+        <a href="{% url 'accounts:login' %}" class="font-semibold text-emerald-600 transition hover:text-emerald-700">
+            Sign in
+        </a>
+    </p>
 </form>
 {% endblock %}

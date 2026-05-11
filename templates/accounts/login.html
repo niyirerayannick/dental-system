@@ -1,30 +1,74 @@
 {% extends "accounts/auth_base.html" %}
 
-{% block title %}Login{% endblock %}
+{% block title %}Sign In{% endblock %}
 
 {% block auth_content %}
-<h1 class="text-2xl font-bold tracking-tight text-slate-950">Login</h1>
+<div class="mb-7">
+    <h1 class="text-2xl font-bold tracking-tight text-slate-900">Welcome back</h1>
+    <p class="mt-1 text-sm text-slate-500">Sign in to your DentalCare account to continue</p>
+</div>
 
-<form method="post" class="mt-6 space-y-4">
+<form method="post" class="space-y-5">
     {% csrf_token %}
     {% if request.GET.next %}
         <input type="hidden" name="next" value="{{ request.GET.next }}">
     {% endif %}
+
     {% if form.non_field_errors %}
-        <div class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{{ form.non_field_errors }}</div>
+        <div class="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+            <span class="material-symbols-rounded mt-0.5 text-base leading-none text-rose-500">error</span>
+            <span>{{ form.non_field_errors }}</span>
+        </div>
     {% endif %}
 
-    {% for field in form %}
-        <div>
-            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-slate-950">{{ field.label }} <span class="text-red-500">*</span></label>
-            <div class="mt-2">{{ field }}</div>
-            {% for error in field.errors %}
-                <p class="mt-1 text-sm text-red-600">{{ error }}</p>
-            {% endfor %}
+    <!-- Email -->
+    <div class="space-y-1.5">
+        <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-slate-700">
+            Email address
+        </label>
+        <div class="relative">
+            <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 select-none text-lg leading-none text-slate-400">mail</span>
+            {{ form.username }}
         </div>
-    {% endfor %}
+        {% for error in form.username.errors %}
+            <p class="text-xs text-rose-600">{{ error }}</p>
+        {% endfor %}
+    </div>
 
-    <button class="w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">Login</button>
-    <a href="{% url 'accounts:register' %}" class="block w-full rounded-lg bg-slate-200 px-4 py-2.5 text-center text-sm font-medium text-slate-950 shadow-sm hover:bg-slate-300">Need an account? Signup</a>
+    <!-- Password -->
+    <div class="space-y-1.5">
+        <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-slate-700">
+            Password
+        </label>
+        <div class="relative">
+            <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 select-none text-lg leading-none text-slate-400">lock</span>
+            {{ form.password }}
+        </div>
+        {% for error in form.password.errors %}
+            <p class="text-xs text-rose-600">{{ error }}</p>
+        {% endfor %}
+    </div>
+
+    <!-- Remember me -->
+    <div class="flex items-center gap-2">
+        <input type="checkbox" name="remember_me" id="remember_me"
+               class="h-4 w-4 cursor-pointer rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+        <label for="remember_me" class="cursor-pointer text-sm text-slate-600">Remember me for 30 days</label>
+    </div>
+
+    <!-- Submit -->
+    <button type="submit"
+            class="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-emerald-600/20 transition hover:bg-emerald-700 active:scale-[0.99]">
+        <span class="material-symbols-rounded text-base leading-none">login</span>
+        Sign in
+    </button>
+
+    <!-- Register link -->
+    <p class="text-center text-sm text-slate-500">
+        Don't have an account?
+        <a href="{% url 'accounts:register' %}" class="font-semibold text-emerald-600 transition hover:text-emerald-700">
+            Create one free
+        </a>
+    </p>
 </form>
 {% endblock %}

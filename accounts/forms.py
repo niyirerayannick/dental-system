@@ -5,22 +5,27 @@ from .models import User
 
 
 class LoginForm(AuthenticationForm):
-    username = forms.EmailField(label="Your email", widget=forms.EmailInput(attrs={"placeholder": "Enter your email"}))
-    password = forms.CharField(widget=forms.PasswordInput(attrs={"placeholder": "Enter password"}))
+    username = forms.EmailField(label="Email address", widget=forms.EmailInput(attrs={"placeholder": "you@example.com", "class": "pl-10"}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={"placeholder": "••••••••", "class": "pl-10"}))
 
     def clean_username(self):
         return User.objects.normalize_email(self.cleaned_data["username"]).lower()
 
 
 class RegisterForm(UserCreationForm):
-    first_name = forms.CharField(widget=forms.TextInput(attrs={"placeholder": "Enter your first name"}))
-    last_name = forms.CharField(widget=forms.TextInput(attrs={"placeholder": "Enter your last name"}))
-    email = forms.EmailField(widget=forms.EmailInput(attrs={"placeholder": "Enter your email"}))
-    phone = forms.CharField(required=False, widget=forms.TextInput(attrs={"placeholder": "Enter your phone"}))
+    first_name = forms.CharField(widget=forms.TextInput(attrs={"placeholder": "John", "class": "pl-10"}))
+    last_name = forms.CharField(widget=forms.TextInput(attrs={"placeholder": "Doe", "class": "pl-10"}))
+    email = forms.EmailField(widget=forms.EmailInput(attrs={"placeholder": "you@example.com", "class": "pl-10"}))
+    phone = forms.CharField(required=False, widget=forms.TextInput(attrs={"placeholder": "+250 7XX XXX XXX", "class": "pl-10"}))
 
     class Meta:
         model = User
         fields = ["first_name", "last_name", "email", "phone", "password1", "password2"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["password1"].widget.attrs.update({"placeholder": "••••••••", "class": "pl-10"})
+        self.fields["password2"].widget.attrs.update({"placeholder": "••••••••", "class": "pl-10"})
 
     def clean_email(self):
         email = User.objects.normalize_email(self.cleaned_data["email"]).lower()
