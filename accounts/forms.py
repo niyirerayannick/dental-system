@@ -3,20 +3,37 @@ from django.contrib.auth.forms import AuthenticationForm, ReadOnlyPasswordHashFi
 
 from .models import User
 
+_TEXT_INPUT  = "pl-12 h-12"
+_PASS_INPUT  = "pl-12 pr-12 h-12"
+
 
 class LoginForm(AuthenticationForm):
-    username = forms.EmailField(label="Email address", widget=forms.EmailInput(attrs={"placeholder": "you@example.com", "class": "pl-10"}))
-    password = forms.CharField(widget=forms.PasswordInput(attrs={"placeholder": "••••••••", "class": "pl-10 pr-10"}))
+    username = forms.EmailField(
+        label="Email address",
+        widget=forms.EmailInput(attrs={"placeholder": "you@example.com", "class": _TEXT_INPUT}),
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={"placeholder": "••••••••", "class": _PASS_INPUT}),
+    )
 
     def clean_username(self):
         return User.objects.normalize_email(self.cleaned_data["username"]).lower()
 
 
 class RegisterForm(UserCreationForm):
-    first_name = forms.CharField(widget=forms.TextInput(attrs={"placeholder": "John", "class": "pl-10"}))
-    last_name = forms.CharField(widget=forms.TextInput(attrs={"placeholder": "Doe", "class": "pl-10"}))
-    email = forms.EmailField(widget=forms.EmailInput(attrs={"placeholder": "you@example.com", "class": "pl-10"}))
-    phone = forms.CharField(required=False, widget=forms.TextInput(attrs={"placeholder": "+250 7XX XXX XXX", "class": "pl-10"}))
+    first_name = forms.CharField(
+        widget=forms.TextInput(attrs={"placeholder": "John", "class": _TEXT_INPUT}),
+    )
+    last_name = forms.CharField(
+        widget=forms.TextInput(attrs={"placeholder": "Doe", "class": _TEXT_INPUT}),
+    )
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={"placeholder": "you@example.com", "class": _TEXT_INPUT}),
+    )
+    phone = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={"placeholder": "+250 7XX XXX XXX", "class": _TEXT_INPUT}),
+    )
 
     class Meta:
         model = User
@@ -24,8 +41,8 @@ class RegisterForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["password1"].widget.attrs.update({"placeholder": "••••••••", "class": "pl-10 pr-10"})
-        self.fields["password2"].widget.attrs.update({"placeholder": "••••••••", "class": "pl-10 pr-10"})
+        self.fields["password1"].widget.attrs.update({"placeholder": "••••••••", "class": _PASS_INPUT})
+        self.fields["password2"].widget.attrs.update({"placeholder": "••••••••", "class": _PASS_INPUT})
 
     def clean_email(self):
         email = User.objects.normalize_email(self.cleaned_data["email"]).lower()

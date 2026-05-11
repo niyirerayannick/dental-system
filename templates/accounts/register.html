@@ -26,8 +26,8 @@
     <div class="grid grid-cols-2 gap-3">
         <div>
             <label for="{{ form.first_name.id_for_label }}" class="mb-1.5 block text-sm font-medium text-slate-700">First name</label>
-            <div class="relative">
-                <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg leading-none text-slate-400">person</span>
+            <div class="group relative">
+                <span class="material-symbols-rounded pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 select-none text-xl leading-none text-slate-400 transition-colors duration-150 group-focus-within:text-emerald-500">person</span>
                 {{ form.first_name }}
             </div>
             {% for error in form.first_name.errors %}
@@ -36,8 +36,8 @@
         </div>
         <div>
             <label for="{{ form.last_name.id_for_label }}" class="mb-1.5 block text-sm font-medium text-slate-700">Last name</label>
-            <div class="relative">
-                <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg leading-none text-slate-400">person</span>
+            <div class="group relative">
+                <span class="material-symbols-rounded pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 select-none text-xl leading-none text-slate-400 transition-colors duration-150 group-focus-within:text-emerald-500">badge</span>
                 {{ form.last_name }}
             </div>
             {% for error in form.last_name.errors %}
@@ -49,8 +49,8 @@
     <!-- Email -->
     <div>
         <label for="{{ form.email.id_for_label }}" class="mb-1.5 block text-sm font-medium text-slate-700">Email address</label>
-        <div class="relative">
-            <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg leading-none text-slate-400">mail</span>
+        <div class="group relative">
+            <span class="material-symbols-rounded pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 select-none text-xl leading-none text-slate-400 transition-colors duration-150 group-focus-within:text-emerald-500">mail</span>
             {{ form.email }}
         </div>
         {% for error in form.email.errors %}
@@ -63,8 +63,8 @@
         <label for="{{ form.phone.id_for_label }}" class="mb-1.5 block text-sm font-medium text-slate-700">
             Phone <span class="font-normal text-slate-400">(optional)</span>
         </label>
-        <div class="relative">
-            <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg leading-none text-slate-400">call</span>
+        <div class="group relative">
+            <span class="material-symbols-rounded pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 select-none text-xl leading-none text-slate-400 transition-colors duration-150 group-focus-within:text-emerald-500">call</span>
             {{ form.phone }}
         </div>
         {% for error in form.phone.errors %}
@@ -75,14 +75,14 @@
     <!-- Password -->
     <div>
         <label for="{{ form.password1.id_for_label }}" class="mb-1.5 block text-sm font-medium text-slate-700">Password</label>
-        <div class="relative">
-            <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg leading-none text-slate-400">lock</span>
+        <div class="group relative">
+            <span class="material-symbols-rounded pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 select-none text-xl leading-none text-slate-400 transition-colors duration-150 group-focus-within:text-emerald-500">lock</span>
             {{ form.password1 }}
             <button type="button"
-                    onclick="togglePassword(this, 'id_password1')"
+                    onclick="togglePassword(this)"
                     aria-label="Toggle password visibility"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600">
-                <span class="material-symbols-rounded text-lg leading-none">visibility</span>
+                    class="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-slate-400 transition-colors duration-150 hover:text-slate-600">
+                <span class="material-symbols-rounded text-xl leading-none">visibility</span>
             </button>
         </div>
         <p class="mt-1 text-xs text-slate-400">Use a mix of letters, numbers, and symbols.</p>
@@ -94,14 +94,14 @@
     <!-- Confirm Password -->
     <div>
         <label for="{{ form.password2.id_for_label }}" class="mb-1.5 block text-sm font-medium text-slate-700">Confirm password</label>
-        <div class="relative">
-            <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg leading-none text-slate-400">lock</span>
+        <div class="group relative">
+            <span class="material-symbols-rounded pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 select-none text-xl leading-none text-slate-400 transition-colors duration-150 group-focus-within:text-emerald-500">lock</span>
             {{ form.password2 }}
             <button type="button"
-                    onclick="togglePassword(this, 'id_password2')"
+                    onclick="togglePassword(this)"
                     aria-label="Toggle confirm password visibility"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600">
-                <span class="material-symbols-rounded text-lg leading-none">visibility</span>
+                    class="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-slate-400 transition-colors duration-150 hover:text-slate-600">
+                <span class="material-symbols-rounded text-xl leading-none">visibility</span>
             </button>
         </div>
         {% for error in form.password2.errors %}
@@ -111,7 +111,7 @@
 
     <!-- Submit -->
     <button type="submit"
-            class="mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3 text-sm font-semibold text-white shadow-sm transition duration-150 hover:bg-emerald-700 active:scale-[0.99]">
+            class="mt-1 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 text-sm font-semibold text-white shadow-sm transition duration-150 hover:bg-emerald-700 active:scale-[0.99]">
         Create account
         <span class="material-symbols-rounded text-base leading-none">arrow_forward</span>
     </button>
@@ -134,11 +134,12 @@
 </form>
 
 <script>
-function togglePassword(btn, inputId) {
-    const input = document.getElementById(inputId);
-    const icon = btn.querySelector('.material-symbols-rounded');
-    const hidden = input.type === 'password';
-    input.type = hidden ? 'text' : 'password';
+function togglePassword(btn) {
+    const wrapper = btn.closest('.group');
+    const input   = wrapper.querySelector('input');
+    const icon    = btn.querySelector('.material-symbols-rounded');
+    const hidden  = input.type === 'password';
+    input.type       = hidden ? 'text'           : 'password';
     icon.textContent = hidden ? 'visibility_off' : 'visibility';
 }
 </script>
