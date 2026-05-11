@@ -2,7 +2,7 @@ from io import BytesIO
 
 from django.contrib import messages
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -57,9 +57,67 @@ def treatment_list(request):
 @require_POST
 @role_required(User.Role.ADMIN, User.Role.DENTIST, User.Role.RECEPTIONIST)
 def treatment_delete(request, pk):
-    get_object_or_404(Treatment, pk=pk).delete()
+    treatment = get_object_or_404(Treatment, pk=pk)
+    if request.user.role == User.Role.DENTIST:
+        dentist = DentistProfile.objects.filter(user=request.user).first()
+        if treatment.dentist_id != getattr(dentist, "pk", None):
+            return JsonResponse({"ok": False, "message": "You do not have permission to delete this treatment."}, status=403)
+    treatment.delete()
     messages.success(request, "Treatment deleted.")
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({"ok": True, "message": "Treatment deleted."})
     return redirect("treatments:list")
+
+
+def can_manage_treatment(user, treatment):
+    if user.role in {User.Role.ADMIN, User.Role.RECEPTIONIST}:
+        return True
+    if user.role == User.Role.DENTIST:
+        dentist = DentistProfile.objects.filter(user=user).first()
+        return treatment.dentist_id == getattr(dentist, "pk", None)
+    return False
+
+
+def treatment_payload(treatment):
+    return {
+        "id": treatment.pk,
+        "patient": treatment.patient_id,
+        "dentist": treatment.dentist_id,
+        "appointment": treatment.appointment_id or "",
+        "diagnosis": treatment.diagnosis,
+        "treatment_plan": treatment.treatment_plan,
+        "prescription": treatment.prescription,
+        "treatment_date": treatment.treatment_date.isoformat(),
+        "display": {
+            "patient": str(treatment.patient),
+            "dentist": str(treatment.dentist),
+            "appointment": str(treatment.appointment or "-"),
+            "diagnosis": treatment.diagnosis[:40],
+            "date": treatment.treatment_date.isoformat(),
+            "prescription": treatment.prescription[:30] if treatment.prescription else "-",
+        },
+    }
+
+
+@role_required(User.Role.ADMIN, User.Role.DENTIST, User.Role.RECEPTIONIST)
+def treatment_json(request, pk):
+    treatment = get_object_or_404(Treatment.objects.select_related("patient__user", "dentist__user", "appointment"), pk=pk)
+    if not can_manage_treatment(request.user, treatment):
+        return JsonResponse({"ok": False, "message": "Permission denied."}, status=403)
+    return JsonResponse({"ok": True, "record": treatment_payload(treatment)})
+
+
+@require_POST
+@role_required(User.Role.ADMIN, User.Role.DENTIST, User.Role.RECEPTIONIST)
+def treatment_update(request, pk):
+    treatment = get_object_or_404(Treatment, pk=pk)
+    if not can_manage_treatment(request.user, treatment):
+        return JsonResponse({"ok": False, "message": "Permission denied."}, status=403)
+    form = TreatmentRecordForm(request.POST, instance=treatment)
+    if form.is_valid():
+        treatment = form.save()
+        return JsonResponse({"ok": True, "message": "Treatment updated successfully.", "record": treatment_payload(treatment)})
+    return JsonResponse({"ok": False, "message": "Please correct the treatment form errors.", "errors": form.errors}, status=400)
 
 
 def export_rows(qs):

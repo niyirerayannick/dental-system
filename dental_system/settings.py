@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import dj_database_url
 from decouple import Csv, config
 from django.core.exceptions import ImproperlyConfigured
 
@@ -18,6 +19,7 @@ def cast_debug(value):
 SECRET_KEY = config("SECRET_KEY", default="django-insecure-change-me")
 DEBUG = config("DEBUG", default=True, cast=cast_debug)
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1", cast=Csv())
+CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="", cast=Csv())
 
 if not DEBUG and SECRET_KEY.startswith("django-insecure"):
     raise ImproperlyConfigured("Set a secure SECRET_KEY when DEBUG=False.")
@@ -38,6 +40,7 @@ INSTALLED_APPS = [
     "dashboard",
     "reports",
     "clinic_settings",
+    "notifications",
 ]
 
 MIDDLEWARE = [
@@ -51,7 +54,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="", cast=Csv())
+CSRF_TRUSTED_ORIGINS = [origin for origin in CSRF_TRUSTED_ORIGINS if origin]
 
 ROOT_URLCONF = "dental_system.urls"
 
@@ -73,18 +76,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "dental_system.wsgi.application"
 
-DATABASE_ENGINE = config("DATABASE_ENGINE", default="sqlite")
+DATABASE_URL = config("DATABASE_URL", default="")
 
-if DATABASE_ENGINE == "postgres":
+if DATABASE_URL:
     DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": config("POSTGRES_DB"),
-            "USER": config("POSTGRES_USER"),
-            "PASSWORD": config("POSTGRES_PASSWORD"),
-            "HOST": config("POSTGRES_HOST", default="localhost"),
-            "PORT": config("POSTGRES_PORT", default="5432"),
-        }
+        "default": dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=config("DATABASE_CONN_MAX_AGE", default=600, cast=int),
+            conn_health_checks=True,
+        )
     }
 else:
     DATABASES = {
@@ -102,16 +102,16 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = config("TIME_ZONE", default="Africa/Johannesburg")
+TIME_ZONE = config("TIME_ZONE", default="Africa/Kigali")
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-MEDIA_URL = "media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 LOGIN_URL = "accounts:login"
@@ -127,7 +127,7 @@ SESSION_COOKIE_SECURE = config("SESSION_COOKIE_SECURE", default=not DEBUG, cast=
 CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=not DEBUG, cast=bool)
 SESSION_COOKIE_SAMESITE = config("SESSION_COOKIE_SAMESITE", default="Lax")
 CSRF_COOKIE_SAMESITE = config("CSRF_COOKIE_SAMESITE", default="Lax")
-SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", default=False, cast=bool)
+SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", default=not DEBUG, cast=bool)
 SECURE_HSTS_SECONDS = config("SECURE_HSTS_SECONDS", default=0, cast=int)
 SECURE_HSTS_INCLUDE_SUBDOMAINS = config("SECURE_HSTS_INCLUDE_SUBDOMAINS", default=False, cast=bool)
 SECURE_HSTS_PRELOAD = config("SECURE_HSTS_PRELOAD", default=False, cast=bool)
@@ -135,8 +135,8 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 X_FRAME_OPTIONS = "DENY"
 
-if config("USE_X_FORWARDED_HOST", default=False, cast=bool):
+if config("USE_X_FORWARDED_HOST", default=not DEBUG, cast=bool):
     USE_X_FORWARDED_HOST = True
 
-if config("SECURE_PROXY_SSL_HEADER", default=False, cast=bool):
+if config("SECURE_PROXY_SSL_HEADER", default=not DEBUG, cast=bool):
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

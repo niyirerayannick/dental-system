@@ -1,14 +1,36 @@
 from django import forms
 from django.core.exceptions import ValidationError
 
+from accounts.models import User
+from dentists.models import DentistProfile
 from .models import Appointment
+
+
+def available_dentists():
+    return DentistProfile.objects.filter(
+        user__role=User.Role.DENTIST,
+        user__is_active=True,
+        is_available=True,
+    ).select_related("user")
 
 
 class AppointmentBookingForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["dentist"].queryset = self.fields["dentist"].queryset.select_related("user")
+        self.fields["dentist"].queryset = available_dentists()
         self.fields["reason"].required = True
+        base_classes = "w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-4 focus:ring-green-100"
+        for field_name, field in self.fields.items():
+            field.widget.attrs["class"] = base_classes
+            if field_name in {"reason", "notes"}:
+                field.widget.attrs["placeholder"] = "Add a short description"
+        self.fields["dentist"].empty_label = (
+            "Choose a dentist" if self.fields["dentist"].queryset.exists() else "No dentists available yet"
+        )
+        self.fields["notes"].widget.attrs["placeholder"] = "Anything the dentist should know?"
+        self.fields["dentist"].widget.attrs["data-availability-dentist"] = "true"
+        self.fields["appointment_date"].widget.attrs["data-availability-date"] = "true"
+        self.fields["appointment_time"].widget.attrs["data-availability-time"] = "true"
 
     class Meta:
         model = Appointment
@@ -47,7 +69,13 @@ class AppointmentManageForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["patient"].queryset = self.fields["patient"].queryset.select_related("user")
-        self.fields["dentist"].queryset = self.fields["dentist"].queryset.select_related("user")
+        self.fields["dentist"].queryset = available_dentists()
+        self.fields["dentist"].empty_label = (
+            "Choose a dentist" if self.fields["dentist"].queryset.exists() else "No dentists available yet"
+        )
+        self.fields["dentist"].widget.attrs["data-availability-dentist"] = "true"
+        self.fields["appointment_date"].widget.attrs["data-availability-date"] = "true"
+        self.fields["appointment_time"].widget.attrs["data-availability-time"] = "true"
 
     class Meta:
         model = Appointment

@@ -1,0 +1,116 @@
+<div id="bookAppointmentModal"
+     class="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 transition duration-200 {% if not booking_modal_open %}pointer-events-none opacity-0{% endif %}"
+     aria-hidden="{% if booking_modal_open %}false{% else %}true{% endif %}">
+  <div id="bookAppointmentBackdrop"
+       class="absolute inset-0 bg-gray-900 bg-opacity-60 transition-opacity"
+       onclick="closeBookAppointmentModal()"></div>
+
+  <div id="bookAppointmentPanel"
+       class="relative z-10 max-h-full w-full max-w-2xl transform overflow-y-auto rounded-2xl bg-white shadow-xl transition duration-200 {% if booking_modal_open %}scale-100 opacity-100{% else %}scale-95 opacity-0{% endif %}"
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="bookAppointmentTitle">
+    <div class="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-gray-100 bg-white px-5 py-5 sm:px-6">
+      <div>
+        <h2 id="bookAppointmentTitle" class="text-xl font-bold text-gray-900 sm:text-2xl">Book Appointment</h2>
+        <p class="mt-1 text-sm text-gray-500">Choose dentist, date, and time for your visit</p>
+      </div>
+      <button type="button"
+              onclick="closeBookAppointmentModal()"
+              class="flex h-10 w-10 flex-none items-center justify-center rounded-full text-gray-400 transition hover:bg-green-50 hover:text-green-700"
+              aria-label="Close appointment form">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+    </div>
+
+    <form method="post"
+          action="{{ request.path }}"
+          id="bookAppointmentForm"
+          data-availability-form
+          class="grid gap-5 px-5 py-5 sm:px-6 md:grid-cols-2">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="book_appointment">
+
+      {% if booking_form.non_field_errors %}
+      <div class="md:col-span-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+        {% for error in booking_form.non_field_errors %}
+        <p>{{ error }}</p>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% for field in booking_form %}
+      <div class="{% if field.name == 'reason' or field.name == 'notes' %}md:col-span-2{% endif %}">
+        <label for="{{ field.id_for_label }}" class="flex items-center gap-2 text-sm font-semibold text-gray-700">
+          <span class="material-symbols-rounded text-lg text-green-600">
+            {% if field.name == 'dentist' %}dentistry{% elif field.name == 'appointment_date' %}event{% elif field.name == 'appointment_time' %}schedule{% else %}edit_note{% endif %}
+          </span>
+          {{ field.label }}
+        </label>
+        <div class="mt-2">{{ field }}</div>
+        {% if field.help_text %}
+        <p class="mt-1 text-xs text-gray-400">{{ field.help_text }}</p>
+        {% endif %}
+        {% for error in field.errors %}
+        <p class="mt-1 text-sm font-medium text-red-600">{{ error }}</p>
+        {% endfor %}
+      </div>
+      {% endfor %}
+
+      <div class="flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 md:col-span-2 sm:flex-row sm:justify-end">
+        <button type="button"
+                onclick="closeBookAppointmentModal()"
+                class="inline-flex items-center justify-center rounded-2xl border border-gray-200 px-5 py-3 text-sm font-bold text-gray-700 transition hover:bg-gray-50">
+          Cancel
+        </button>
+        <button id="bookAppointmentSubmit"
+                type="submit"
+                data-availability-submit
+                class="inline-flex items-center justify-center gap-2 rounded-2xl bg-green-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-green-400">
+          <span class="material-symbols-rounded text-lg">check_circle</span>
+          <span>Request Appointment</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const bookAppointmentModal = document.getElementById('bookAppointmentModal');
+  const bookAppointmentPanel = document.getElementById('bookAppointmentPanel');
+  const bookAppointmentForm = document.getElementById('bookAppointmentForm');
+  const bookAppointmentSubmit = document.getElementById('bookAppointmentSubmit');
+
+  function openBookAppointmentModal() {
+    if (!bookAppointmentModal || !bookAppointmentPanel) return;
+    bookAppointmentModal.classList.remove('pointer-events-none', 'opacity-0');
+    bookAppointmentModal.setAttribute('aria-hidden', 'false');
+    bookAppointmentPanel.classList.remove('scale-95', 'opacity-0');
+    bookAppointmentPanel.classList.add('scale-100', 'opacity-100');
+    document.body.classList.add('overflow-hidden');
+  }
+
+  function closeBookAppointmentModal() {
+    if (!bookAppointmentModal || !bookAppointmentPanel) return;
+    bookAppointmentModal.classList.add('pointer-events-none', 'opacity-0');
+    bookAppointmentModal.setAttribute('aria-hidden', 'true');
+    bookAppointmentPanel.classList.add('scale-95', 'opacity-0');
+    bookAppointmentPanel.classList.remove('scale-100', 'opacity-100');
+    document.body.classList.remove('overflow-hidden');
+  }
+
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape' && bookAppointmentModal && bookAppointmentModal.getAttribute('aria-hidden') === 'false') {
+      closeBookAppointmentModal();
+    }
+  });
+
+  if (bookAppointmentForm && bookAppointmentSubmit) {
+    bookAppointmentForm.addEventListener('submit', function() {
+      bookAppointmentSubmit.disabled = true;
+      bookAppointmentSubmit.innerHTML = '<span class="material-symbols-rounded text-lg animate-spin">progress_activity</span><span>Submitting...</span>';
+    });
+  }
+</script>
+{% load static %}
+<script src="{% static 'js/appointment_availability.js' %}"></script>

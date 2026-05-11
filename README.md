@@ -6,179 +6,146 @@ A Django and Tailwind CSS system for managing patients, dentists, appointments, 
 
 - Custom email-based user model
 - Role-based access control for `ADMIN`, `DENTIST`, `RECEPTIONIST`, and `PATIENT`
-- Patient appointment booking with duplicate slot prevention
+- Patient appointment booking with dentist availability, daily capacity, and duplicate slot prevention
 - Dentist and receptionist appointment approval, cancellation, and completion
-- Treatment records and invoice tracking
-- Django Templates with Tailwind CSS
-- PostgreSQL-ready settings with `python-decouple`
-- Production-oriented security settings
+- Treatment records, invoice tracking, exports, and custom dashboard CRUD modals
+- Django Templates with compiled Tailwind CSS
+- Docker/Coolify-ready deployment with PostgreSQL, WhiteNoise, and Gunicorn
 
-## Requirements
-
-- Python 3.11 or newer
-- Node.js and npm for Tailwind CSS builds
-- PostgreSQL for production or shared development
-- SQLite for quick local development
-
-## Installation
-
-Create and activate a virtual environment:
+## Local Development
 
 ```bash
 python -m venv .venv
 .venv\Scripts\activate
-```
-
-Install Python dependencies:
-
-```bash
 pip install -r requirements.txt
-```
-
-Create your local environment file:
-
-```bash
 copy .env.example .env
 ```
 
-For local development, set these values in `.env`:
+For local SQLite development, set:
 
 ```env
 DEBUG=True
-DATABASE_ENGINE=sqlite
-SQLITE_NAME=db.sqlite3
+SECRET_KEY=local-dev-secret
+ALLOWED_HOSTS=localhost,127.0.0.1
+CSRF_TRUSTED_ORIGINS=http://localhost,http://127.0.0.1
+DATABASE_URL=
+SECURE_SSL_REDIRECT=False
 SESSION_COOKIE_SECURE=False
 CSRF_COOKIE_SECURE=False
-CSRF_COOKIE_HTTPONLY=True
-SECURE_SSL_REDIRECT=False
 ```
 
-For production, keep `DEBUG=False`, set a strong `SECRET_KEY`, configure your real domain in `ALLOWED_HOSTS`, and use HTTPS.
-
-## Database Setup
-
-The project supports SQLite and PostgreSQL.
-
-SQLite local setup:
-
-```env
-DATABASE_ENGINE=sqlite
-SQLITE_NAME=db.sqlite3
-```
-
-PostgreSQL setup:
-
-```env
-DATABASE_ENGINE=postgres
-POSTGRES_DB=dental_system
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=your-password
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
-```
-
-Run migrations:
+Run:
 
 ```bash
 python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
 ```
 
-Create an admin user:
+Open `http://127.0.0.1:8000`.
+
+## Tailwind CSS
+
+The compiled CSS is committed at `static/css/styles.css`, so Docker deployment does not require Node.js.
+
+To rebuild CSS locally:
+
+```bash
+npm install
+npm run build:css
+```
+
+## Coolify Deployment
+
+1. Push the project to GitHub.
+2. In Coolify, create a PostgreSQL database.
+3. Copy the PostgreSQL connection string.
+4. Create a new Coolify application from the GitHub repository.
+5. Choose Dockerfile build.
+6. Add environment variables:
+
+```env
+SECRET_KEY=use-a-long-random-secret
+DEBUG=False
+ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
+CSRF_TRUSTED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
+DATABASE_URL=postgres://username:password@host:5432/database_name
+TIME_ZONE=Africa/Kigali
+SECURE_SSL_REDIRECT=True
+SESSION_COOKIE_SECURE=True
+CSRF_COOKIE_SECURE=True
+USE_X_FORWARDED_HOST=True
+SECURE_PROXY_SSL_HEADER=True
+```
+
+7. Set your domain in Coolify and enable SSL.
+8. Deploy.
+
+The container starts with `entrypoint.sh`, which automatically runs:
+
+```bash
+python manage.py migrate --noinput
+python manage.py collectstatic --noinput
+gunicorn dental_system.wsgi:application --bind 0.0.0.0:8000
+```
+
+## Create A Superuser On Coolify
+
+Use Coolify's terminal/execute command feature:
 
 ```bash
 python manage.py createsuperuser
 ```
 
-This project uses a custom user model. If you migrated an older version before the custom user model was added, back up or remove the old `db.sqlite3`, then run migrations again.
+## Health Check
 
-## Tailwind CSS Setup
-
-Install frontend dependencies:
-
-```bash
-npm install
-```
-
-Build CSS once:
-
-```bash
-npm run build:css
-```
-
-Watch CSS during development:
-
-```bash
-npm run dev:css
-```
-
-Tailwind source file:
+Coolify can check:
 
 ```text
-static/src/input.css
+/health/
 ```
 
-Compiled CSS output:
+Expected response:
 
-```text
-static/css/styles.css
+```json
+{"status": "ok"}
 ```
 
-## Run The Project
-
-Start the development server:
+## Local Docker Production Test
 
 ```bash
-python manage.py runserver
+docker compose up --build
 ```
 
 Open:
 
 ```text
-http://127.0.0.1:8000
+http://localhost:8000/health/
 ```
 
-Django admin:
+The compose file runs a `web` container and a local PostgreSQL container.
 
-```text
-http://127.0.0.1:8000/admin/
-```
+## Static And Media Files
 
-## Roles
+- Static files are collected to `staticfiles/`.
+- WhiteNoise serves static files in production.
+- Media uploads are stored in `media/`.
+- In Coolify, add persistent storage for `/app/media` if user-uploaded profile images must survive redeploys.
 
-- `ADMIN`: system overview and admin access
-- `DENTIST`: assigned appointments, appointment status updates, treatment records
-- `RECEPTIONIST`: patient registration, appointment management, invoice viewing
-- `PATIENT`: appointment booking, personal appointments, treatment history, invoices
+## Troubleshooting Deployment
+
+- Check Coolify logs if the app does not start.
+- Confirm `SECRET_KEY` is set and not the insecure fallback.
+- Confirm `ALLOWED_HOSTS` includes your deployed domain.
+- Confirm `CSRF_TRUSTED_ORIGINS` includes `https://yourdomain.com`.
+- Confirm `DATABASE_URL` points to the Coolify PostgreSQL service.
+- If SSL redirect loops occur, keep `SECURE_PROXY_SSL_HEADER=True` and `USE_X_FORWARDED_HOST=True`.
+- If static files are missing, check that `collectstatic` completed successfully.
 
 ## Security Notes
 
-- All protected dashboard views require login.
-- Role-specific pages use permission checks.
-- Django CSRF middleware is enabled, and all POST forms include CSRF tokens.
-- Password validation uses Django's built-in validators.
-- Login redirects are checked to prevent unsafe external redirects.
-- Production security settings are environment-driven.
-- `DEBUG=False` should be used outside local development.
-- Set `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` for your domain.
-- Use HTTPS in production and enable secure cookies.
-
-Recommended production `.env` values:
-
-```env
-DEBUG=False
-ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
-CSRF_TRUSTED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
-SESSION_COOKIE_SECURE=True
-CSRF_COOKIE_SECURE=True
-CSRF_COOKIE_HTTPONLY=True
-SECURE_SSL_REDIRECT=True
-SECURE_HSTS_SECONDS=31536000
-SECURE_HSTS_INCLUDE_SUBDOMAINS=True
-SECURE_HSTS_PRELOAD=True
-```
-
-Before deploying static files:
-
-```bash
-python manage.py collectstatic
-```
+- Use `DEBUG=False` in production.
+- Use HTTPS with secure cookies in production.
+- Do not commit a real `.env`.
+- PostgreSQL is recommended for production.
+- SQLite fallback is only for local development.

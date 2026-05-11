@@ -2,7 +2,7 @@ from io import BytesIO
 
 from django.contrib import messages
 from django.db.models import Count, Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -164,12 +164,54 @@ def patient_edit(request, pk):
     return render(request, "patients/patient_form.html", {"form": form, "title": "Edit Patient"})
 
 
+def patient_payload(patient):
+    return {
+        "id": patient.pk,
+        "full_name": patient.user.full_name,
+        "email": patient.user.email,
+        "phone": patient.user.phone,
+        "gender": patient.gender,
+        "date_of_birth": patient.date_of_birth.isoformat() if patient.date_of_birth else "",
+        "address": patient.address,
+        "emergency_contact": patient.emergency_contact,
+        "medical_history": patient.medical_history,
+        "allergies": patient.allergies,
+        "is_active": patient.user.is_active,
+        "display": {
+            "name": str(patient),
+            "email": patient.user.email,
+            "phone": patient.user.phone or "-",
+            "gender": patient.get_gender_display() or "-",
+            "status": "Active" if patient.user.is_active else "Inactive",
+        },
+    }
+
+
+@role_required(User.Role.ADMIN, User.Role.DENTIST, User.Role.RECEPTIONIST)
+def patient_json(request, pk):
+    patient = get_object_or_404(PatientProfile.objects.select_related("user"), pk=pk)
+    return JsonResponse({"ok": True, "record": patient_payload(patient)})
+
+
+@require_POST
+@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
+def patient_update(request, pk):
+    patient = get_object_or_404(PatientProfile.objects.select_related("user"), pk=pk)
+    form = PatientForm(request.POST, instance=patient)
+    if form.is_valid():
+        patient = form.save()
+        return JsonResponse({"ok": True, "message": "Patient updated successfully.", "record": patient_payload(patient)})
+    return JsonResponse({"ok": False, "message": "Please correct the patient form errors.", "errors": form.errors}, status=400)
+
+
 @require_POST
 @role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
 def patient_delete(request, pk):
     patient = get_object_or_404(PatientProfile.objects.select_related("user"), pk=pk)
     patient.user.delete()
     messages.success(request, "Patient deleted successfully.")
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({"ok": True, "message": "Patient deleted successfully."})
     return redirect("patients:list")
 
 

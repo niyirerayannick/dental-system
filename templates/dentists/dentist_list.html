@@ -1,7 +1,191 @@
-{% extends "dashboard/base.html" %}{% block title %}Dentists{% endblock %}{% block dashboard_content %}
-<div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between"><div><p class="text-sm font-semibold uppercase tracking-wide text-green-600">Dentist management</p><h1 class="mt-1 text-3xl font-bold text-gray-900">Dentists</h1><p class="mt-2 text-sm text-gray-500">Manage dentist profiles, schedules, and specializations</p></div><div class="flex flex-wrap gap-2"><a href="{% url 'dentists:export_pdf' %}?{{ request.GET.urlencode }}" class="inline-flex items-center gap-2 rounded-2xl border border-green-200 bg-white px-4 py-2.5 text-sm font-semibold text-green-700 shadow-sm hover:bg-green-50"><span class="material-symbols-rounded text-lg">picture_as_pdf</span> Export PDF</a><a href="{% url 'dentists:export_excel' %}?{{ request.GET.urlencode }}" class="inline-flex items-center gap-2 rounded-2xl border border-green-200 bg-white px-4 py-2.5 text-sm font-semibold text-green-700 shadow-sm hover:bg-green-50"><span class="material-symbols-rounded text-lg">table_view</span> Export Excel</a><button onclick="openModal()" class="inline-flex items-center gap-2 rounded-2xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-green-700"><span class="material-symbols-rounded text-lg">add_circle</span> Add New Dentist</button></div></div>
-<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">{% for stat in kpis %}<div class="rounded-2xl bg-white p-4 shadow-sm hover:shadow-md"><div class="flex items-center gap-3"><span class="material-symbols-rounded flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 text-green-600">{{ stat.icon }}</span><div><p class="text-2xl font-bold text-gray-900">{{ stat.value }}</p><p class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ stat.label }}</p></div></div></div>{% endfor %}</div>
-<section class="mt-6 rounded-2xl bg-white p-5 shadow-sm"><form method="get" class="grid gap-4 lg:grid-cols-12 lg:items-end"><div class="lg:col-span-5"><label class="flex items-center gap-2 text-sm font-semibold"><span class="material-symbols-rounded text-green-600">search</span>Search</label><input class="mt-2" name="q" value="{{ request.GET.q }}" placeholder="Name, email, phone, license"></div><div class="lg:col-span-3"><label class="block text-sm font-semibold">Specialization</label><input class="mt-2" name="specialization" value="{{ request.GET.specialization }}"></div><div class="lg:col-span-3"><label class="block text-sm font-semibold">Availability</label><input class="mt-2" name="availability" value="{{ request.GET.availability }}" placeholder="Monday"></div><button class="rounded-2xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white">Filter</button></form></section>
-<section class="mt-6 overflow-hidden rounded-2xl bg-white shadow-sm"><div class="hidden grid-cols-7 gap-4 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 xl:grid"><span>Dentist</span><span>Email</span><span>Phone</span><span>Specialization</span><span>License</span><span>Available Days</span><span>Actions</span></div><div class="divide-y divide-gray-100">{% for dentist in dentists %}<div class="grid gap-4 px-5 py-4 hover:bg-green-50 xl:grid-cols-7 xl:items-center"><p class="font-semibold">{{ dentist }}</p><p class="text-sm text-gray-600">{{ dentist.user.email }}</p><p class="text-sm text-gray-600">{{ dentist.user.phone|default:"-" }}</p><p class="text-sm text-gray-600">{{ dentist.specialization }}</p><p class="text-sm text-gray-600">{{ dentist.license_number }}</p><p class="text-sm text-gray-600">{{ dentist.available_days }}</p><div class="flex gap-2"><a href="/admin/dentists/dentistprofile/{{ dentist.pk }}/change/" class="rounded-xl border border-green-200 px-3 py-2 text-xs font-bold text-green-700"><span class="material-symbols-rounded text-base">edit</span></a><form method="post" action="{% url 'dentists:delete' dentist.pk %}">{% csrf_token %}<button class="rounded-xl border border-red-200 px-3 py-2 text-xs font-bold text-red-600"><span class="material-symbols-rounded text-base">delete</span></button></form></div></div>{% empty %}{% include "components/empty_state.html" with title="No dentists found" message="Add a dentist profile or adjust filters." %}{% endfor %}</div></section>
-<div id="pageModal" class="{% if not modal_open %}hidden{% endif %} fixed inset-0 z-50 flex items-center justify-center px-4 py-6"><div class="absolute inset-0 bg-gray-900 bg-opacity-60" onclick="closeModal()"></div><div class="no-scrollbar relative z-10 max-h-full w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-xl"><div class="sticky top-0 flex justify-between border-b bg-white px-6 py-5"><div><h2 class="text-2xl font-bold">Add New Dentist</h2><p class="text-sm text-gray-500">Fill dentist information</p></div><button type="button" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button></div><form method="post" id="modalForm" class="grid gap-5 px-6 py-6 md:grid-cols-2">{% csrf_token %}{% for field in form %}<div><label class="flex items-center gap-2 text-sm font-semibold"><span class="material-symbols-rounded text-green-600">edit_note</span>{{ field.label }}</label><div class="mt-2">{{ field }}</div>{% for error in field.errors %}<p class="text-sm text-red-600">{{ error }}</p>{% endfor %}</div>{% endfor %}<div class="md:col-span-2 flex justify-end gap-3"><button type="button" onclick="closeModal()" class="rounded-2xl border px-5 py-3">Cancel</button><button id="submitBtn" class="rounded-2xl bg-green-600 px-5 py-3 font-semibold text-white">Save</button></div></form></div></div><script>const modal=document.getElementById("pageModal");function openModal(){modal.classList.remove("hidden")}function closeModal(){modal.classList.add("hidden")}document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal()});document.getElementById("modalForm")?.addEventListener("submit",()=>{document.getElementById("submitBtn").textContent="Saving..."});{% if modal_open %}openModal();{% endif %}</script>
+{% extends "dashboard/base.html" %}
+{% block title %}Dentists{% endblock %}
+
+{% block dashboard_content %}
+<div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+  <div>
+    <p class="text-sm font-semibold uppercase tracking-wide text-green-600">Dentist management</p>
+    <h1 class="mt-1 text-3xl font-bold text-gray-900">Dentists</h1>
+    <p class="mt-2 text-sm text-gray-500">Manage dentist profiles, schedules, and specializations</p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <a href="{% url 'dentists:export_pdf' %}?{{ request.GET.urlencode }}" class="inline-flex items-center gap-2 rounded-2xl border border-green-200 bg-white px-4 py-2.5 text-sm font-semibold text-green-700 shadow-sm hover:bg-green-50"><span class="material-symbols-rounded text-lg">picture_as_pdf</span> Export PDF</a>
+    <a href="{% url 'dentists:export_excel' %}?{{ request.GET.urlencode }}" class="inline-flex items-center gap-2 rounded-2xl border border-green-200 bg-white px-4 py-2.5 text-sm font-semibold text-green-700 shadow-sm hover:bg-green-50"><span class="material-symbols-rounded text-lg">table_view</span> Export Excel</a>
+    <button type="button" onclick="openModal()" class="inline-flex items-center gap-2 rounded-2xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-green-700"><span class="material-symbols-rounded text-lg">add_circle</span> Add New Dentist</button>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  {% for stat in kpis %}
+  <div class="rounded-2xl bg-white p-4 shadow-sm hover:shadow-md">
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-rounded flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 text-green-600">{{ stat.icon }}</span>
+      <div>
+        <p class="text-2xl font-bold text-gray-900">{{ stat.value }}</p>
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">{{ stat.label }}</p>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<section class="mt-6 rounded-2xl bg-white p-5 shadow-sm">
+  <form method="get" class="grid gap-4 lg:grid-cols-12 lg:items-end">
+    <div class="lg:col-span-5"><label class="flex items-center gap-2 text-sm font-semibold"><span class="material-symbols-rounded text-green-600">search</span>Search</label><input class="mt-2" name="q" value="{{ request.GET.q }}" placeholder="Name, email, phone, license"></div>
+    <div class="lg:col-span-3"><label class="block text-sm font-semibold">Specialization</label><input class="mt-2" name="specialization" value="{{ request.GET.specialization }}"></div>
+    <div class="lg:col-span-3"><label class="block text-sm font-semibold">Availability</label><input class="mt-2" name="availability" value="{{ request.GET.availability }}" placeholder="Monday"></div>
+    <button class="rounded-2xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white">Filter</button>
+  </form>
+</section>
+
+<section class="mt-6 overflow-hidden rounded-2xl bg-white shadow-sm">
+  <div class="hidden grid-cols-8 gap-4 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 xl:grid">
+    <span>Dentist</span><span>Email</span><span>Phone</span><span>Specialization</span><span>License</span><span>Available Days</span><span>Schedule</span><span>Actions</span>
+  </div>
+  <div class="divide-y divide-gray-100">
+    {% for dentist in dentists %}
+    <div class="grid gap-4 px-5 py-4 hover:bg-green-50 xl:grid-cols-8 xl:items-center">
+      <p class="font-semibold">{{ dentist }}</p>
+      <p class="text-sm text-gray-600">{{ dentist.user.email }}</p>
+      <p class="text-sm text-gray-600">{{ dentist.user.phone|default:"-" }}</p>
+      <p class="text-sm text-gray-600">{{ dentist.specialization|default:"-" }}</p>
+      <p class="text-sm text-gray-600">{{ dentist.license_number }}</p>
+      <p class="text-sm text-gray-600">{{ dentist.available_days }}</p>
+      <div class="text-sm text-gray-600">
+        <p>{{ dentist.available_from|time:"H:i" }}-{{ dentist.available_to|time:"H:i" }}</p>
+        <p class="text-xs text-gray-400">{{ dentist.appointment_duration }} min, max {{ dentist.max_patients_per_day }}/day</p>
+        {% if dentist.break_start_time and dentist.break_end_time %}<p class="text-xs text-gray-400">Break {{ dentist.break_start_time|time:"H:i" }}-{{ dentist.break_end_time|time:"H:i" }}</p>{% endif %}
+        <p class="text-xs font-semibold {% if dentist.user.is_active and dentist.is_available %}text-green-600{% else %}text-red-600{% endif %}">{% if dentist.user.is_active and dentist.is_available %}Available{% else %}Unavailable{% endif %}</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        {% if request.user.role == "ADMIN" %}
+        <button type="button"
+                onclick="openEditModal(this)"
+                data-action="{% url 'dentists:edit' dentist.pk %}"
+                data-first-name="{{ dentist.user.first_name|escapejs }}"
+                data-last-name="{{ dentist.user.last_name|escapejs }}"
+                data-email="{{ dentist.user.email|escapejs }}"
+                data-phone="{{ dentist.user.phone|escapejs }}"
+                data-specialization="{{ dentist.specialization|escapejs }}"
+                data-license-number="{{ dentist.license_number|escapejs }}"
+                data-available-days="{{ dentist.available_days|escapejs }}"
+                data-available-from="{{ dentist.available_from|time:'H:i' }}"
+                data-available-to="{{ dentist.available_to|time:'H:i' }}"
+                data-appointment-duration="{{ dentist.appointment_duration }}"
+                data-max-patients-per-day="{{ dentist.max_patients_per_day }}"
+                data-break-start-time="{% if dentist.break_start_time %}{{ dentist.break_start_time|time:'H:i' }}{% endif %}"
+                data-break-end-time="{% if dentist.break_end_time %}{{ dentist.break_end_time|time:'H:i' }}{% endif %}"
+                data-is-available="{% if dentist.is_available %}true{% else %}false{% endif %}"
+                data-is-active="{% if dentist.user.is_active %}true{% else %}false{% endif %}"
+                class="rounded-xl border border-green-200 px-3 py-2 text-xs font-bold text-green-700 hover:bg-green-50"
+                aria-label="Edit {{ dentist }}">
+          <span class="material-symbols-rounded text-base">edit</span>
+        </button>
+        {% endif %}
+        <form method="post" action="{% url 'dentists:delete' dentist.pk %}">
+          {% csrf_token %}
+          <button class="rounded-xl border border-red-200 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50"><span class="material-symbols-rounded text-base">delete</span></button>
+        </form>
+      </div>
+    </div>
+    {% empty %}
+    {% include "components/empty_state.html" with title="No dentists found" message="Add a dentist profile or adjust filters." %}
+    {% endfor %}
+  </div>
+</section>
+
+<div id="pageModal" class="{% if not modal_open %}hidden{% endif %} fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
+  <div class="absolute inset-0 bg-gray-900 bg-opacity-60" onclick="closeModal()"></div>
+  <div class="no-scrollbar relative z-10 max-h-full w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-xl">
+    <div class="sticky top-0 flex justify-between border-b bg-white px-6 py-5"><div><h2 class="text-2xl font-bold">Add New Dentist</h2><p class="text-sm text-gray-500">Fill dentist information</p></div><button type="button" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button></div>
+    <form method="post" id="modalForm" class="grid gap-5 px-6 py-6 md:grid-cols-2">
+      {% csrf_token %}
+      {% for field in form %}
+      <div {% if field.name == "available_days" %}class="md:col-span-2"{% endif %}>
+        <label class="flex items-center gap-2 text-sm font-semibold"><span class="material-symbols-rounded text-green-600">edit_note</span>{{ field.label }}</label>
+        <div class="mt-2 {% if field.name == 'available_days' %}grid grid-cols-2 gap-2 text-sm sm:grid-cols-4{% endif %}">{{ field }}</div>
+        {% for error in field.errors %}<p class="text-sm text-red-600">{{ error }}</p>{% endfor %}
+      </div>
+      {% endfor %}
+      <div class="md:col-span-2 flex justify-end gap-3"><button type="button" onclick="closeModal()" class="rounded-2xl border px-5 py-3">Cancel</button><button id="submitBtn" class="rounded-2xl bg-green-600 px-5 py-3 font-semibold text-white">Save</button></div>
+    </form>
+  </div>
+</div>
+
+<div id="editModal" class="{% if not edit_modal_open %}hidden{% endif %} fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
+  <div class="absolute inset-0 bg-gray-900 bg-opacity-60" onclick="closeEditModal()"></div>
+  <div class="no-scrollbar relative z-10 max-h-full w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-xl">
+    <div class="sticky top-0 flex justify-between border-b bg-white px-6 py-5">
+      <div><h2 class="text-2xl font-bold">Edit Dentist</h2><p class="text-sm text-gray-500">Update dentist information and availability</p></div>
+      <button type="button" onclick="closeEditModal()"><span class="material-symbols-rounded">close</span></button>
+    </div>
+    <form method="post" id="editForm" action="{% if edit_dentist %}{% url 'dentists:edit' edit_dentist.pk %}{% else %}#{% endif %}" class="grid gap-5 px-6 py-6 md:grid-cols-2">
+      {% csrf_token %}
+      {% for field in edit_form %}
+      <div {% if field.name == "available_days" %}class="md:col-span-2"{% endif %}>
+        <label class="flex items-center gap-2 text-sm font-semibold"><span class="material-symbols-rounded text-green-600">edit</span>{{ field.label }}</label>
+        <div class="mt-2 {% if field.name == 'available_days' %}grid grid-cols-2 gap-2 text-sm sm:grid-cols-4{% endif %}">{{ field }}</div>
+        {% for error in field.errors %}<p class="text-sm text-red-600">{{ error }}</p>{% endfor %}
+      </div>
+      {% endfor %}
+      {% if edit_form.non_field_errors %}<div class="md:col-span-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ edit_form.non_field_errors }}</div>{% endif %}
+      <div class="md:col-span-2 flex justify-end gap-3"><button type="button" onclick="closeEditModal()" class="rounded-2xl border px-5 py-3">Cancel</button><button id="editSubmitBtn" class="rounded-2xl bg-green-600 px-5 py-3 font-semibold text-white">Save Changes</button></div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const modal = document.getElementById("pageModal");
+  const editModal = document.getElementById("editModal");
+  const editForm = document.getElementById("editForm");
+
+  function openModal(){modal.classList.remove("hidden");document.body.classList.add("overflow-hidden")}
+  function closeModal(){modal.classList.add("hidden");document.body.classList.remove("overflow-hidden")}
+  function closeEditModal(){editModal.classList.add("hidden");document.body.classList.remove("overflow-hidden")}
+
+  function setEditValue(name, value) {
+    const fields = editForm.elements[name];
+    if (!fields) return;
+    if (fields.length && fields[0] && fields[0].type === "checkbox") {
+      const selected = String(value || "").split(",").map((item) => item.trim());
+      Array.from(fields).forEach((field) => { field.checked = selected.includes(field.value); });
+    } else if (fields.type === "checkbox") {
+      fields.checked = value === "true";
+    } else {
+      fields.value = value || "";
+    }
+  }
+
+  function openEditModal(button) {
+    editForm.action = button.dataset.action;
+    setEditValue("first_name", button.dataset.firstName);
+    setEditValue("last_name", button.dataset.lastName);
+    setEditValue("email", button.dataset.email);
+    setEditValue("phone", button.dataset.phone);
+    setEditValue("specialization", button.dataset.specialization);
+    setEditValue("license_number", button.datasetLicenseNumber || button.dataset.licenseNumber);
+    setEditValue("available_days", button.dataset.availableDays);
+    setEditValue("available_from", button.dataset.availableFrom);
+    setEditValue("available_to", button.dataset.availableTo);
+    setEditValue("appointment_duration", button.dataset.appointmentDuration);
+    setEditValue("max_patients_per_day", button.dataset.maxPatientsPerDay);
+    setEditValue("break_start_time", button.dataset.breakStartTime);
+    setEditValue("break_end_time", button.dataset.breakEndTime);
+    setEditValue("is_available", button.dataset.isAvailable);
+    setEditValue("is_active", button.dataset.isActive);
+    editModal.classList.remove("hidden");
+    document.body.classList.add("overflow-hidden");
+  }
+
+  document.addEventListener("keydown", e => {
+    if(e.key === "Escape"){
+      closeModal();
+      closeEditModal();
+    }
+  });
+  document.getElementById("modalForm")?.addEventListener("submit",()=>{document.getElementById("submitBtn").textContent="Saving..."});
+  document.getElementById("editForm")?.addEventListener("submit",()=>{document.getElementById("editSubmitBtn").textContent="Saving..."});
+  {% if modal_open %}openModal();{% endif %}
+  {% if edit_modal_open %}editModal.classList.remove("hidden");document.body.classList.add("overflow-hidden");{% endif %}
+</script>
 {% endblock %}

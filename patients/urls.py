@@ -7,7 +7,9 @@ from .views import (
     patient_delete,
     patient_detail,
     patient_edit,
+    patient_json,
     patient_list,
+    patient_update,
 )
 
 app_name = "patients"
@@ -15,6 +17,8 @@ app_name = "patients"
 urlpatterns = [
     path("", patient_list, name="list"),
     path("add/", patient_create, name="add"),
+    path("<int:pk>/json/", patient_json, name="json"),
+    path("<int:pk>/update/", patient_update, name="update"),
     path("<int:pk>/", patient_detail, name="detail"),
     path("<int:pk>/edit/", patient_edit, name="edit"),
     path("<int:pk>/delete/", patient_delete, name="delete"),

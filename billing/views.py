@@ -2,7 +2,7 @@ from io import BytesIO
 
 from django.contrib import messages
 from django.db.models import Q, Sum
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 from openpyxl import Workbook
@@ -59,6 +59,8 @@ def invoice_status(request, pk, status):
     if status in Invoice.Status.values:
         invoice.status = status
         invoice.save(update_fields=["status"])
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({"ok": True, "message": "Invoice status updated.", "record": invoice_payload(invoice)})
     return redirect("billing:list")
 
 
@@ -66,7 +68,43 @@ def invoice_status(request, pk, status):
 @role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
 def invoice_delete(request, pk):
     get_object_or_404(Invoice, pk=pk).delete()
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({"ok": True, "message": "Invoice deleted."})
     return redirect("billing:list")
+
+
+def invoice_payload(invoice):
+    return {
+        "id": invoice.pk,
+        "patient": invoice.patient_id,
+        "appointment": invoice.appointment_id or "",
+        "amount": str(invoice.amount),
+        "status": invoice.status,
+        "display": {
+            "number": f"INV-{invoice.pk:05d}",
+            "patient": str(invoice.patient),
+            "appointment": str(invoice.appointment or "-"),
+            "amount": str(invoice.amount),
+            "status": invoice.get_status_display(),
+        },
+    }
+
+
+@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
+def invoice_json(request, pk):
+    invoice = get_object_or_404(Invoice.objects.select_related("patient__user", "appointment"), pk=pk)
+    return JsonResponse({"ok": True, "record": invoice_payload(invoice)})
+
+
+@require_POST
+@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
+def invoice_update(request, pk):
+    invoice = get_object_or_404(Invoice, pk=pk)
+    form = InvoiceForm(request.POST, instance=invoice)
+    if form.is_valid():
+        invoice = form.save()
+        return JsonResponse({"ok": True, "message": "Invoice updated successfully.", "record": invoice_payload(invoice)})
+    return JsonResponse({"ok": False, "message": "Please correct the invoice form errors.", "errors": form.errors}, status=400)
 
 
 def export_rows(qs):

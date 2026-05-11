@@ -1,0 +1,78 @@
+{% extends "dashboard/patient_base.html" %}
+{% block title %}Book Appointment{% endblock %}
+
+{% block patient_content %}
+
+<!-- Page Header -->
+<div class="mb-6">
+  <a href="{% url 'dashboard:patient_appointments' %}"
+     class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-green-600">
+    <span class="material-symbols-rounded text-base">arrow_back</span> Back to Appointments
+  </a>
+  <h1 class="mt-3 text-2xl font-bold text-gray-900 sm:text-3xl">Book Appointment</h1>
+  <p class="mt-1 text-sm text-gray-500">Request a new appointment with one of our dentists</p>
+</div>
+
+<!-- Booking Form -->
+<div class="mx-auto max-w-2xl">
+  <div class="overflow-hidden rounded-2xl bg-white shadow-sm">
+    <div class="border-b border-gray-100 px-6 py-5">
+      <div class="flex items-center gap-3">
+        <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 text-green-600">
+          <span class="material-symbols-rounded">calendar_add_on</span>
+        </span>
+        <div>
+          <p class="font-bold text-gray-900">New Appointment Request</p>
+          <p class="text-xs text-gray-500">Fill in the details below and we will confirm your booking</p>
+        </div>
+      </div>
+    </div>
+
+    <form method="post" class="grid gap-5 px-6 py-6 md:grid-cols-2">
+      {% csrf_token %}
+      {% for field in booking_form %}
+      <div {% if field.name == 'notes' %}class="md:col-span-2"{% endif %}>
+        <label class="block text-sm font-semibold text-gray-700">{{ field.label }}</label>
+        <div class="mt-1.5">{{ field }}</div>
+        {% for error in field.errors %}
+        <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+        {% endfor %}
+      </div>
+      {% endfor %}
+
+      {% if booking_form.non_field_errors %}
+      <div class="md:col-span-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        {{ booking_form.non_field_errors }}
+      </div>
+      {% endif %}
+
+      <div class="md:col-span-2 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <a href="{% url 'dashboard:patient_appointments' %}"
+           class="inline-flex items-center justify-center rounded-2xl border border-gray-200 px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+          Cancel
+        </a>
+        <button id="bookingSubmitBtn" type="submit"
+                class="inline-flex items-center justify-center gap-2 rounded-2xl bg-green-600 px-6 py-3 text-sm font-bold text-white shadow-sm hover:bg-green-700">
+          <span class="material-symbols-rounded text-base">check_circle</span> Request Appointment
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Info card -->
+  <div class="mt-4 rounded-2xl border border-blue-100 bg-blue-50 px-5 py-4 text-sm text-blue-700">
+    <div class="flex items-start gap-3">
+      <span class="material-symbols-rounded mt-0.5 flex-none text-blue-500">info</span>
+      <p>Your appointment request will be reviewed and you will receive a notification once it is approved or confirmed by our team.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.querySelector('form').addEventListener('submit', function() {
+    const btn = document.getElementById('bookingSubmitBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; }
+  });
+</script>
+
+{% endblock %}

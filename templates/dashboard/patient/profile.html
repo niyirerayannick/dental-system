@@ -1,0 +1,283 @@
+{% extends "dashboard/patient_base.html" %}
+{% block title %}My Profile{% endblock %}
+
+{% block patient_content %}
+
+<!-- Page Header -->
+<div class="mb-6">
+  <h1 class="text-2xl font-bold text-gray-900 sm:text-3xl">My Profile</h1>
+  <p class="mt-1 text-sm text-gray-500">View and update your personal and medical information</p>
+</div>
+
+<div class="grid gap-6 lg:grid-cols-3">
+
+  <!-- Left: Avatar card + account summary -->
+  <div class="space-y-4">
+
+    <!-- Avatar card -->
+    <div class="overflow-hidden rounded-2xl bg-white shadow-sm">
+      <div class="flex flex-col items-center gap-3 px-6 py-8">
+
+        <!-- Avatar circle (live preview target) -->
+        <div class="relative">
+          <div id="avatarRing" class="h-24 w-24 overflow-hidden rounded-full ring-4 ring-green-200">
+            {% if profile.profile_image %}
+            <img id="avatarPreviewImg" src="{{ profile.profile_image.url }}"
+                 alt="{{ request.user.full_name }}"
+                 class="h-full w-full object-cover">
+            {% else %}
+            <div id="avatarInitials"
+                 class="flex h-full w-full items-center justify-center bg-green-100 text-2xl font-bold text-green-700">
+              {{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}
+            </div>
+            {% endif %}
+          </div>
+          <!-- Camera overlay (triggers file input) -->
+          <label for="avatarFileInput"
+                 class="absolute bottom-0 right-0 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-green-600 text-white shadow-md hover:bg-green-700 transition">
+            <span class="material-symbols-rounded text-sm">photo_camera</span>
+          </label>
+        </div>
+
+        <div class="text-center">
+          <p class="text-lg font-bold text-gray-900">{{ request.user.full_name|default:request.user.email }}</p>
+          <p class="mt-0.5 text-sm text-gray-500">{{ request.user.email }}</p>
+          <span class="mt-2 inline-flex items-center rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">
+            Patient
+          </span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Account details card -->
+    <div class="overflow-hidden rounded-2xl bg-white shadow-sm">
+      <div class="flex items-center gap-2 border-b border-gray-100 px-5 py-4">
+        <span class="material-symbols-rounded text-green-600">manage_accounts</span>
+        <h2 class="font-bold text-gray-900">Account Details</h2>
+      </div>
+      <div class="space-y-4 px-5 py-4 text-sm">
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-rounded mt-0.5 flex-none text-green-500">email</span>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Email</p>
+            <p class="mt-0.5 break-all font-medium text-gray-800">{{ request.user.email }}</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-rounded mt-0.5 flex-none text-green-500">phone</span>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Phone</p>
+            <p class="mt-0.5 font-medium text-gray-800">{{ request.user.phone|default:"Not set" }}</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-rounded mt-0.5 flex-none text-green-500">calendar_today</span>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Date of Birth</p>
+            <p class="mt-0.5 font-medium text-gray-800">{{ profile.date_of_birth|default:"Not set" }}</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-rounded mt-0.5 flex-none text-green-500">wc</span>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Gender</p>
+            <p class="mt-0.5 font-medium text-gray-800">{{ profile.get_gender_display|default:"Not set" }}</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-rounded mt-0.5 flex-none text-green-500">emergency</span>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Emergency Contact</p>
+            <p class="mt-0.5 font-medium text-gray-800">{{ profile.emergency_contact|default:"Not set" }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end left col -->
+
+  <!-- Right: Edit form -->
+  <div class="lg:col-span-2">
+    <div class="overflow-hidden rounded-2xl bg-white shadow-sm">
+      <div class="flex items-center gap-2 border-b border-gray-100 px-5 py-4">
+        <span class="material-symbols-rounded text-green-600">edit</span>
+        <h2 class="font-bold text-gray-900">Edit Profile</h2>
+      </div>
+
+      <form method="post" enctype="multipart/form-data" class="px-5 py-5">
+        {% csrf_token %}
+
+        {% if profile_form.non_field_errors %}
+        <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {{ profile_form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <!-- ─── Profile Image Upload Section ─── -->
+        <div class="mb-5 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 py-4">
+          <p class="mb-3 text-sm font-semibold text-gray-700">Profile Photo</p>
+          <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+
+            <!-- Thumbnail preview -->
+            <div class="relative flex-none">
+              <div class="h-16 w-16 overflow-hidden rounded-full ring-2 ring-green-200" id="thumbRing">
+                {% if profile.profile_image %}
+                <img id="thumbImg" src="{{ profile.profile_image.url }}"
+                     alt="{{ request.user.full_name }}"
+                     class="h-full w-full object-cover">
+                {% else %}
+                <div id="thumbInitials"
+                     class="flex h-full w-full items-center justify-center bg-green-100 text-lg font-bold text-green-700">
+                  {{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}
+                </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Upload controls -->
+            <div class="flex flex-col gap-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <!-- Hidden real input — rendered by form field -->
+                {{ profile_form.profile_image }}
+                <!-- Styled label triggers the hidden input -->
+                <label for="avatarFileInput"
+                       class="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-green-600 px-3 py-2 text-xs font-bold text-white hover:bg-green-700 transition">
+                  <span class="material-symbols-rounded text-sm">upload</span>
+                  {% if profile.profile_image %}Change photo{% else %}Upload photo{% endif %}
+                </label>
+                {% if profile.profile_image %}
+                <button type="submit" name="remove_photo" value="1"
+                        onclick="return confirm('Remove your profile photo?')"
+                        class="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition">
+                  <span class="material-symbols-rounded text-sm">delete</span> Remove photo
+                </button>
+                {% endif %}
+              </div>
+              <p class="text-xs text-gray-400">JPG, PNG or GIF — max 2 MB</p>
+              {% for error in profile_form.profile_image.errors %}
+              <p class="text-xs text-red-600">{{ error }}</p>
+              {% endfor %}
+              <!-- Selected file name indicator -->
+              <p id="selectedFileName" class="hidden text-xs font-medium text-green-600"></p>
+            </div>
+
+          </div>
+        </div>
+        <!-- ─── End Image Section ─── -->
+
+        <!-- Other profile fields -->
+        <div class="grid gap-5 sm:grid-cols-2">
+          {% for field in profile_form %}
+          {% if field.name != 'profile_image' %}
+          <div {% if field.name == 'address' or field.name == 'medical_history' or field.name == 'allergies' %}class="sm:col-span-2"{% endif %}>
+            <label class="block text-sm font-semibold text-gray-700">{{ field.label }}</label>
+            <div class="mt-1.5">{{ field }}</div>
+            {% for error in field.errors %}
+            <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+            {% endfor %}
+          </div>
+          {% endif %}
+          {% endfor %}
+        </div>
+
+        <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <a href="{% url 'dashboard:patient' %}"
+             class="inline-flex items-center justify-center rounded-2xl border border-gray-200 px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+            Cancel
+          </a>
+          <button id="saveProfileBtn" type="submit"
+                  class="inline-flex items-center justify-center gap-2 rounded-2xl bg-green-600 px-6 py-3 text-sm font-bold text-white shadow-sm hover:bg-green-700">
+            <span class="material-symbols-rounded text-base">save</span> Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Medical Info card (read-only) -->
+    {% if profile.medical_history or profile.allergies %}
+    <div class="mt-4 overflow-hidden rounded-2xl bg-white shadow-sm">
+      <div class="flex items-center gap-2 border-b border-gray-100 px-5 py-4">
+        <span class="material-symbols-rounded text-green-600">medical_information</span>
+        <h2 class="font-bold text-gray-900">Medical Information</h2>
+      </div>
+      <div class="space-y-4 px-5 py-4 text-sm">
+        {% if profile.medical_history %}
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Medical History</p>
+          <p class="mt-1 text-gray-700 leading-relaxed">{{ profile.medical_history }}</p>
+        </div>
+        {% endif %}
+        {% if profile.allergies %}
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Allergies</p>
+          <p class="mt-1 text-gray-700 leading-relaxed">{{ profile.allergies }}</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div><!-- end right col -->
+
+</div>
+
+<script>
+  const fileInput = document.getElementById('avatarFileInput');
+  const avatarPreviewImg = document.getElementById('avatarPreviewImg');
+  const avatarInitials = document.getElementById('avatarInitials');
+  const thumbImg = document.getElementById('thumbImg');
+  const thumbInitials = document.getElementById('thumbInitials');
+  const selectedFileName = document.getElementById('selectedFileName');
+
+  if (fileInput) {
+    fileInput.addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
+
+      if (selectedFileName) {
+        selectedFileName.textContent = file.name;
+        selectedFileName.classList.remove('hidden');
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const src = e.target.result;
+
+        // Update large avatar in left card
+        if (avatarPreviewImg) {
+          avatarPreviewImg.src = src;
+        } else if (avatarInitials) {
+          // Replace initials div with image
+          const img = document.createElement('img');
+          img.id = 'avatarPreviewImg';
+          img.src = src;
+          img.alt = '';
+          img.className = 'h-full w-full object-cover';
+          avatarInitials.replaceWith(img);
+        }
+
+        // Update small thumbnail
+        if (thumbImg) {
+          thumbImg.src = src;
+        } else if (thumbInitials) {
+          const img = document.createElement('img');
+          img.id = 'thumbImg';
+          img.src = src;
+          img.alt = '';
+          img.className = 'h-full w-full object-cover';
+          thumbInitials.replaceWith(img);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  document.querySelector('form').addEventListener('submit', function (e) {
+    if (e.submitter && e.submitter.name === 'remove_photo') return;
+    const btn = document.getElementById('saveProfileBtn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="material-symbols-rounded text-base">hourglass_empty</span> Saving…'; }
+  });
+</script>
+
+{% endblock %}

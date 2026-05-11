@@ -1,6 +1,5 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-from django.utils import timezone
 
 
 class Appointment(models.Model):
@@ -23,6 +22,7 @@ class Appointment(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["dentist", "appointment_date", "appointment_time"],
+                condition=models.Q(status__in=["pending", "approved", "completed"]),
                 name="unique_dentist_appointment_slot",
             )
         ]
@@ -31,27 +31,6 @@ class Appointment(models.Model):
         return f"{self.patient} with {self.dentist} on {self.appointment_date} at {self.appointment_time:%H:%M}"
 
     def clean(self):
-        errors = {}
-        today = timezone.localdate()
+        from .services import validate_appointment_slot
 
-        if self.appointment_date and self.appointment_date < today:
-            errors["appointment_date"] = "Appointment date cannot be in the past."
-        if self.dentist_id and self.appointment_date:
-            day_name = self.appointment_date.strftime("%A").lower()
-            available_days = {day.strip().lower() for day in self.dentist.available_days.split(",") if day.strip()}
-            if day_name not in available_days:
-                errors["appointment_date"] = "Dentist is not available on this day."
-        if self.dentist_id and self.appointment_time:
-            if not (self.dentist.available_from <= self.appointment_time <= self.dentist.available_to):
-                errors["appointment_time"] = "Appointment time is outside the dentist's available hours."
-        if self.dentist_id and self.appointment_date and self.appointment_time:
-            duplicate_slot = Appointment.objects.filter(
-                dentist=self.dentist,
-                appointment_date=self.appointment_date,
-                appointment_time=self.appointment_time,
-            ).exclude(pk=self.pk)
-            if duplicate_slot.exists():
-                errors["appointment_time"] = "This dentist already has an appointment at the selected date and time."
-
-        if errors:
-            raise ValidationError(errors)
+        validate_appointment_slot(self)

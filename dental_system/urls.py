@@ -3,10 +3,11 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-from .views import home
+from .views import health, home
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("health/", health, name="health"),
     path("", home, name="home"),
     path("accounts/", include("accounts.urls")),
     path("dashboard/", include("dashboard.urls")),
@@ -17,6 +18,7 @@ urlpatterns = [
     path("billing/", include("billing.urls")),
     path("reports/", include("reports.urls")),
     path("settings/", include("clinic_settings.urls")),
+    path("notifications/", include("notifications.urls")),
 ]
 
 if settings.DEBUG:

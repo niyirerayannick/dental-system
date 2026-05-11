@@ -2,8 +2,9 @@ from io import BytesIO
 
 from django.contrib import messages
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
 from openpyxl import Workbook
 from reportlab.lib.pagesizes import A4
@@ -11,9 +12,9 @@ from reportlab.platypus import SimpleDocTemplate, Table
 
 from accounts.models import User
 from accounts.permissions import role_required
-from dentists.models import DentistProfile
-from .forms import AppointmentManageForm
+from .forms import AppointmentManageForm, available_dentists
 from .models import Appointment
+from .services import availability_summary, booked_count, booked_times, generate_time_slots, is_fully_booked
 
 
 def filtered_appointments(request):
@@ -39,7 +40,7 @@ def appointment_list(request):
         modal_open = True
         if form.is_valid():
             form.save()
-            messages.success(request, "Appointment saved successfully.")
+            messages.success(request, "Appointment booked successfully and is pending approval.")
             return redirect("appointments:list")
         messages.error(request, "Please correct the appointment form errors.")
     appointments = filtered_appointments(request)
@@ -49,7 +50,69 @@ def appointment_list(request):
         {"label": "Approved Appointments", "value": appointments.filter(status=Appointment.Status.APPROVED).count(), "icon": "task_alt"},
         {"label": "Completed Appointments", "value": appointments.filter(status=Appointment.Status.COMPLETED).count(), "icon": "check_circle"},
     ]
-    return render(request, "appointments/appointment_list.html", {"appointments": appointments, "form": form, "modal_open": modal_open, "kpis": kpis, "status_choices": Appointment.Status.choices, "dentists": DentistProfile.objects.select_related("user")})
+    return render(request, "appointments/appointment_list.html", {"appointments": appointments, "form": form, "modal_open": modal_open, "kpis": kpis, "status_choices": Appointment.Status.choices, "dentists": available_dentists()})
+
+
+@role_required(User.Role.ADMIN, User.Role.DENTIST, User.Role.RECEPTIONIST, User.Role.PATIENT)
+def dentist_availability_api(request, dentist_id):
+    dentist = get_object_or_404(available_dentists(), pk=dentist_id)
+    return JsonResponse(availability_summary(dentist))
+
+
+@role_required(User.Role.ADMIN, User.Role.DENTIST, User.Role.RECEPTIONIST, User.Role.PATIENT)
+def available_slots_api(request):
+    dentist_id = request.GET.get("dentist_id")
+    date_value = parse_date(request.GET.get("date", ""))
+    if not dentist_id or not date_value:
+        return JsonResponse({"error": "Select a dentist and appointment date."}, status=400)
+
+    dentist = get_object_or_404(available_dentists(), pk=dentist_id)
+    booked = sorted(time_value.strftime("%H:%M") for time_value in booked_times(dentist, date_value))
+    return JsonResponse({
+        "available_slots": generate_time_slots(dentist, date_value),
+        "booked_slots": booked,
+        "is_fully_booked": is_fully_booked(dentist, date_value),
+        "max_patients_per_day": dentist.max_patients_per_day,
+        "booked_count": booked_count(dentist, date_value),
+    })
+
+
+def appointment_payload(appointment):
+    return {
+        "id": appointment.pk,
+        "patient": appointment.patient_id,
+        "dentist": appointment.dentist_id,
+        "appointment_date": appointment.appointment_date.isoformat(),
+        "appointment_time": appointment.appointment_time.strftime("%H:%M"),
+        "reason": appointment.reason,
+        "status": appointment.status,
+        "notes": appointment.notes,
+        "display": {
+            "patient": str(appointment.patient),
+            "dentist": str(appointment.dentist),
+            "date": appointment.appointment_date.isoformat(),
+            "time": appointment.appointment_time.strftime("%H:%M"),
+            "reason": appointment.reason or "-",
+            "status": appointment.get_status_display(),
+        },
+    }
+
+
+@role_required(User.Role.ADMIN, User.Role.DENTIST, User.Role.RECEPTIONIST)
+def appointment_json(request, pk):
+    appointment = get_object_or_404(Appointment.objects.select_related("patient__user", "dentist__user"), pk=pk)
+    return JsonResponse({"ok": True, "record": appointment_payload(appointment)})
+
+
+@require_POST
+@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
+def appointment_update(request, pk):
+    appointment = get_object_or_404(Appointment, pk=pk)
+    form = AppointmentManageForm(request.POST, instance=appointment)
+    if form.is_valid():
+        appointment = form.save()
+        return JsonResponse({"ok": True, "message": "Appointment updated successfully.", "record": appointment_payload(appointment)})
+    return JsonResponse({"ok": False, "message": "Please correct the appointment form errors.", "errors": form.errors}, status=400)
 
 
 @require_POST
@@ -60,6 +123,8 @@ def appointment_status(request, pk, status):
         appointment.status = status
         appointment.save(update_fields=["status"])
         messages.success(request, "Appointment status updated.")
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({"ok": True, "message": "Appointment status updated.", "record": appointment_payload(appointment)})
     return redirect("appointments:list")
 
 
@@ -68,6 +133,8 @@ def appointment_status(request, pk, status):
 def appointment_delete(request, pk):
     get_object_or_404(Appointment, pk=pk).delete()
     messages.success(request, "Appointment deleted.")
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({"ok": True, "message": "Appointment deleted."})
     return redirect("appointments:list")
 
 

@@ -9,7 +9,7 @@
         <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">Practice dashboard</h1>
         <p class="mt-2 max-w-2xl text-sm text-slate-600">Monitor patient activity, appointment demand, and billing status from one clinical command center.</p>
     </div>
-    <a href="/admin/" class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-700">Django admin</a>
+    <a href="{% url 'appointments:list' %}" class="inline-flex items-center justify-center rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-green-700">Manage dashboard records</a>
 </div>
 
 <div class="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

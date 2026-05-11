@@ -38,9 +38,15 @@
       <!-- Patient avatar card -->
       <div class="border-b border-gray-100 px-5 py-4">
         <div class="flex items-center gap-3">
+          {% if request.user.patient_profile.profile_image %}
+          <img src="{{ request.user.patient_profile.profile_image.url }}"
+               alt="{{ request.user.full_name }}"
+               class="h-11 w-11 flex-none rounded-full object-cover ring-2 ring-green-200">
+          {% else %}
           <div class="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-green-100 text-sm font-bold text-green-700 ring-2 ring-green-200">
             {{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}
           </div>
+          {% endif %}
           <div class="min-w-0">
             <p class="truncate text-sm font-bold text-gray-900">{{ request.user.first_name }} {{ request.user.last_name }}</p>
             <p class="truncate text-xs text-gray-400">{{ request.user.email }}</p>
@@ -51,19 +57,19 @@
       <!-- Nav links -->
       <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1 text-sm font-medium">
         <a href="{% url 'dashboard:patient' %}"
-           class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700">
-          <span class="material-symbols-rounded w-8 text-center text-green-600">dashboard</span> Dashboard
+           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {% if request.resolver_match.url_name == 'patient' %}bg-green-50 font-semibold text-green-700{% else %}text-gray-600 hover:bg-green-50 hover:text-green-700{% endif %}">
+          <span class="material-symbols-rounded w-8 text-center {% if request.resolver_match.url_name == 'patient' %}text-green-700{% else %}text-green-600{% endif %}">dashboard</span> Dashboard
         </a>
-        <button type="button" onclick="openBookingModal()"
-                class="flex w-full items-center gap-3 rounded-2xl bg-green-600 px-4 py-3 font-semibold text-white transition hover:bg-green-700">
+        {% comment %} <a href="{% url 'dashboard:patient_book' %}"
+           class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 font-semibold text-white transition {% if request.resolver_match.url_name == 'patient_book' %}bg-green-700{% else %}bg-green-600 hover:bg-green-700{% endif %}">
           <span class="material-symbols-rounded flex h-7 w-7 items-center justify-center rounded-xl bg-white/20">add_circle</span> Book Appointment
-        </button>
-        <a href="#appointments"
-           class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700">
+        </a> {% endcomment %}
+        <a href="{% url 'dashboard:patient_appointments' %}"
+           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {% if request.resolver_match.url_name == 'patient_appointments' %}bg-green-50 font-semibold text-green-700{% else %}text-gray-600 hover:bg-green-50 hover:text-green-700{% endif %}">
           <span class="material-symbols-rounded w-8 text-center text-green-600">calendar_month</span> My Appointments
         </a>
-        <a href="#notifications"
-           class="flex items-center justify-between rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700">
+        <a href="{% url 'dashboard:patient_notifications' %}"
+           class="flex items-center justify-between rounded-2xl px-4 py-3 transition {% if request.resolver_match.url_name == 'patient_notifications' %}bg-green-50 font-semibold text-green-700{% else %}text-gray-600 hover:bg-green-50 hover:text-green-700{% endif %}">
           <span class="flex items-center gap-3">
             <span class="material-symbols-rounded w-8 text-center text-green-600">notifications</span> Notifications
           </span>
@@ -71,16 +77,16 @@
           <span class="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-xs font-bold text-white">{{ unread_count }}</span>
           {% endif %}
         </a>
-        <a href="#treatments"
-           class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700">
+        <a href="{% url 'dashboard:patient_treatments' %}"
+           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {% if request.resolver_match.url_name == 'patient_treatments' %}bg-green-50 font-semibold text-green-700{% else %}text-gray-600 hover:bg-green-50 hover:text-green-700{% endif %}">
           <span class="material-symbols-rounded w-8 text-center text-green-600">healing</span> Treatment History
         </a>
-        <a href="#invoices"
-           class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700">
+        <a href="{% url 'dashboard:patient_invoices' %}"
+           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {% if request.resolver_match.url_name == 'patient_invoices' %}bg-green-50 font-semibold text-green-700{% else %}text-gray-600 hover:bg-green-50 hover:text-green-700{% endif %}">
           <span class="material-symbols-rounded w-8 text-center text-green-600">receipt_long</span> Invoices
         </a>
-        <a href="#profile"
-           class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700">
+        <a href="{% url 'dashboard:patient_profile' %}"
+           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {% if request.resolver_match.url_name == 'patient_profile' %}bg-green-50 font-semibold text-green-700{% else %}text-gray-600 hover:bg-green-50 hover:text-green-700{% endif %}">
           <span class="material-symbols-rounded w-8 text-center text-green-600">person</span> My Profile
         </a>
       </nav>
@@ -121,7 +127,7 @@
         <!-- Right actions -->
         <div class="flex items-center gap-2 sm:gap-3">
           <!-- Notification bell -->
-          <a href="#notifications"
+          <a href="{% url 'dashboard:patient_notifications' %}"
              class="relative flex h-10 w-10 items-center justify-center rounded-full text-gray-500 transition hover:bg-green-50 hover:text-green-600">
             <span class="material-symbols-rounded text-2xl">notifications</span>
             {% if unread_count > 0 %}
@@ -133,9 +139,15 @@
           <!-- Avatar + name -->
           <div class="flex items-center gap-2">
             <span class="hidden text-sm font-semibold text-gray-700 sm:inline">{{ request.user.first_name }}</span>
+            {% if request.user.patient_profile.profile_image %}
+            <img src="{{ request.user.patient_profile.profile_image.url }}"
+                 alt="{{ request.user.full_name }}"
+                 class="h-10 w-10 rounded-full object-cover ring-2 ring-green-200">
+            {% else %}
             <div class="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 text-sm font-bold text-green-700 ring-2 ring-green-200">
               {{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}
             </div>
+            {% endif %}
           </div>
         </div>
 
@@ -168,33 +180,43 @@
   <!-- ─── BOTTOM NAV (mobile only) ─── -->
   <nav class="fixed bottom-0 inset-x-0 z-20 flex border-t border-gray-100 bg-white shadow-[0_-2px_8px_rgba(0,0,0,0.06)] lg:hidden">
     <a href="{% url 'dashboard:patient' %}"
-       class="flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-semibold text-green-600">
+       class="flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-semibold {% if request.resolver_match.url_name == 'patient' %}text-green-600{% else %}text-gray-500 hover:text-green-600{% endif %}">
       <span class="material-symbols-rounded text-[22px]">dashboard</span>
       <span>Home</span>
     </a>
-    <a href="#appointments"
-       class="flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium text-gray-500 hover:text-green-600">
+    <a href="{% url 'dashboard:patient_appointments' %}"
+       class="flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium {% if request.resolver_match.url_name == 'patient_appointments' %}text-green-600 font-semibold{% else %}text-gray-500 hover:text-green-600{% endif %}">
       <span class="material-symbols-rounded text-[22px]">calendar_month</span>
       <span>Appts</span>
     </a>
     <!-- FAB: Book -->
-    <button type="button" onclick="openBookingModal()"
-            class="relative flex flex-1 flex-col items-center justify-center py-1">
+    {% if request.resolver_match.url_name == 'patient' or request.resolver_match.url_name == 'patient_appointments' %}
+    <button type="button" onclick="openBookAppointmentModal()"
+       class="relative flex flex-1 flex-col items-center justify-center py-1">
       <span class="flex h-13 w-13 -translate-y-3 items-center justify-center rounded-full bg-green-600 p-3 text-white shadow-lg shadow-green-200">
         <span class="material-symbols-rounded text-[26px]">add</span>
       </span>
       <span class="mt-0.5 text-[10px] font-semibold text-green-600">Book</span>
     </button>
-    <a href="#notifications"
-       class="relative flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium text-gray-500 hover:text-green-600">
+    {% else %}
+    <a href="{% url 'dashboard:patient_book' %}"
+       class="relative flex flex-1 flex-col items-center justify-center py-1">
+      <span class="flex h-13 w-13 -translate-y-3 items-center justify-center rounded-full bg-green-600 p-3 text-white shadow-lg shadow-green-200">
+        <span class="material-symbols-rounded text-[26px]">add</span>
+      </span>
+      <span class="mt-0.5 text-[10px] font-semibold text-green-600">Book</span>
+    </a>
+    {% endif %}
+    <a href="{% url 'dashboard:patient_notifications' %}"
+       class="relative flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium {% if request.resolver_match.url_name == 'patient_notifications' %}text-green-600 font-semibold{% else %}text-gray-500 hover:text-green-600{% endif %}">
       <span class="material-symbols-rounded text-[22px]">notifications</span>
       <span>Alerts</span>
       {% if unread_count > 0 %}
       <span class="absolute right-3 top-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-0.5 text-[9px] font-bold text-white">{{ unread_count }}</span>
       {% endif %}
     </a>
-    <a href="#profile"
-       class="flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium text-gray-500 hover:text-green-600">
+    <a href="{% url 'dashboard:patient_profile' %}"
+       class="flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium {% if request.resolver_match.url_name == 'patient_profile' %}text-green-600 font-semibold{% else %}text-gray-500 hover:text-green-600{% endif %}">
       <span class="material-symbols-rounded text-[22px]">person</span>
       <span>Profile</span>
     </a>
@@ -225,21 +247,6 @@
   if (openBtn) openBtn.addEventListener('click', openSidebar);
   if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
   if (patientBackdrop) patientBackdrop.addEventListener('click', closeSidebar);
-
-  // Smooth scroll with offset for sticky header
-  document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
-    anchor.addEventListener('click', function(e) {
-      const id = this.getAttribute('href').slice(1);
-      const target = document.getElementById(id);
-      if (target) {
-        e.preventDefault();
-        closeSidebar();
-        const offset = 80;
-        const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
-        window.scrollTo({ top: top, behavior: 'smooth' });
-      }
-    });
-  });
 </script>
 
 </body>

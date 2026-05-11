@@ -11,13 +11,20 @@ from .models import PatientProfile
 class PatientProfileForm(forms.ModelForm):
     class Meta:
         model = PatientProfile
-        fields = ["date_of_birth", "gender", "address", "emergency_contact", "medical_history", "allergies"]
+        fields = ["profile_image", "date_of_birth", "gender", "address", "emergency_contact", "medical_history", "allergies"]
         widgets = {
+            "profile_image": forms.FileInput(attrs={"accept": "image/*", "class": "hidden", "id": "avatarFileInput"}),
             "date_of_birth": forms.DateInput(attrs={"type": "date"}),
             "address": forms.Textarea(attrs={"rows": 3}),
             "medical_history": forms.Textarea(attrs={"rows": 4}),
             "allergies": forms.Textarea(attrs={"rows": 3}),
         }
+
+    def clean_profile_image(self):
+        image = self.cleaned_data.get("profile_image")
+        if image and hasattr(image, "size") and image.size > 2 * 1024 * 1024:
+            raise forms.ValidationError("Profile image must be 2 MB or less.")
+        return image
 
     def clean_date_of_birth(self):
         date_of_birth = self.cleaned_data.get("date_of_birth")

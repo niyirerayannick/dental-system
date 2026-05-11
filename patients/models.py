@@ -11,6 +11,7 @@ class PatientProfile(models.Model):
         PREFER_NOT_TO_SAY = "prefer_not_to_say", "Prefer not to say"
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="patient_profile")
+    profile_image = models.ImageField(upload_to="profile_images/", null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=20, choices=Gender.choices, blank=True)
     address = models.TextField(blank=True)

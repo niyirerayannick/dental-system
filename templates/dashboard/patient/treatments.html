@@ -1,0 +1,80 @@
+{% extends "dashboard/patient_base.html" %}
+{% block title %}Treatment History{% endblock %}
+
+{% block patient_content %}
+
+<!-- Page Header -->
+<div class="mb-6">
+  <h1 class="text-2xl font-bold text-gray-900 sm:text-3xl">Treatment History</h1>
+  <p class="mt-1 text-sm text-gray-500">A full record of treatments and procedures completed during your visits</p>
+</div>
+
+<!-- Treatments List -->
+<div class="overflow-hidden rounded-2xl bg-white shadow-sm">
+  <div class="divide-y divide-gray-100">
+    {% for treatment in treatments %}
+    <div class="px-5 py-5 hover:bg-green-50/40 transition">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+
+        <!-- Left: dentist + date badge -->
+        <div class="flex items-start gap-3">
+          <span class="mt-0.5 flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-green-50 text-green-600">
+            <span class="material-symbols-rounded">healing</span>
+          </span>
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <p class="font-bold text-gray-900">{{ treatment.dentist }}</p>
+              <span class="rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-semibold text-green-700">{{ treatment.treatment_date }}</span>
+            </div>
+            {% if treatment.appointment %}
+            <p class="mt-0.5 text-xs text-gray-400">Appointment #{{ treatment.appointment.pk }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Details -->
+      <div class="mt-3 space-y-2 pl-13 sm:pl-0 sm:mt-4">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Diagnosis</p>
+          <p class="mt-0.5 text-sm text-gray-700">{{ treatment.diagnosis }}</p>
+        </div>
+        {% if treatment.treatment_plan %}
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Treatment Plan</p>
+          <p class="mt-0.5 text-sm text-gray-700">{{ treatment.treatment_plan }}</p>
+        </div>
+        {% endif %}
+        {% if treatment.prescription %}
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Prescription</p>
+          <p class="mt-0.5 text-sm text-gray-700">{{ treatment.prescription }}</p>
+        </div>
+        {% endif %}
+        {% if treatment.notes %}
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Notes</p>
+          <p class="mt-0.5 text-sm text-gray-600 italic">{{ treatment.notes }}</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% empty %}
+    <div class="flex flex-col items-center gap-3 px-5 py-24 text-center">
+      <span class="material-symbols-rounded text-6xl text-green-200">healing</span>
+      <div>
+        <p class="font-semibold text-gray-800">No treatment records yet</p>
+        <p class="mt-1 text-sm text-gray-400">Treatment notes from your completed appointments will appear here.</p>
+      </div>
+      <a href="{% url 'dashboard:patient_book' %}"
+         class="mt-2 inline-flex items-center gap-2 rounded-2xl bg-green-600 px-5 py-3 text-sm font-semibold text-white hover:bg-green-700">
+        <span class="material-symbols-rounded text-base">add_circle</span> Book an Appointment
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}
