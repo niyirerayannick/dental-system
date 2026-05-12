@@ -8,18 +8,112 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23059669'/><text y='.9em' font-size='75' x='10'>🦷</text></svg>">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        .dot-pattern {
+            background-image: radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px);
+            background-size: 22px 22px;
+        }
+    </style>
 </head>
-<body class="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-emerald-50 via-white to-white">
 
-    <!-- Background accents -->
-    <div class="pointer-events-none absolute -left-40 -top-40 h-80 w-80 rounded-full bg-emerald-100/70 blur-3xl"></div>
-    <div class="pointer-events-none absolute -bottom-40 -right-40 h-80 w-80 rounded-full bg-teal-100/50 blur-3xl"></div>
+<!-- h-screen + overflow-hidden = page never scrolls -->
+<body class="flex h-screen overflow-hidden bg-white">
 
-    <div class="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-10">
+    <!-- ═══════════════════════════════════════
+         LEFT PANEL  (hidden on mobile / tablet)
+         ═══════════════════════════════════════ -->
+    <div class="relative hidden overflow-hidden lg:flex lg:w-5/12 xl:w-1/2">
 
-        <!-- Flash messages -->
+        <!-- Photo-style gradient background -->
+        <div class="absolute inset-0 bg-gradient-to-br from-emerald-950 via-emerald-800 to-teal-700"></div>
+
+        <!-- Dot texture overlay -->
+        <div class="dot-pattern absolute inset-0"></div>
+
+        <!-- Soft light blobs -->
+        <div class="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-emerald-500/25 blur-3xl"></div>
+        <div class="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-teal-400/20 blur-3xl"></div>
+        <div class="absolute left-1/2 top-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/5 blur-2xl"></div>
+
+        <!-- Content layer -->
+        <div class="relative z-10 flex w-full flex-col px-10 py-10">
+
+            <!-- Brand -->
+            <a href="{% url 'home' %}" class="flex items-center gap-3">
+                <span class="material-symbols-rounded flex h-11 w-11 items-center justify-center rounded-2xl bg-white/20 text-2xl text-white backdrop-blur-sm">dentistry</span>
+                <div class="leading-tight">
+                    <p class="text-lg font-bold tracking-tight text-white">DentalCare</p>
+                    <p class="text-xs text-emerald-300">Healthcare Management</p>
+                </div>
+            </a>
+
+            <!-- Hero section -->
+            <div class="flex flex-1 flex-col items-center justify-center text-center">
+
+                <!-- Large icon bubble -->
+                <div class="mb-8 flex h-28 w-28 items-center justify-center rounded-3xl bg-white/10 ring-1 ring-white/20 backdrop-blur-sm">
+                    <span class="material-symbols-rounded text-7xl text-white" style="font-variation-settings:'FILL' 1">dentistry</span>
+                </div>
+
+                <h2 class="text-3xl font-bold leading-tight text-white">
+                    Your Dental Practice,<br>Simplified
+                </h2>
+                <p class="mx-auto mt-4 max-w-xs text-sm leading-relaxed text-emerald-200">
+                    Manage patients, appointments, treatments, and billing — all in one modern platform.
+                </p>
+
+                <!-- Feature pills -->
+                <div class="mt-8 flex flex-wrap justify-center gap-2">
+                    <span class="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-white ring-1 ring-white/20">
+                        <span class="material-symbols-rounded text-sm leading-none text-emerald-300">calendar_month</span>
+                        Smart Scheduling
+                    </span>
+                    <span class="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-white ring-1 ring-white/20">
+                        <span class="material-symbols-rounded text-sm leading-none text-emerald-300">group</span>
+                        Patient Records
+                    </span>
+                    <span class="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-white ring-1 ring-white/20">
+                        <span class="material-symbols-rounded text-sm leading-none text-emerald-300">receipt_long</span>
+                        Billing & Reports
+                    </span>
+                    <span class="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-white ring-1 ring-white/20">
+                        <span class="material-symbols-rounded text-sm leading-none text-emerald-300">notifications</span>
+                        Reminders
+                    </span>
+                </div>
+
+                <!-- Stats row -->
+                <div class="mt-10 grid w-full max-w-xs grid-cols-3 gap-3">
+                    <div class="rounded-2xl bg-white/10 px-3 py-4 text-center ring-1 ring-white/10 backdrop-blur-sm">
+                        <p class="text-2xl font-bold text-white">500+</p>
+                        <p class="mt-0.5 text-xs text-emerald-300">Patients</p>
+                    </div>
+                    <div class="rounded-2xl bg-white/10 px-3 py-4 text-center ring-1 ring-white/10 backdrop-blur-sm">
+                        <p class="text-2xl font-bold text-white">98%</p>
+                        <p class="mt-0.5 text-xs text-emerald-300">Satisfaction</p>
+                    </div>
+                    <div class="rounded-2xl bg-white/10 px-3 py-4 text-center ring-1 ring-white/10 backdrop-blur-sm">
+                        <p class="text-2xl font-bold text-white">24/7</p>
+                        <p class="mt-0.5 text-xs text-emerald-300">Support</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <p class="text-center text-xs text-emerald-400/70">&copy; {% now "Y" %} DentalCare. All rights reserved.</p>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         RIGHT PANEL — form area
+         overflow-y-auto = form scrolls inside,
+         but the body/page never scrolls
+         ═══════════════════════════════════════ -->
+    <div class="flex flex-1 flex-col overflow-y-auto bg-white">
+
+        <!-- Flash messages (stick to top) -->
         {% if messages %}
-            <div class="mb-4 w-full max-w-[460px] space-y-2">
+            <div class="px-6 pt-6 space-y-2">
                 {% for message in messages %}
                     <div class="flex items-center gap-3 rounded-xl border px-4 py-3 text-sm
                                 {% if message.tags == 'error' %}border-rose-200 bg-rose-50 text-rose-800
@@ -34,22 +128,24 @@
             </div>
         {% endif %}
 
-        <!-- Card -->
-        <div class="w-full max-w-[460px] rounded-3xl bg-white px-8 py-10 shadow-xl ring-1 ring-black/5 sm:px-10">
+        <!-- Vertically centered form wrapper -->
+        <div class="flex flex-1 items-center justify-center px-6 py-10 sm:px-10">
+            <div class="w-full max-w-[420px]">
 
-            <!-- Brand -->
-            <a href="{% url 'home' %}" class="mb-7 flex items-center gap-2.5">
-                <span class="material-symbols-rounded flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-xl text-white shadow-md">dentistry</span>
-                <div class="leading-tight">
-                    <p class="text-base font-bold tracking-tight text-slate-900"><span class="text-emerald-600">Dental</span>Care</p>
-                    <p class="text-xs text-slate-400">Healthcare Management</p>
-                </div>
-            </a>
+                <!-- Mobile-only brand (left panel hidden on small screens) -->
+                <a href="{% url 'home' %}" class="mb-8 flex items-center gap-2.5 lg:hidden">
+                    <span class="material-symbols-rounded flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-xl text-white shadow-md">dentistry</span>
+                    <div class="leading-tight">
+                        <p class="text-base font-bold tracking-tight text-slate-900"><span class="text-emerald-600">Dental</span>Care</p>
+                        <p class="text-xs text-slate-400">Healthcare Management</p>
+                    </div>
+                </a>
 
-            {% block auth_content %}{% endblock %}
+                {% block auth_content %}{% endblock %}
+
+                <p class="mt-8 text-center text-xs text-slate-400 lg:hidden">&copy; {% now "Y" %} DentalCare. All rights reserved.</p>
+            </div>
         </div>
-
-        <p class="mt-5 text-center text-xs text-slate-400">&copy; {% now "Y" %} DentalCare. All rights reserved.</p>
     </div>
 
 </body>
