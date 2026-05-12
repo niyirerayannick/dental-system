@@ -23,10 +23,10 @@
       <!-- Logo + close -->
       <div class="flex h-16 items-center justify-between border-b border-gray-100 px-5">
         <div class="flex items-center gap-3">
-          <span class="material-symbols-rounded flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-md">local_hospital</span>
+          <span class="material-symbols-rounded flex h-10 w-10 items-center justify-center rounded-2xl bg-green-700 text-white shadow-md">local_hospital</span>
           <div>
             <p class="text-base font-bold text-gray-900 leading-tight">DentalCare</p>
-            <p class="text-xs font-semibold text-blue-600">Front Desk</p>
+            <p class="text-xs font-semibold text-green-700">Front Desk</p>
           </div>
         </div>
         <button id="closeReceptionistSidebarBtn" type="button"
@@ -38,7 +38,7 @@
       <!-- Avatar card -->
       <div class="border-b border-gray-100 px-5 py-4">
         <div class="flex items-center gap-3">
-          <div class="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700 ring-2 ring-blue-200">
+          <div class="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-green-100 text-sm font-bold text-green-700 ring-2 ring-green-200">
             {{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}
           </div>
           <div class="min-w-0">
@@ -51,37 +51,37 @@
       <!-- Nav -->
       <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1 text-sm font-medium">
         <a href="{% url 'dashboard:receptionist' %}"
-           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-blue-50 hover:text-blue-700">
-          <span class="material-symbols-rounded w-8 text-center text-blue-600">dashboard</span> Dashboard
+           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-green-50 hover:text-green-700">
+          <span class="material-symbols-rounded w-8 text-center text-green-700">dashboard</span> Dashboard
         </a>
         <a href="#appointments"
-           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-blue-50 hover:text-blue-700">
-          <span class="material-symbols-rounded w-8 text-center text-blue-600">calendar_month</span> Appointments
+           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-green-50 hover:text-green-700">
+          <span class="material-symbols-rounded w-8 text-center text-green-700">calendar_month</span> Appointments
         </a>
         <a href="{% url 'patients:list' %}"
-           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-blue-50 hover:text-blue-700">
-          <span class="material-symbols-rounded w-8 text-center text-blue-600">groups</span> Patients
+           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-green-50 hover:text-green-700">
+          <span class="material-symbols-rounded w-8 text-center text-green-700">groups</span> Patients
         </a>
         <a href="{% url 'dentists:list' %}"
-           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-blue-50 hover:text-blue-700">
-          <span class="material-symbols-rounded w-8 text-center text-blue-600">dentistry</span> Dentists
+           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-green-50 hover:text-green-700">
+          <span class="material-symbols-rounded w-8 text-center text-green-700">dentistry</span> Dentists
         </a>
         <a href="{% url 'billing:list' %}"
-           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-blue-50 hover:text-blue-700">
-          <span class="material-symbols-rounded w-8 text-center text-blue-600">receipt_long</span> Billing
+           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-green-50 hover:text-green-700">
+          <span class="material-symbols-rounded w-8 text-center text-green-700">receipt_long</span> Billing
         </a>
         <a href="#notifications"
-           class="flex items-center justify-between rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-blue-50 hover:text-blue-700">
+           class="flex items-center justify-between rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-green-50 hover:text-green-700">
           <span class="flex items-center gap-3">
-            <span class="material-symbols-rounded w-8 text-center text-blue-600">notifications</span> Notifications
+            <span class="material-symbols-rounded w-8 text-center text-green-700">notifications</span> Notifications
           </span>
           {% if unread_count > 0 %}
           <span class="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-xs font-bold text-white">{{ unread_count }}</span>
           {% endif %}
         </a>
         <a href="#profile"
-           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-blue-50 hover:text-blue-700">
-          <span class="material-symbols-rounded w-8 text-center text-blue-600">person</span> My Profile
+           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-green-50 hover:text-green-700">
+          <span class="material-symbols-rounded w-8 text-center text-green-700">person</span> My Profile
         </a>
       </nav>
 
@@ -106,17 +106,17 @@
       <div class="flex h-16 items-center justify-between gap-4 px-4 sm:px-6">
         <div class="flex items-center gap-3">
           <button id="openReceptionistSidebarBtn" type="button"
-                  class="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-3 py-2 text-sm font-bold text-white shadow-sm lg:hidden">
+                  class="inline-flex items-center gap-2 rounded-2xl bg-green-700 px-3 py-2 text-sm font-bold text-white shadow-sm lg:hidden">
             <span class="material-symbols-rounded text-xl leading-none">menu</span>
           </button>
           <div class="hidden items-center gap-2 lg:flex">
-            <span class="material-symbols-rounded text-blue-600">local_hospital</span>
+            <span class="material-symbols-rounded text-green-700">local_hospital</span>
             <span class="text-sm font-bold text-gray-700">DentalCare — Front Desk</span>
           </div>
         </div>
         <div class="flex items-center gap-2 sm:gap-3">
           <a href="#notifications"
-             class="relative flex h-10 w-10 items-center justify-center rounded-full text-gray-500 transition hover:bg-blue-50 hover:text-blue-600">
+             class="relative flex h-10 w-10 items-center justify-center rounded-full text-gray-500 transition hover:bg-green-50 hover:text-green-700">
             <span class="material-symbols-rounded text-2xl">notifications</span>
             {% if unread_count > 0 %}
             <span class="absolute right-0.5 top-0.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">{{ unread_count }}</span>
@@ -124,7 +124,7 @@
           </a>
           <div class="flex items-center gap-2">
             <span class="hidden text-sm font-semibold text-gray-700 sm:inline">{{ request.user.first_name }}</span>
-            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700 ring-2 ring-blue-200">
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 text-sm font-bold text-green-700 ring-2 ring-green-200">
               {{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}
             </div>
           </div>
@@ -138,7 +138,7 @@
       {% for message in messages %}
       <div class="mb-2 flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium shadow-sm
                   {% if message.tags == 'error' %}border-red-200 bg-red-50 text-red-800
-                  {% else %}border-blue-200 bg-blue-50 text-blue-800{% endif %}">
+                  {% else %}border-green-200 bg-green-50 text-green-800{% endif %}">
         <span class="material-symbols-rounded text-lg flex-none">
           {% if message.tags == 'error' %}error{% else %}check_circle{% endif %}
         </span>
