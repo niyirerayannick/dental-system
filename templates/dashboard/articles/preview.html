@@ -1,0 +1,111 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Preview — {{ article.title }}{% endblock %}
+
+{% block dashboard_content %}
+
+{# ── TOOLBAR ── #}
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+  <div class="flex items-center gap-3">
+    <a href="{% url 'articles:dashboard_list' %}"
+       class="inline-flex items-center gap-1.5 rounded-2xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
+      <span class="material-symbols-rounded text-base">arrow_back</span> Back
+    </a>
+    <span class="rounded-full px-3 py-1 text-xs font-bold
+      {% if article.is_published %}bg-green-100 text-green-700{% else %}bg-amber-100 text-amber-700{% endif %}">
+      {% if article.is_published %}Published{% else %}Draft — not visible to public{% endif %}
+    </span>
+  </div>
+  <div class="flex gap-2">
+    <a href="{% url 'articles:dashboard_edit' article.pk %}"
+       class="inline-flex items-center gap-2 rounded-2xl bg-green-700 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-green-800">
+      <span class="material-symbols-rounded text-base">edit</span> Edit
+    </a>
+    {% if article.is_published %}
+    <a href="{% url 'articles:detail' article.slug %}" target="_blank"
+       class="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
+      <span class="material-symbols-rounded text-base">open_in_new</span> View Live
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+{# ── ARTICLE PREVIEW ── #}
+<div class="mx-auto max-w-3xl">
+  <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100">
+
+    {# Featured image #}
+    {% if article.featured_image %}
+    <img src="{{ article.featured_image.url }}" alt="{{ article.title }}"
+         class="w-full object-cover" style="max-height: 360px;">
+    {% endif %}
+
+    <div class="px-8 py-8">
+
+      {# Meta #}
+      <div class="mb-4 flex flex-wrap items-center gap-3 text-xs text-gray-500">
+        {% if article.category %}
+        <span class="rounded-full px-2.5 py-1 font-semibold"
+              style="background: {{ article.category.color }}22; color: {{ article.category.color }}">
+          {{ article.category.name }}
+        </span>
+        {% endif %}
+        <span>{{ article.read_time }} min read</span>
+        <span>By {{ article.author.full_name|default:article.author.email|default:"Unknown" }}</span>
+        {% if article.published_at %}
+        <span>{{ article.published_at|date:"M j, Y" }}</span>
+        {% else %}
+        <span>Created {{ article.created_at|date:"M j, Y" }}</span>
+        {% endif %}
+      </div>
+
+      {# Title #}
+      <h1 class="text-3xl font-bold leading-snug text-gray-900 mb-4">{{ article.title }}</h1>
+
+      {# Excerpt #}
+      {% if article.excerpt %}
+      <p class="mb-6 text-lg text-gray-500 leading-relaxed border-l-4 border-green-200 pl-4 italic">
+        {{ article.excerpt }}
+      </p>
+      {% endif %}
+
+      {# Content #}
+      <div class="prose prose-green max-w-none text-gray-700 leading-relaxed"
+           style="word-break: break-word;">
+        {{ article.content|safe }}
+      </div>
+
+      {# Video embed #}
+      {% if article.video_url %}
+      <div class="mt-8">
+        <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">Embedded media</p>
+        <div class="overflow-hidden rounded-2xl" style="position:relative;padding-top:56.25%;">
+          <iframe src="{{ article.video_url }}"
+                  style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen loading="lazy"></iframe>
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  {# Quick actions at bottom #}
+  <div class="mt-4 flex flex-wrap gap-3 justify-end">
+    <form method="post" action="{% url 'articles:dashboard_toggle' article.pk %}">
+      {% csrf_token %}
+      <button type="submit"
+              class="rounded-2xl px-5 py-2.5 text-sm font-bold shadow-sm transition
+                     {% if article.is_published %}bg-amber-50 text-amber-700 hover:bg-amber-100 ring-1 ring-amber-200
+                     {% else %}bg-green-700 text-white hover:bg-green-800{% endif %}">
+        {% if article.is_published %}Unpublish{% else %}Publish Now{% endif %}
+      </button>
+    </form>
+    <a href="{% url 'articles:dashboard_delete' article.pk %}"
+       class="rounded-2xl border border-red-200 bg-white px-5 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50">
+      Delete Article
+    </a>
+  </div>
+</div>
+
+{% endblock %}

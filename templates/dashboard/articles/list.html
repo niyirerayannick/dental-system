@@ -8,7 +8,10 @@
   <div>
     <p class="text-xs font-semibold uppercase tracking-wide text-green-600">Content management</p>
     <h1 class="mt-1 text-2xl font-bold text-gray-900">Dental Articles</h1>
-    <p class="mt-1 text-sm text-gray-500">Create and manage articles for the public education page.</p>
+    <p class="mt-1 text-sm text-gray-500">
+      {% if is_dentist %}Your articles for the public education page.
+      {% else %}All articles across all authors.{% endif %}
+    </p>
   </div>
   <a href="{% url 'articles:dashboard_create' %}"
      class="inline-flex items-center gap-2 rounded-2xl bg-green-700 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-green-800">
@@ -54,10 +57,9 @@
 {% if messages %}
 <div class="mb-4 space-y-2">
   {% for msg in messages %}
-  <div class="flex items-center gap-2 rounded-2xl
+  <div class="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium
     {% if msg.tags == 'error' %}bg-red-50 text-red-700 ring-1 ring-red-200
-    {% else %}bg-green-50 text-green-800 ring-1 ring-green-200{% endif %}
-    px-4 py-3 text-sm font-medium">
+    {% else %}bg-green-50 text-green-800 ring-1 ring-green-200{% endif %}">
     <span class="material-symbols-rounded text-base">
       {% if msg.tags == 'error' %}error{% else %}check_circle{% endif %}
     </span>
@@ -71,13 +73,13 @@
 {% if articles %}
 <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100">
 
-  {# Desktop #}
+  {# Desktop table #}
   <table class="hidden w-full text-sm lg:table">
     <thead class="border-b border-gray-100 bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
       <tr>
         <th class="px-5 py-3 text-left">Article</th>
         <th class="px-5 py-3 text-left">Category</th>
-        <th class="px-5 py-3 text-left">Author</th>
+        {% if not is_dentist %}<th class="px-5 py-3 text-left">Author</th>{% endif %}
         <th class="px-5 py-3 text-left">Status</th>
         <th class="px-5 py-3 text-left">Date</th>
         <th class="px-5 py-3 text-right">Actions</th>
@@ -112,9 +114,11 @@
           <span class="text-gray-400">—</span>
           {% endif %}
         </td>
-        <td class="px-5 py-4 text-gray-600 text-sm">
+        {% if not is_dentist %}
+        <td class="px-5 py-4 text-sm text-gray-600">
           {{ article.author.full_name|default:article.author.email|default:"—" }}
         </td>
+        {% endif %}
         <td class="px-5 py-4">
           {% if article.is_published %}
           <span class="rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700">Published</span>
@@ -128,9 +132,15 @@
         </td>
         <td class="px-5 py-4">
           <div class="flex items-center justify-end gap-1.5 flex-wrap">
+            {# Preview — works for both drafts and published articles #}
+            <a href="{% url 'articles:dashboard_preview' article.pk %}"
+               class="rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600 hover:bg-gray-200">Preview</a>
+            {# View live — only shown for published articles #}
+            {% if article.is_published %}
             <a href="{% url 'articles:detail' article.slug %}" target="_blank"
-               class="rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600 hover:bg-gray-200"
-               title="View public page">View</a>
+               class="rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-500 hover:bg-gray-200"
+               title="Open public page in new tab">Live ↗</a>
+            {% endif %}
             <a href="{% url 'articles:dashboard_edit' article.pk %}"
                class="rounded-lg bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700 hover:bg-green-100">Edit</a>
             <form method="post" action="{% url 'articles:dashboard_toggle' article.pk %}">
@@ -166,6 +176,9 @@
         {% endif %}
         <div class="min-w-0 flex-1">
           <p class="font-bold text-gray-900 text-sm leading-snug">{{ article.title }}</p>
+          {% if not is_dentist %}
+          <p class="text-xs text-gray-500 mt-0.5">{{ article.author.full_name|default:"—" }}</p>
+          {% endif %}
           <p class="text-xs text-gray-400 mt-0.5">{{ article.read_time }} min read · {{ article.created_at|date:"M j, Y" }}</p>
           <div class="mt-1.5 flex gap-2 flex-wrap">
             {% if article.is_published %}
@@ -183,8 +196,12 @@
         </div>
       </div>
       <div class="flex flex-wrap gap-2">
+        <a href="{% url 'articles:dashboard_preview' article.pk %}"
+           class="rounded-xl bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600">Preview</a>
+        {% if article.is_published %}
         <a href="{% url 'articles:detail' article.slug %}" target="_blank"
-           class="rounded-xl bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600">View</a>
+           class="rounded-xl bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-500">Live ↗</a>
+        {% endif %}
         <a href="{% url 'articles:dashboard_edit' article.pk %}"
            class="rounded-xl bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-700">Edit</a>
         <form method="post" action="{% url 'articles:dashboard_toggle' article.pk %}">
@@ -207,7 +224,9 @@
 {# Pagination #}
 {% if page_obj.has_other_pages %}
 <div class="mt-4 flex items-center justify-between text-sm">
-  <p class="text-gray-500">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }} &mdash; {{ total }} article{{ total|pluralize }}</p>
+  <p class="text-gray-500">
+    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }} &mdash; {{ total }} article{{ total|pluralize }}
+  </p>
   <div class="flex gap-2">
     {% if page_obj.has_previous %}
     <a href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}"
@@ -222,21 +241,31 @@
 {% endif %}
 
 {% else %}
+{# ── EMPTY STATE ── #}
 <div class="flex flex-col items-center justify-center rounded-2xl bg-white py-20 text-center shadow-sm ring-1 ring-gray-100">
   <span class="material-symbols-rounded mb-4 text-6xl text-gray-200">article</span>
   <p class="font-semibold text-gray-500">
-    {% if q or status_filter or category_filter %}No articles match your filters.
-    {% else %}No articles yet.{% endif %}
+    {% if q or status_filter or category_filter %}
+      No articles match your filters.
+    {% elif is_dentist %}
+      You have not created any articles yet.
+    {% else %}
+      No articles yet.
+    {% endif %}
   </p>
   <p class="mt-1 text-sm text-gray-400">
     {% if q or status_filter or category_filter %}
-    <a href="{% url 'articles:dashboard_list' %}" class="font-semibold text-green-600 hover:text-green-800">Clear filters</a>
-    {% else %}Create your first article to get started.{% endif %}
+      <a href="{% url 'articles:dashboard_list' %}" class="font-semibold text-green-600 hover:text-green-800">Clear filters</a>
+    {% elif is_dentist %}
+      Start writing to share dental knowledge with patients.
+    {% else %}
+      Create the first article to get started.
+    {% endif %}
   </p>
   {% if not q and not status_filter and not category_filter %}
   <a href="{% url 'articles:dashboard_create' %}"
-     class="mt-4 inline-flex items-center gap-2 rounded-2xl bg-green-700 px-5 py-2.5 text-sm font-bold text-white hover:bg-green-800">
-    <span class="material-symbols-rounded text-base">add_circle</span> New Article
+     class="mt-5 inline-flex items-center gap-2 rounded-2xl bg-green-700 px-5 py-2.5 text-sm font-bold text-white hover:bg-green-800">
+    <span class="material-symbols-rounded text-base">add_circle</span> Write an Article
   </a>
   {% endif %}
 </div>
