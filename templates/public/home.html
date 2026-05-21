@@ -10,53 +10,52 @@
 ══════════════════════════════════════════ -->
 <section class="relative overflow-hidden"
          style="min-height:100vh;
-                background:linear-gradient(145deg,#f0fdf4 0%,#f7fafc 38%,#ffffff 62%,#f0fdf4 100%);">
+                background:linear-gradient(145deg,#EAF7F1 0%,#f5faf7 38%,#ffffff 62%,#EAF7F1 100%);">
 
   {% include "public/partials/public_navbar.html" %}
 
-  <!-- Bottom-left wave arcs -->
+  <!-- Bottom-left wave arcs — brand green palette -->
   <svg class="absolute bottom-0 left-0 pointer-events-none select-none"
        width="520" height="560" viewBox="0 0 520 560" fill="none"
        aria-hidden="true" preserveAspectRatio="xMinYMax meet">
     <path d="M-160 620 Q60 370 310 120"
-          stroke="#bbf7d0" stroke-width="175" fill="none" stroke-linecap="round"/>
+          stroke="#C5E8D8" stroke-width="175" fill="none" stroke-linecap="round"/>
     <path d="M-110 600 Q110 355 360 110"
-          stroke="#86efac" stroke-width="118" fill="none" stroke-linecap="round" opacity="0.8"/>
+          stroke="#8DC9AE" stroke-width="118" fill="none" stroke-linecap="round" opacity="0.8"/>
     <path d="M-60 580 Q160 340 400 100"
-          stroke="#4ade80" stroke-width="78" fill="none" stroke-linecap="round" opacity="0.55"/>
+          stroke="#4FA882" stroke-width="78" fill="none" stroke-linecap="round" opacity="0.55"/>
     <path d="M-10 555 Q210 325 440 90"
-          stroke="#22c55e" stroke-width="44" fill="none" stroke-linecap="round" opacity="0.32"/>
+          stroke="#0B7A4B" stroke-width="44" fill="none" stroke-linecap="round" opacity="0.28"/>
   </svg>
 
-  <!-- Top-right wave arcs -->
+  <!-- Top-right wave arcs — brand green palette -->
   <svg class="absolute top-0 right-0 pointer-events-none select-none"
        width="460" height="560" viewBox="0 0 460 560" fill="none"
        aria-hidden="true" preserveAspectRatio="xMaxYMin meet">
     <path d="M600 -80 Q360 160 320 430"
-          stroke="#bbf7d0" stroke-width="158" fill="none" stroke-linecap="round"/>
+          stroke="#C5E8D8" stroke-width="158" fill="none" stroke-linecap="round"/>
     <path d="M630 -60 Q390 185 345 460"
-          stroke="#86efac" stroke-width="104" fill="none" stroke-linecap="round" opacity="0.7"/>
+          stroke="#8DC9AE" stroke-width="104" fill="none" stroke-linecap="round" opacity="0.7"/>
     <path d="M660 -40 Q420 210 370 490"
-          stroke="#4ade80" stroke-width="62" fill="none" stroke-linecap="round" opacity="0.44"/>
+          stroke="#4FA882" stroke-width="62" fill="none" stroke-linecap="round" opacity="0.44"/>
   </svg>
 
   <!-- Soft white radial overlay for text readability -->
   <div class="absolute inset-0 pointer-events-none" aria-hidden="true"
-       style="background:radial-gradient(ellipse 62% 52% at 50% 58%,rgba(255,255,255,.88) 0%,transparent 72%);"></div>
+       style="background:radial-gradient(ellipse 62% 52% at 50% 58%,rgba(255,255,255,.9) 0%,transparent 72%);"></div>
 
   <!-- Hero content -->
   <div class="relative z-10 flex flex-col items-center justify-center text-center px-4 sm:px-6 lg:px-8"
        style="padding-top:195px;padding-bottom:110px;min-height:100vh;">
 
+    <!-- Section badge -->
     <div class="inline-flex items-center gap-2 mb-6 font-bold uppercase tracking-widest"
-         style="font-size:12px;color:#16a34a;">
-      <svg style="width:15px;height:15px;flex-shrink:0;" fill="currentColor"
-           viewBox="0 0 20 20" aria-hidden="true">
-        <path fill-rule="evenodd"
-              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-              clip-rule="evenodd"/>
+         style="font-size:12px;color:#0B7A4B;">
+      <!-- Tooth icon -->
+      <svg style="width:16px;height:16px;flex-shrink:0;" fill="currentColor" viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M32 4c-5.5 0-9.5 3.5-11 7.5C19.5 9 17.5 8 15 8 10.5 8 7 11.5 7 16c0 7 5 11.5 9 16 2 2.5 3.5 5 4.5 8.5.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5c.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5C35 37 36.5 34.5 39 32c4-4 9-8.5 9-16C48 11.5 44 8 39.5 8c-2.5 0-4.5 1-6 3.5C32 8 31 4 32 4Z"/>
       </svg>
-      Medical Excellence
+      Dental Excellence
     </div>
 
     <h1 class="font-extrabold text-slate-950 leading-tight tracking-tight"
@@ -70,17 +69,28 @@
       family — from routine check-ups to complete smile transformations.
     </p>
 
-    <div class="mt-10">
+    <div class="mt-10 flex items-center gap-4 flex-wrap justify-center">
       <a href="{% url 'accounts:login' %}"
-         class="inline-flex items-center gap-2.5 font-semibold text-white transition-all duration-200"
-         style="background-color:#166534;padding:14px 36px;border-radius:9999px;
-                font-size:15px;box-shadow:0 4px 14px rgba(22,101,52,.35);"
-         onmouseover="this.style.backgroundColor='#14532d';this.style.boxShadow='0 6px 20px rgba(22,101,52,.45)';this.style.transform='translateY(-1px)'"
-         onmouseout="this.style.backgroundColor='#166534';this.style.boxShadow='0 4px 14px rgba(22,101,52,.35)';this.style.transform='translateY(0)'">
-        Get Appointment
+         class="inline-flex items-center gap-2.5 font-semibold text-white"
+         style="background-color:#0B7A4B;padding:14px 36px;border-radius:9999px;
+                font-size:15px;box-shadow:0 4px 18px rgba(11,122,75,.35);transition:all .22s;"
+         onmouseover="this.style.backgroundColor='#075A38';this.style.boxShadow='0 6px 24px rgba(11,122,75,.45)';this.style.transform='translateY(-2px)'"
+         onmouseout="this.style.backgroundColor='#0B7A4B';this.style.boxShadow='0 4px 18px rgba(11,122,75,.35)';this.style.transform='translateY(0)'">
+        Book Appointment
         <svg style="width:15px;height:15px;flex-shrink:0;" fill="none" stroke="currentColor"
              viewBox="0 0 24 24" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        </svg>
+      </a>
+      <a href="#about"
+         class="inline-flex items-center gap-2 font-semibold"
+         style="color:#0B7A4B;font-size:15px;border:2px solid rgba(11,122,75,.3);padding:12px 28px;
+                border-radius:9999px;transition:all .22s;"
+         onmouseover="this.style.background='#EAF7F1';this.style.borderColor='#0B7A4B';"
+         onmouseout="this.style.background='transparent';this.style.borderColor='rgba(11,122,75,.3)';">
+        Learn More
+        <svg style="width:15px;height:15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
         </svg>
       </a>
     </div>
@@ -89,9 +99,39 @@
 
 
 <!-- ══════════════════════════════════════════
+     STATS STRIP
+══════════════════════════════════════════ -->
+<section style="background-color:#EAF7F1;border-top:1px solid rgba(11,122,75,.1);border-bottom:1px solid rgba(11,122,75,.1);">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;">
+
+      {% for stat in "1234" %}
+      <div class="flex flex-col items-center justify-center text-center"
+           style="padding:28px 20px;{% if not forloop.last %}border-right:1px solid rgba(11,122,75,.12);{% endif %}">
+        <p class="font-extrabold" style="font-size:clamp(1.6rem,3vw,2.2rem);color:#0B7A4B;line-height:1.1;margin:0;">
+          {% if forloop.counter == 1 %}1,500+
+          {% elif forloop.counter == 2 %}15+
+          {% elif forloop.counter == 3 %}50+
+          {% else %}4.9★{% endif %}
+        </p>
+        <p class="text-slate-600 font-medium" style="font-size:13px;margin:4px 0 0;">
+          {% if forloop.counter == 1 %}Happy Patients
+          {% elif forloop.counter == 2 %}Years Experience
+          {% elif forloop.counter == 3 %}Dental Services
+          {% else %}Patient Rating{% endif %}
+        </p>
+      </div>
+      {% endfor %}
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
      ABOUT PREVIEW SECTION
 ══════════════════════════════════════════ -->
-<section class="py-20 bg-white">
+<section id="about" class="py-20 bg-white">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="grid lg:grid-cols-2 gap-12 items-center">
 
@@ -99,25 +139,22 @@
       <div>
         <!-- Badge -->
         <div class="inline-flex items-center gap-2 mb-4"
-             style="color:#16a34a;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;">
-          <svg style="width:13px;height:13px;flex-shrink:0;" fill="currentColor"
-               viewBox="0 0 20 20" aria-hidden="true">
-            <path fill-rule="evenodd"
-                  d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                  clip-rule="evenodd"/>
+             style="color:#0B7A4B;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;">
+          <svg style="width:14px;height:14px;flex-shrink:0;" fill="currentColor" viewBox="0 0 64 64" aria-hidden="true">
+            <path d="M32 4c-5.5 0-9.5 3.5-11 7.5C19.5 9 17.5 8 15 8 10.5 8 7 11.5 7 16c0 7 5 11.5 9 16 2 2.5 3.5 5 4.5 8.5.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5c.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5C35 37 36.5 34.5 39 32c4-4 9-8.5 9-16C48 11.5 44 8 39.5 8c-2.5 0-4.5 1-6 3.5C32 8 31 4 32 4Z"/>
           </svg>
-          About Us
+          About Our Clinic
         </div>
 
         <h2 class="font-extrabold text-slate-900 leading-tight"
             style="font-size:clamp(1.8rem,3.5vw,2.6rem);">
-          Your Health Our Priority<br>The Caring for You Always
+          Your Smile Is Our<br>Greatest Achievement
         </h2>
 
         <p class="mt-4 leading-relaxed text-slate-500" style="font-size:15px;max-width:480px;">
-          Dental services are an essential part of your overall health. Our clinic offers
-          comprehensive care across a wide range of dental specialties, delivered with
-          compassion and clinical excellence.
+          We are a patient-centred dental clinic dedicated to providing exceptional oral healthcare
+          across all ages. Our experienced team combines modern techniques with genuine compassion
+          to give you a smile you are proud to show.
         </p>
 
         <!-- Checklist -->
@@ -125,17 +162,17 @@
           {% for item in "1234" %}
           <li class="flex items-center gap-3">
             <span class="rounded-full flex-none flex items-center justify-center"
-                  style="width:22px;height:22px;background-color:#dcfce7;flex-shrink:0;">
-              <svg style="width:11px;height:11px;" fill="none" stroke="#16a34a"
+                  style="width:22px;height:22px;background-color:#EAF7F1;flex-shrink:0;">
+              <svg style="width:11px;height:11px;" fill="none" stroke="#0B7A4B"
                    viewBox="0 0 24 24" stroke-width="3">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
               </svg>
             </span>
             <span class="text-sm font-medium text-slate-700">
               {% if forloop.counter == 1 %}General Check-ups &amp; Preventive Dental Care
-              {% elif forloop.counter == 2 %}Cosmetic Dentistry &amp; Teeth Whitening Services
+              {% elif forloop.counter == 2 %}Cosmetic Dentistry &amp; Teeth Whitening
               {% elif forloop.counter == 3 %}Dental Implants, Bridges &amp; Restorations
-              {% else %}Orthodontics &amp; Pediatric Dental Programmes{% endif %}
+              {% else %}Orthodontics &amp; Family Dental Programmes{% endif %}
             </span>
           </li>
           {% endfor %}
@@ -145,11 +182,11 @@
         <div class="mt-8 flex items-center gap-5 flex-wrap">
           <a href="{% url 'accounts:login' %}"
              class="inline-flex items-center gap-2 font-semibold text-white"
-             style="background-color:#166534;padding:12px 28px;border-radius:9999px;
-                    font-size:14px;transition:background-color .2s;"
-             onmouseover="this.style.backgroundColor='#14532d'"
-             onmouseout="this.style.backgroundColor='#166534'">
-            Read More
+             style="background-color:#0B7A4B;padding:12px 28px;border-radius:9999px;
+                    font-size:14px;box-shadow:0 3px 12px rgba(11,122,75,.3);transition:all .22s;"
+             onmouseover="this.style.backgroundColor='#075A38';this.style.boxShadow='0 5px 18px rgba(11,122,75,.4)'"
+             onmouseout="this.style.backgroundColor='#0B7A4B';this.style.boxShadow='0 3px 12px rgba(11,122,75,.3)'">
+            Book A Visit
             <svg style="width:14px;height:14px;" fill="none" stroke="currentColor"
                  viewBox="0 0 24 24" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
@@ -158,7 +195,7 @@
 
           <div class="flex items-center gap-3">
             <div class="rounded-full flex items-center justify-center flex-none"
-                 style="width:44px;height:44px;background-color:#166534;">
+                 style="width:44px;height:44px;background-color:#0B7A4B;box-shadow:0 3px 10px rgba(11,122,75,.3);">
               <svg style="width:18px;height:18px;" fill="white" viewBox="0 0 20 20">
                 <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
               </svg>
@@ -166,7 +203,9 @@
             <div style="line-height:1.3;">
               <p class="text-xs text-slate-400" style="margin:0 0 2px 0;">Need help?</p>
               <a href="tel:+250788000000"
-                 class="text-sm font-bold text-slate-900 hover:text-green-700 transition-colors whitespace-nowrap">
+                 class="text-sm font-bold text-slate-900 whitespace-nowrap"
+                 style="transition:color .18s;"
+                 onmouseover="this.style.color='#0B7A4B'" onmouseout="this.style.color=''">
                 +250 788 000 000
               </a>
             </div>
@@ -174,50 +213,115 @@
         </div>
       </div>
 
-      <!-- ── Right: image collage ── -->
-      <div class="relative" style="height:420px;">
-        <!-- CSS grid: left column 2 stacked images, right column tall image -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:240px 164px;gap:12px;height:100%;">
+      <!-- ── Right: dental image collage ── -->
+      <div class="relative" style="height:440px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:256px 168px;gap:14px;height:100%;">
 
-          <!-- Image 1 · top-left -->
+          <!-- Panel 1 · top-left: Dental Consultation -->
           <div class="rounded-2xl overflow-hidden flex items-center justify-center"
-               style="background:linear-gradient(135deg,#d1fae5 0%,#6ee7b7 100%);">
-            <svg style="width:72px;height:72px;opacity:.25;" fill="white" viewBox="0 0 64 64" aria-hidden="true">
-              <path d="M32 8c-5.5 0-9.5 3.2-11 7C19.5 13 17.5 12 15 12c-4.5 0-8 3.5-8 8 0 7 5 11 9 15.5 2 2.5 3.5 5 4.5 8.5.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5c.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5C35 41 36.5 38.5 39 36c4-4.5 8-8.5 8-15.5 0-4.5-3.5-8-8-8-2.5 0-4.5 1-6 3C31 12 30 8 32 8Z"/>
+               style="background:linear-gradient(135deg,#EAF7F1 0%,#8DC9AE 100%);
+                      position:relative;box-shadow:0 4px 16px rgba(11,122,75,.15);">
+            <!-- Decorative circle -->
+            <div style="position:absolute;bottom:-30px;right:-30px;width:120px;height:120px;
+                        border-radius:50%;background:rgba(11,122,75,0.1);"></div>
+            <!-- Tooth + mirror SVG scene -->
+            <svg style="width:90px;height:90px;opacity:.22;" fill="none" viewBox="0 0 100 100" aria-hidden="true">
+              <!-- Large tooth -->
+              <path d="M50 8c-8 0-14 5-16 10-2-3-5-5-9-5-6 0-11 5-11 11 0 10 7 16 13 23 3 4 5 7 6 12.5.7 3 2 5 5 5s4.5-2 5-5c.5 3 2 5 5 5s4.5-2 5-5c1-5 3-8 6-12.5 6-7 13-13 13-23 0-6-5-11-11-11-4 0-7 2-9 5C64 13 56 8 50 8z"
+                    fill="#0B7A4B"/>
+              <!-- Dental mirror handle -->
+              <rect x="70" y="60" width="4" height="22" rx="2" fill="#0B7A4B" transform="rotate(35 72 71)"/>
+              <!-- Mirror head circle -->
+              <circle cx="78" cy="52" r="8" stroke="#0B7A4B" stroke-width="3" fill="none"/>
+              <!-- Sparkle dots -->
+              <circle cx="20" cy="20" r="2.5" fill="#0B7A4B" opacity=".5"/>
+              <circle cx="30" cy="14" r="1.5" fill="#0B7A4B" opacity=".4"/>
+              <circle cx="14" cy="30" r="1.5" fill="#0B7A4B" opacity=".35"/>
             </svg>
+            <!-- Label tag -->
+            <div style="position:absolute;bottom:14px;left:14px;background:rgba(255,255,255,0.92);
+                        border-radius:8px;padding:5px 11px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+              <span style="font-size:10.5px;font-weight:700;color:#0B7A4B;letter-spacing:.04em;">DENTAL CHECK-UP</span>
+            </div>
           </div>
 
-          <!-- Image 3 · right, spans both rows -->
+          <!-- Panel 3 · right, spans both rows: Patient Care -->
           <div class="rounded-2xl overflow-hidden flex items-center justify-center"
-               style="grid-row:1/3;background:linear-gradient(160deg,#a7f3d0 0%,#34d399 60%,#059669 100%);">
-            <svg style="width:80px;height:80px;opacity:.2;" fill="white" viewBox="0 0 64 64" aria-hidden="true">
-              <circle cx="32" cy="20" r="12" fill="white"/>
-              <path d="M12 52c0-11 9-20 20-20s20 9 20 20H12Z"/>
+               style="grid-row:1/3;background:linear-gradient(160deg,#C5E8D8 0%,#0B7A4B 58%,#075A38 100%);
+                      position:relative;box-shadow:0 4px 20px rgba(11,122,75,.25);">
+            <!-- Background ring decoration -->
+            <div style="position:absolute;bottom:-40px;right:-40px;width:200px;height:200px;border-radius:50%;
+                        border:30px solid rgba(255,255,255,.06);"></div>
+            <div style="position:absolute;top:-30px;left:-30px;width:150px;height:150px;border-radius:50%;
+                        border:20px solid rgba(255,255,255,.04);"></div>
+            <!-- Patient + Dentist SVG -->
+            <svg style="width:110px;height:150px;opacity:.35;" fill="white" viewBox="0 0 110 150" aria-hidden="true">
+              <!-- Dentist (standing, left) -->
+              <circle cx="30" cy="28" r="14"/>
+              <rect x="18" y="44" width="24" height="34" rx="8"/>
+              <rect x="14" y="50" width="8" height="24" rx="4"/>
+              <rect x="36" y="50" width="8" height="24" rx="4"/>
+              <rect x="20" y="78" width="10" height="28" rx="4"/>
+              <rect x="32" y="78" width="10" height="28" rx="4"/>
+              <!-- Patient (seated, right) -->
+              <circle cx="80" cy="32" r="14"/>
+              <rect x="66" y="54" width="28" height="30" rx="8"/>
+              <!-- Dental chair suggestion -->
+              <rect x="58" y="82" width="44" height="6" rx="3"/>
+              <rect x="58" y="88" width="6" height="30" rx="3"/>
+              <!-- Tool in dentist hand -->
+              <rect x="36" y="58" width="3" height="20" rx="1.5" transform="rotate(-20 37 68)"/>
             </svg>
+            <!-- Label tag -->
+            <div style="position:absolute;top:14px;right:14px;background:rgba(255,255,255,0.15);
+                        border:1px solid rgba(255,255,255,0.25);border-radius:8px;padding:5px 11px;">
+              <span style="font-size:10.5px;font-weight:700;color:rgba(255,255,255,0.92);letter-spacing:.04em;">PATIENT CARE</span>
+            </div>
           </div>
 
-          <!-- Image 2 · bottom-left -->
+          <!-- Panel 2 · bottom-left: Teeth Cleaning -->
           <div class="rounded-2xl overflow-hidden flex items-center justify-center"
-               style="background:linear-gradient(135deg,#cffafe 0%,#67e8f9 60%,#0891b2 100%);">
-            <svg style="width:60px;height:60px;opacity:.25;" fill="white" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+               style="background:linear-gradient(135deg,#C5E8D8 0%,#4FA882 100%);
+                      position:relative;box-shadow:0 4px 16px rgba(11,122,75,.15);">
+            <!-- Clean smile SVG -->
+            <svg style="width:80px;height:56px;opacity:.28;" fill="white" viewBox="0 0 80 56" aria-hidden="true">
+              <!-- 6 teeth -->
+              <rect x="4"  y="8" width="10" height="30" rx="5"/>
+              <rect x="17" y="4" width="12" height="34" rx="6"/>
+              <rect x="32" y="2" width="12" height="36" rx="6"/>
+              <rect x="47" y="2" width="12" height="36" rx="6"/>
+              <rect x="62" y="4" width="12" height="34" rx="6"/>
+              <!-- Smile arc -->
+              <path d="M4 38 Q40 55 76 38" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+              <!-- Sparkles -->
+              <circle cx="10" cy="2" r="2.5"/>
+              <circle cx="40" cy="0" r="1.8"/>
+              <circle cx="70" cy="2" r="2.5"/>
+              <path d="M24 1 L25.4 4.2 L28.6 5.6 L25.4 7 L24 10.2 L22.6 7 L19.4 5.6 L22.6 4.2 Z"
+                    transform="scale(0.6) translate(10,-2)"/>
             </svg>
+            <!-- Label tag -->
+            <div style="position:absolute;bottom:14px;left:14px;background:rgba(255,255,255,0.92);
+                        border-radius:8px;padding:5px 11px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+              <span style="font-size:10.5px;font-weight:700;color:#0B7A4B;letter-spacing:.04em;">TEETH CLEANING</span>
+            </div>
           </div>
         </div>
 
-        <!-- Floating badge: 15+ Years of experience -->
+        <!-- Floating badge: 15+ Years -->
         <div class="absolute bg-white rounded-2xl shadow-xl flex items-center gap-3"
-             style="bottom:20px;right:0;z-index:10;padding:14px 20px;min-width:190px;">
+             style="bottom:20px;right:0;z-index:10;padding:14px 20px;min-width:190px;
+                    box-shadow:0 8px 28px rgba(11,122,75,.18);">
           <div class="rounded-full flex items-center justify-center flex-none"
-               style="width:48px;height:48px;background-color:#dcfce7;">
-            <svg style="width:24px;height:24px;" fill="none" stroke="#166534"
+               style="width:48px;height:48px;background-color:#EAF7F1;">
+            <svg style="width:24px;height:24px;" fill="none" stroke="#0B7A4B"
                  viewBox="0 0 24 24" stroke-width="1.8">
               <path stroke-linecap="round" stroke-linejoin="round"
                     d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>
             </svg>
           </div>
           <div style="line-height:1.25;">
-            <p class="font-extrabold text-slate-900" style="font-size:1.6rem;">15+</p>
+            <p class="font-extrabold text-slate-900" style="font-size:1.6rem;color:#0B7A4B;">15+</p>
             <p class="text-xs text-slate-500">Years of experience</p>
           </div>
         </div>
@@ -231,17 +335,15 @@
 <!-- ══════════════════════════════════════════
      SERVICES PREVIEW SECTION
 ══════════════════════════════════════════ -->
-<section class="py-20" style="background-color:#f8fafc;">
+<section class="py-20" style="background-color:#F5F9F7;">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
     <!-- Section header -->
-    <div class="text-center mb-8">
+    <div class="text-center" style="margin-bottom:40px;">
       <div class="inline-flex items-center gap-2 mb-3"
-           style="color:#16a34a;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;">
-        <svg style="width:13px;height:13px;" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-          <path fill-rule="evenodd"
-                d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                clip-rule="evenodd"/>
+           style="color:#0B7A4B;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;">
+        <svg style="width:14px;height:14px;" fill="currentColor" viewBox="0 0 64 64" aria-hidden="true">
+          <path d="M32 4c-5.5 0-9.5 3.5-11 7.5C19.5 9 17.5 8 15 8 10.5 8 7 11.5 7 16c0 7 5 11.5 9 16 2 2.5 3.5 5 4.5 8.5.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5c.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5C35 37 36.5 34.5 39 32c4-4 9-8.5 9-16C48 11.5 44 8 39.5 8c-2.5 0-4.5 1-6 3.5C32 8 31 4 32 4Z"/>
         </svg>
         Our Services
       </div>
@@ -249,17 +351,36 @@
           style="font-size:clamp(1.7rem,3.2vw,2.4rem);">
         Healing Smiles With Compassionate<br>Dental Care
       </h2>
+      <p class="text-slate-500 mx-auto" style="font-size:15px;max-width:500px;margin-top:12px;">
+        From prevention to transformation, our full-spectrum dental services are designed
+        to keep your smile healthy, bright, and beautiful for life.
+      </p>
     </div>
 
     <!-- Cards grid -->
     <div class="grid gap-6 lg:grid-cols-3">
       {% for svc in featured_services %}
-        {% include "public/partials/service_card.html" with card_name=svc.name card_desc=svc.description card_bg="background:linear-gradient(135deg,#dcfce7 0%,#86efac 100%)" %}
+        {% include "public/partials/service_card.html" with card_name=svc.name card_desc=svc.description card_index=forloop.counter %}
       {% empty %}
-        {% include "public/partials/service_card.html" with card_name="Dental Consultation" card_desc="Professional dental assessment and personalised oral health planning. Our dentists take the time to understand your needs and build a clear care roadmap." card_bg="background:linear-gradient(135deg,#dcfce7 0%,#86efac 60%,#4ade80 100%)" %}
-        {% include "public/partials/service_card.html" with card_name="Teeth Cleaning" card_desc="Thorough professional cleaning to remove plaque and tartar buildup, preventing cavities, gum disease, and protecting your long-term oral health." card_bg="background:linear-gradient(135deg,#cffafe 0%,#67e8f9 60%,#22d3ee 100%)" %}
-        {% include "public/partials/service_card.html" with card_name="Tooth Restoration" card_desc="Restore damaged or missing teeth with fillings, crowns, bridges, and implants. We match natural tooth colour for a seamless, confident smile." card_bg="background:linear-gradient(135deg,#ede9fe 0%,#a78bfa 60%,#7c3aed 100%)" %}
+        {% include "public/partials/service_card.html" with card_name="Dental Consultation" card_desc="Professional dental assessment and personalised oral health planning. Our dentists take the time to understand your needs and build a clear care roadmap." card_index=1 %}
+        {% include "public/partials/service_card.html" with card_name="Teeth Cleaning" card_desc="Thorough professional cleaning to remove plaque and tartar buildup, preventing cavities, gum disease, and protecting your long-term oral health." card_index=2 %}
+        {% include "public/partials/service_card.html" with card_name="Tooth Restoration" card_desc="Restore damaged or missing teeth with fillings, crowns, bridges, and implants. We match natural tooth colour for a seamless, confident smile." card_index=3 %}
       {% endfor %}
+    </div>
+
+    <!-- View all services CTA -->
+    <div class="text-center" style="margin-top:36px;">
+      <a href="#"
+         class="inline-flex items-center gap-2 font-semibold"
+         style="color:#0B7A4B;font-size:14.5px;border:2px solid rgba(11,122,75,.3);
+                padding:11px 28px;border-radius:9999px;transition:all .22s;"
+         onmouseover="this.style.background='#EAF7F1';this.style.borderColor='#0B7A4B';"
+         onmouseout="this.style.background='transparent';this.style.borderColor='rgba(11,122,75,.3)';">
+        View All Services
+        <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        </svg>
+      </a>
     </div>
 
   </div>
@@ -269,25 +390,25 @@
 <!-- ══════════════════════════════════════════
      WORK PROCESS SECTION
 ══════════════════════════════════════════ -->
-<section class="py-20 relative overflow-hidden" style="background-color:#166534;">
+<section class="py-20 relative overflow-hidden" style="background-color:#0B7A4B;">
 
-  <!-- Background decoration: large concentric ring in bottom-left -->
+  <!-- Background decoration -->
   <div class="absolute pointer-events-none select-none"
-       style="bottom:-120px;left:-120px;width:480px;height:480px;border-radius:9999px;
-              border:60px solid rgba(255,255,255,.04);z-index:0;"></div>
+       style="bottom:-120px;left:-120px;width:500px;height:500px;border-radius:9999px;
+              border:65px solid rgba(255,255,255,.04);z-index:0;"></div>
   <div class="absolute pointer-events-none select-none"
-       style="bottom:-80px;left:-80px;width:360px;height:360px;border-radius:9999px;
-              border:40px solid rgba(255,255,255,.06);z-index:0;"></div>
-  <!-- Stethoscope outline (decorative) -->
+       style="bottom:-80px;left:-80px;width:370px;height:370px;border-radius:9999px;
+              border:42px solid rgba(255,255,255,.05);z-index:0;"></div>
+  <!-- Decorative dental tool outline (top-right) -->
   <svg class="absolute pointer-events-none select-none"
-       style="right:0;top:0;width:340px;height:340px;opacity:.04;z-index:0;"
+       style="right:0;top:0;width:300px;height:300px;opacity:.05;z-index:0;"
        viewBox="0 0 120 120" fill="none" aria-hidden="true">
-    <circle cx="90" cy="88" r="16" stroke="white" stroke-width="6"/>
-    <circle cx="90" cy="88" r="6" fill="white"/>
-    <path d="M30 18 C28 32 24 48 24 58 C24 78 40 90 58 90 C76 90 90 76 90 58"
-          stroke="white" stroke-width="7" stroke-linecap="round" fill="none"/>
-    <circle cx="28" cy="18" r="7" fill="white"/>
-    <circle cx="42" cy="18" r="7" fill="white"/>
+    <!-- Tooth outline -->
+    <path d="M60 10c-10 0-17 6-20 13-3-5-8-8-14-8-9 0-16 7-16 17 0 13 9 20 16 29 4 5 6 9 8 15.5 1 3.5 3 6 6.5 6s5.5-2.5 6-6c.7 3.5 3 6 6.5 6s5.5-2.5 6-6c2-7 4-10.5 8-15.5 7-9 16-16 16-29 0-10-7-17-16-17-6 0-11 3-14 8C77 16 70 10 60 10z"
+          stroke="white" stroke-width="4" fill="none"/>
+    <!-- Mirror -->
+    <circle cx="96" cy="85" r="12" stroke="white" stroke-width="3" fill="none"/>
+    <line x1="88" y1="93" x2="76" y2="108" stroke="white" stroke-width="4" stroke-linecap="round"/>
   </svg>
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -296,32 +417,30 @@
       <!-- ── Left: text content ── -->
       <div class="text-white">
         <div class="inline-flex items-center gap-2 mb-4"
-             style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#86efac;">
-          <svg style="width:13px;height:13px;" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-            <path fill-rule="evenodd"
-                  d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                  clip-rule="evenodd"/>
+             style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#A8D9C3;">
+          <svg style="width:14px;height:14px;" fill="currentColor" viewBox="0 0 64 64" aria-hidden="true">
+            <path d="M32 4c-5.5 0-9.5 3.5-11 7.5C19.5 9 17.5 8 15 8 10.5 8 7 11.5 7 16c0 7 5 11.5 9 16 2 2.5 3.5 5 4.5 8.5.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5c.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5C35 37 36.5 34.5 39 32c4-4 9-8.5 9-16C48 11.5 44 8 39.5 8c-2.5 0-4.5 1-6 3.5C32 8 31 4 32 4Z"/>
           </svg>
-          Work Process
+          How We Work
         </div>
 
         <h2 class="font-extrabold leading-tight"
             style="font-size:clamp(1.8rem,3.4vw,2.5rem);">
-          Trusted Dental Care<br>Close To The Home
+          Simple Steps To Your<br>Perfect Healthy Smile
         </h2>
 
-        <p class="mt-4 leading-relaxed" style="font-size:15px;color:#bbf7d0;max-width:400px;">
+        <p class="mt-4 leading-relaxed" style="font-size:15px;color:#C5E8D8;max-width:400px;">
           We make great dental care simple and stress-free. From your first call to your
           follow-up visit, every step is designed around your comfort and confidence.
         </p>
 
         <a href="{% url 'accounts:login' %}"
            class="inline-flex items-center gap-2 font-semibold mt-8"
-           style="border:2px solid rgba(255,255,255,.6);color:white;padding:11px 26px;
-                  border-radius:9999px;font-size:14px;transition:background-color .2s,border-color .2s;"
+           style="border:2px solid rgba(255,255,255,.5);color:white;padding:11px 26px;
+                  border-radius:9999px;font-size:14px;transition:all .22s;"
            onmouseover="this.style.backgroundColor='rgba(255,255,255,.12)';this.style.borderColor='white'"
-           onmouseout="this.style.backgroundColor='transparent';this.style.borderColor='rgba(255,255,255,.6)'">
-          Read More
+           onmouseout="this.style.backgroundColor='transparent';this.style.borderColor='rgba(255,255,255,.5)'">
+          Get Started
           <svg style="width:14px;height:14px;" fill="none" stroke="currentColor"
                viewBox="0 0 24 24" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
@@ -332,11 +451,14 @@
       <!-- ── Right: 2 × 2 process cards ── -->
       <div class="grid grid-cols-2 gap-4">
 
-        <!-- Card 01 -->
-        <div class="bg-white rounded-2xl p-5 relative overflow-hidden">
+        <!-- Card 01: Book Appointment -->
+        <div class="bg-white rounded-2xl p-5 relative overflow-hidden"
+             style="transition:transform .22s,box-shadow .22s;"
+             onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(11,122,75,.2)'"
+             onmouseout="this.style.transform='translateY(0)';this.style.boxShadow=''">
           <div class="rounded-full flex items-center justify-center"
-               style="width:44px;height:44px;background-color:#dcfce7;">
-            <svg style="width:22px;height:22px;" fill="none" stroke="#166534"
+               style="width:46px;height:46px;background-color:#EAF7F1;">
+            <svg style="width:22px;height:22px;" fill="none" stroke="#0B7A4B"
                  viewBox="0 0 24 24" stroke-width="1.8">
               <path stroke-linecap="round" stroke-linejoin="round"
                     d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
@@ -344,22 +466,25 @@
           </div>
           <h3 class="font-bold text-slate-900 mt-3" style="font-size:14.5px;">Book Appointment</h3>
           <a href="#" class="inline-flex items-center gap-1 mt-2 font-semibold"
-             style="font-size:13px;color:#166534;">
-            Read More
+             style="font-size:13px;color:#0B7A4B;">
+            Learn More
             <svg style="width:12px;height:12px;" fill="none" stroke="currentColor"
                  viewBox="0 0 24 24" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
             </svg>
           </a>
-          <span class="absolute bottom-4 right-4 font-extrabold"
-                style="font-size:2rem;color:#f0fdf4;line-height:1;">01</span>
+          <span class="absolute bottom-4 right-4 font-extrabold select-none"
+                style="font-size:2.2rem;color:#EAF7F1;line-height:1;">01</span>
         </div>
 
-        <!-- Card 02 -->
-        <div class="bg-white rounded-2xl p-5 relative overflow-hidden">
+        <!-- Card 02: Dentist Consultation -->
+        <div class="bg-white rounded-2xl p-5 relative overflow-hidden"
+             style="transition:transform .22s,box-shadow .22s;"
+             onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(11,122,75,.2)'"
+             onmouseout="this.style.transform='translateY(0)';this.style.boxShadow=''">
           <div class="rounded-full flex items-center justify-center"
-               style="width:44px;height:44px;background-color:#dcfce7;">
-            <svg style="width:22px;height:22px;" fill="none" stroke="#166534"
+               style="width:46px;height:46px;background-color:#EAF7F1;">
+            <svg style="width:22px;height:22px;" fill="none" stroke="#0B7A4B"
                  viewBox="0 0 24 24" stroke-width="1.8">
               <path stroke-linecap="round" stroke-linejoin="round"
                     d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
@@ -367,22 +492,25 @@
           </div>
           <h3 class="font-bold text-slate-900 mt-3" style="font-size:14.5px;">Dentist Consultation</h3>
           <a href="#" class="inline-flex items-center gap-1 mt-2 font-semibold"
-             style="font-size:13px;color:#166534;">
-            Read More
+             style="font-size:13px;color:#0B7A4B;">
+            Learn More
             <svg style="width:12px;height:12px;" fill="none" stroke="currentColor"
                  viewBox="0 0 24 24" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
             </svg>
           </a>
-          <span class="absolute bottom-4 right-4 font-extrabold"
-                style="font-size:2rem;color:#f0fdf4;line-height:1;">02</span>
+          <span class="absolute bottom-4 right-4 font-extrabold select-none"
+                style="font-size:2.2rem;color:#EAF7F1;line-height:1;">02</span>
         </div>
 
-        <!-- Card 03 -->
-        <div class="bg-white rounded-2xl p-5 relative overflow-hidden">
+        <!-- Card 03: Treatment Planning -->
+        <div class="bg-white rounded-2xl p-5 relative overflow-hidden"
+             style="transition:transform .22s,box-shadow .22s;"
+             onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(11,122,75,.2)'"
+             onmouseout="this.style.transform='translateY(0)';this.style.boxShadow=''">
           <div class="rounded-full flex items-center justify-center"
-               style="width:44px;height:44px;background-color:#dcfce7;">
-            <svg style="width:22px;height:22px;" fill="none" stroke="#166534"
+               style="width:46px;height:46px;background-color:#EAF7F1;">
+            <svg style="width:22px;height:22px;" fill="none" stroke="#0B7A4B"
                  viewBox="0 0 24 24" stroke-width="1.8">
               <path stroke-linecap="round" stroke-linejoin="round"
                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
@@ -390,22 +518,25 @@
           </div>
           <h3 class="font-bold text-slate-900 mt-3" style="font-size:14.5px;">Treatment Planning</h3>
           <a href="#" class="inline-flex items-center gap-1 mt-2 font-semibold"
-             style="font-size:13px;color:#166534;">
-            Read More
+             style="font-size:13px;color:#0B7A4B;">
+            Learn More
             <svg style="width:12px;height:12px;" fill="none" stroke="currentColor"
                  viewBox="0 0 24 24" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
             </svg>
           </a>
-          <span class="absolute bottom-4 right-4 font-extrabold"
-                style="font-size:2rem;color:#f0fdf4;line-height:1;">03</span>
+          <span class="absolute bottom-4 right-4 font-extrabold select-none"
+                style="font-size:2.2rem;color:#EAF7F1;line-height:1;">03</span>
         </div>
 
-        <!-- Card 04 -->
-        <div class="bg-white rounded-2xl p-5 relative overflow-hidden">
+        <!-- Card 04: Follow-up Care -->
+        <div class="bg-white rounded-2xl p-5 relative overflow-hidden"
+             style="transition:transform .22s,box-shadow .22s;"
+             onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(11,122,75,.2)'"
+             onmouseout="this.style.transform='translateY(0)';this.style.boxShadow=''">
           <div class="rounded-full flex items-center justify-center"
-               style="width:44px;height:44px;background-color:#dcfce7;">
-            <svg style="width:22px;height:22px;" fill="none" stroke="#166534"
+               style="width:46px;height:46px;background-color:#EAF7F1;">
+            <svg style="width:22px;height:22px;" fill="none" stroke="#0B7A4B"
                  viewBox="0 0 24 24" stroke-width="1.8">
               <path stroke-linecap="round" stroke-linejoin="round"
                     d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>
@@ -413,15 +544,15 @@
           </div>
           <h3 class="font-bold text-slate-900 mt-3" style="font-size:14.5px;">Follow-up Care</h3>
           <a href="#" class="inline-flex items-center gap-1 mt-2 font-semibold"
-             style="font-size:13px;color:#166534;">
-            Read More
+             style="font-size:13px;color:#0B7A4B;">
+            Learn More
             <svg style="width:12px;height:12px;" fill="none" stroke="currentColor"
                  viewBox="0 0 24 24" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
             </svg>
           </a>
-          <span class="absolute bottom-4 right-4 font-extrabold"
-                style="font-size:2rem;color:#f0fdf4;line-height:1;">04</span>
+          <span class="absolute bottom-4 right-4 font-extrabold select-none"
+                style="font-size:2.2rem;color:#EAF7F1;line-height:1;">04</span>
         </div>
 
       </div><!-- /process grid -->
