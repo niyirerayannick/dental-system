@@ -292,7 +292,7 @@
                 <div>
                   <p style="font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:6px;
                             text-transform:uppercase;letter-spacing:.04em;font-weight:600;">
-                    {% if post.author %}{{ post.author.get_full_name|default:post.author.email }}{% else %}Admin{% endif %}
+                    {% if post.author %}{{ post.author.full_name|default:post.author.email }}{% else %}Admin{% endif %}
                     {% if post.category %}&nbsp;|&nbsp; {{ post.category.name }}{% endif %}
                   </p>
                   <a href="{% url 'articles:detail' post.slug %}"
@@ -395,10 +395,10 @@
               <div>
                 <p style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.5);
                           text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;">Phone Number</p>
-                <a href="tel:+250780000000"
+                <a href="tel:+250780474044"
                    style="font-size:13.5px;color:rgba(255,255,255,0.85);text-decoration:none;transition:color .18s;"
                    onmouseover="this.style.color='#fff';" onmouseout="this.style.color='rgba(255,255,255,0.85)';">
-                  +250 780 000 000
+                  +250 780 474 044
                 </a>
               </div>
             </div>
@@ -417,10 +417,10 @@
               <div>
                 <p style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.5);
                           text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;">Email</p>
-                <a href="mailto:info@dentalcarepro.com"
+                <a href="mailto:info@dentalcare.rw"
                    style="font-size:13.5px;color:rgba(255,255,255,0.85);text-decoration:none;transition:color .18s;"
                    onmouseover="this.style.color='#fff';" onmouseout="this.style.color='rgba(255,255,255,0.85)';">
-                  info@dentalcarepro.com
+                  info@dentalcare.rw
                 </a>
               </div>
             </div>
