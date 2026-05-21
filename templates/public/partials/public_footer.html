@@ -1,0 +1,395 @@
+{% load static %}
+<style>
+  .pub-footer-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 40px;
+  }
+  .pub-footer-subscribe-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 40px;
+  }
+  .pub-footer-subscribe-form {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .pub-footer-recent-post {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  @media (max-width: 1023px) {
+    .pub-footer-grid { grid-template-columns: repeat(2, 1fr); gap: 32px; }
+  }
+  @media (max-width: 599px) {
+    .pub-footer-grid { grid-template-columns: 1fr; gap: 28px; }
+    .pub-footer-subscribe-row { flex-direction: column; }
+    .pub-footer-subscribe-form input { min-width: 0; width: 100%; }
+  }
+</style>
+
+<footer style="background-color:#0d1f17;position:relative;overflow:hidden;">
+
+  <!-- ── Background pattern: subtle dot-network ── -->
+  <div aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;opacity:0.13;
+       background-image:radial-gradient(circle,#86efac 1.2px,transparent 1.2px);
+       background-size:30px 30px;"></div>
+  <!-- Decorative rings bottom-left -->
+  <svg aria-hidden="true" style="position:absolute;bottom:-60px;left:-60px;width:320px;height:320px;opacity:0.06;" viewBox="0 0 320 320" fill="none">
+    <circle cx="160" cy="160" r="155" stroke="#86efac" stroke-width="1.5"/>
+    <circle cx="160" cy="160" r="110" stroke="#86efac" stroke-width="1.5"/>
+    <circle cx="160" cy="160" r="65"  stroke="#86efac" stroke-width="1.5"/>
+  </svg>
+  <!-- Decorative rings top-right -->
+  <svg aria-hidden="true" style="position:absolute;top:-40px;right:-40px;width:260px;height:260px;opacity:0.06;" viewBox="0 0 260 260" fill="none">
+    <circle cx="130" cy="130" r="125" stroke="#86efac" stroke-width="1.5"/>
+    <circle cx="130" cy="130" r="85"  stroke="#86efac" stroke-width="1.5"/>
+    <circle cx="130" cy="130" r="45"  stroke="#86efac" stroke-width="1.5"/>
+  </svg>
+
+  <!-- ══════════════════════════════════════════════
+       TOP — Logo / desc / socials  +  Newsletter
+  ══════════════════════════════════════════════ -->
+  <div style="border-bottom:1px solid rgba(255,255,255,0.08);padding:52px 0;position:relative;z-index:1;">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="pub-footer-subscribe-row">
+
+        <!-- Left: Logo + tagline + socials -->
+        <div style="max-width:360px;">
+          <!-- Logo -->
+          <a href="{% url 'home' %}" class="flex items-center" style="gap:10px;text-decoration:none;margin-bottom:16px;">
+            <div class="flex items-center justify-center rounded-full"
+                 style="width:44px;height:44px;background-color:#166534;flex-shrink:0;">
+              <svg style="width:22px;height:22px;" fill="white" viewBox="0 0 64 64" aria-hidden="true">
+                <path d="M32 4c-5.5 0-9.5 3.5-11 7.5C19.5 9 17.5 8 15 8 10.5 8 7 11.5 7 16c0 7 5 11.5 9 16 2 2.5 3.5 5 4.5 8.5.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5c.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5C35 37 36.5 34.5 39 32c4-4 9-8.5 9-16C48 11.5 44 8 39.5 8c-2.5 0-4.5 1-6 3.5C32 8 31 4 32 4Z"/>
+              </svg>
+            </div>
+            <span style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.3px;">DentalCare</span>
+          </a>
+
+          <!-- Description -->
+          <p style="font-size:14px;line-height:1.75;color:rgba(255,255,255,0.6);margin-bottom:24px;">
+            Medical services are an essential part of our lives, offering care and treatment for various dental conditions. Our expert team provides a wide range of specialties to keep your smile healthy.
+          </p>
+
+          <!-- Social icons -->
+          <div class="flex items-center" style="gap:10px;">
+            <!-- Facebook -->
+            <a href="#" aria-label="Facebook"
+               style="width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,0.15);
+                      display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.65);
+                      transition:background .2s,border-color .2s;text-decoration:none;"
+               onmouseover="this.style.background='#166534';this.style.borderColor='#166534';"
+               onmouseout="this.style.background='transparent';this.style.borderColor='rgba(255,255,255,0.15)';">
+              <svg style="width:14px;height:14px;" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>
+              </svg>
+            </a>
+            <!-- X / Twitter -->
+            <a href="#" aria-label="X"
+               style="width:36px;height:36px;border-radius:50%;background-color:#166534;border:1px solid #166534;
+                      display:flex;align-items:center;justify-content:center;color:#fff;
+                      text-decoration:none;">
+              <svg style="width:14px;height:14px;" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>
+            </a>
+            <!-- LinkedIn -->
+            <a href="#" aria-label="LinkedIn"
+               style="width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,0.15);
+                      display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.65);
+                      transition:background .2s,border-color .2s;text-decoration:none;"
+               onmouseover="this.style.background='#166534';this.style.borderColor='#166534';"
+               onmouseout="this.style.background='transparent';this.style.borderColor='rgba(255,255,255,0.15)';">
+              <svg style="width:14px;height:14px;" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/>
+                <circle cx="4" cy="4" r="2"/>
+              </svg>
+            </a>
+            <!-- Pinterest -->
+            <a href="#" aria-label="Pinterest"
+               style="width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,0.15);
+                      display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.65);
+                      transition:background .2s,border-color .2s;text-decoration:none;"
+               onmouseover="this.style.background='#166534';this.style.borderColor='#166534';"
+               onmouseout="this.style.background='transparent';this.style.borderColor='rgba(255,255,255,0.15)';">
+              <svg style="width:14px;height:14px;" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 01.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Right: Newsletter subscribe -->
+        <div style="flex:1;min-width:320px;max-width:580px;">
+          <h2 style="font-size:clamp(1.35rem,2.5vw,1.75rem);font-weight:800;color:#ffffff;margin-bottom:24px;line-height:1.25;">
+            Subscribe to Our Newsletter
+          </h2>
+          <div class="pub-footer-subscribe-form">
+            <input type="email" placeholder="Enter your email"
+                   style="flex:1;min-width:200px;padding:14px 20px;border-radius:9999px;
+                          border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);
+                          color:#fff;font-size:14px;outline:none;"
+                   onfocus="this.style.borderColor='#4ade80';"
+                   onblur="this.style.borderColor='rgba(255,255,255,0.15)';">
+            <button type="button"
+                    style="padding:14px 28px;border-radius:9999px;background-color:#166534;color:#fff;
+                           font-size:14px;font-weight:600;border:none;cursor:pointer;white-space:nowrap;
+                           display:inline-flex;align-items:center;gap:6px;
+                           transition:background .2s;"
+                    onmouseover="this.style.background='#15803d';"
+                    onmouseout="this.style.background='#166534';">
+              Subscribe Now
+              <!-- double-chevron right -->
+              <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M6 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       MIDDLE — 4-column link grid
+  ══════════════════════════════════════════════ -->
+  <div style="padding:52px 0;position:relative;z-index:1;">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="pub-footer-grid">
+
+        <!-- Column 1: Page -->
+        <div>
+          <h3 style="font-size:16px;font-weight:700;color:#ffffff;margin-bottom:20px;padding-bottom:12px;
+                     border-bottom:2px solid #166534;">Page</h3>
+          <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;">
+            <li><a href="{% url 'home' %}"
+                   style="font-size:14px;color:rgba(255,255,255,0.6);text-decoration:none;
+                          display:flex;align-items:center;gap:7px;transition:color .18s;"
+                   onmouseover="this.style.color='#86efac';" onmouseout="this.style.color='rgba(255,255,255,0.6)';">
+              <svg style="width:12px;height:12px;flex-shrink:0;" fill="none" stroke="#166534" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+              </svg>About Us</a></li>
+            <li><a href="#"
+                   style="font-size:14px;color:rgba(255,255,255,0.6);text-decoration:none;
+                          display:flex;align-items:center;gap:7px;transition:color .18s;"
+                   onmouseover="this.style.color='#86efac';" onmouseout="this.style.color='rgba(255,255,255,0.6)';">
+              <svg style="width:12px;height:12px;flex-shrink:0;" fill="none" stroke="#166534" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+              </svg>Services</a></li>
+            <li><a href="#"
+                   style="font-size:14px;color:rgba(255,255,255,0.6);text-decoration:none;
+                          display:flex;align-items:center;gap:7px;transition:color .18s;"
+                   onmouseover="this.style.color='#86efac';" onmouseout="this.style.color='rgba(255,255,255,0.6)';">
+              <svg style="width:12px;height:12px;flex-shrink:0;" fill="none" stroke="#166534" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+              </svg>Why Choose Us</a></li>
+            <li><a href="#"
+                   style="font-size:14px;color:rgba(255,255,255,0.6);text-decoration:none;
+                          display:flex;align-items:center;gap:7px;transition:color .18s;"
+                   onmouseover="this.style.color='#86efac';" onmouseout="this.style.color='rgba(255,255,255,0.6)';">
+              <svg style="width:12px;height:12px;flex-shrink:0;" fill="none" stroke="#166534" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+              </svg>Doctors</a></li>
+            <li><a href="#"
+                   style="font-size:14px;color:rgba(255,255,255,0.6);text-decoration:none;
+                          display:flex;align-items:center;gap:7px;transition:color .18s;"
+                   onmouseover="this.style.color='#86efac';" onmouseout="this.style.color='rgba(255,255,255,0.6)';">
+              <svg style="width:12px;height:12px;flex-shrink:0;" fill="none" stroke="#166534" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+              </svg>Blog And News</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 2: Department -->
+        <div>
+          <h3 style="font-size:16px;font-weight:700;color:#ffffff;margin-bottom:20px;padding-bottom:12px;
+                     border-bottom:2px solid #166534;">Department</h3>
+          <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;">
+            {% if footer_services %}
+              {% for svc in footer_services %}
+              <li><a href="#"
+                     style="font-size:14px;color:rgba(255,255,255,0.6);text-decoration:none;
+                            display:flex;align-items:center;gap:7px;transition:color .18s;"
+                     onmouseover="this.style.color='#86efac';" onmouseout="this.style.color='rgba(255,255,255,0.6)';">
+                <svg style="width:12px;height:12px;flex-shrink:0;" fill="none" stroke="#166534" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                </svg>{{ svc.name }}</a></li>
+              {% endfor %}
+            {% else %}
+              {% for dept in "12345" %}
+              <li><a href="#"
+                     style="font-size:14px;color:rgba(255,255,255,0.6);text-decoration:none;
+                            display:flex;align-items:center;gap:7px;transition:color .18s;"
+                     onmouseover="this.style.color='#86efac';" onmouseout="this.style.color='rgba(255,255,255,0.6)';">
+                <svg style="width:12px;height:12px;flex-shrink:0;" fill="none" stroke="#166534" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                </svg>{% if forloop.counter == 1 %}Dental Consultation
+                {% elif forloop.counter == 2 %}Teeth Cleaning
+                {% elif forloop.counter == 3 %}Tooth Restoration
+                {% elif forloop.counter == 4 %}Emergency Dental Care
+                {% else %}Follow-up Care{% endif %}</a></li>
+              {% endfor %}
+            {% endif %}
+          </ul>
+        </div>
+
+        <!-- Column 3: Recent Post -->
+        <div>
+          <h3 style="font-size:16px;font-weight:700;color:#ffffff;margin-bottom:20px;padding-bottom:12px;
+                     border-bottom:2px solid #166534;">Recent Post</h3>
+          <div style="display:flex;flex-direction:column;gap:20px;">
+
+            <!-- Post 1 -->
+            <div class="pub-footer-recent-post">
+              <!-- Thumbnail -->
+              <div style="width:64px;height:64px;border-radius:8px;flex-shrink:0;overflow:hidden;
+                          background:linear-gradient(135deg,#166534 0%,#4ade80 100%);
+                          display:flex;align-items:center;justify-content:center;">
+                <svg style="width:28px;height:28px;opacity:0.6;" fill="white" viewBox="0 0 64 64">
+                  <path d="M32 4c-5.5 0-9.5 3.5-11 7.5C19.5 9 17.5 8 15 8 10.5 8 7 11.5 7 16c0 7 5 11.5 9 16 2 2.5 3.5 5 4.5 8.5.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5c.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5C35 37 36.5 34.5 39 32c4-4 9-8.5 9-16C48 11.5 44 8 39.5 8c-2.5 0-4.5 1-6 3.5C32 8 31 4 32 4Z"/>
+                </svg>
+              </div>
+              <!-- Text -->
+              <div>
+                <p style="font-size:11.5px;color:rgba(255,255,255,0.4);margin-bottom:5px;">
+                  <span>Admin</span> &nbsp;|&nbsp; <span>Dental Tips</span>
+                </p>
+                <a href="#"
+                   style="font-size:13.5px;font-weight:600;color:rgba(255,255,255,0.85);text-decoration:none;
+                          line-height:1.4;display:block;transition:color .18s;"
+                   onmouseover="this.style.color='#86efac';" onmouseout="this.style.color='rgba(255,255,255,0.85)';">
+                  How Regular Check-Ups Protect Your Oral Health
+                </a>
+              </div>
+            </div>
+
+            <!-- Post 2 -->
+            <div class="pub-footer-recent-post">
+              <div style="width:64px;height:64px;border-radius:8px;flex-shrink:0;overflow:hidden;
+                          background:linear-gradient(135deg,#0e7490 0%,#67e8f9 100%);
+                          display:flex;align-items:center;justify-content:center;">
+                <svg style="width:28px;height:28px;opacity:0.6;" fill="white" viewBox="0 0 64 64">
+                  <path d="M32 4c-5.5 0-9.5 3.5-11 7.5C19.5 9 17.5 8 15 8 10.5 8 7 11.5 7 16c0 7 5 11.5 9 16 2 2.5 3.5 5 4.5 8.5.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5c.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5C35 37 36.5 34.5 39 32c4-4 9-8.5 9-16C48 11.5 44 8 39.5 8c-2.5 0-4.5 1-6 3.5C32 8 31 4 32 4Z"/>
+                </svg>
+              </div>
+              <div>
+                <p style="font-size:11.5px;color:rgba(255,255,255,0.4);margin-bottom:5px;">
+                  <span>Admin</span> &nbsp;|&nbsp; <span>Patient Care</span>
+                </p>
+                <a href="#"
+                   style="font-size:13.5px;font-weight:600;color:rgba(255,255,255,0.85);text-decoration:none;
+                          line-height:1.4;display:block;transition:color .18s;"
+                   onmouseover="this.style.color='#86efac';" onmouseout="this.style.color='rgba(255,255,255,0.85)';">
+                  Understanding Modern Teeth Whitening Treatments
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Column 4: Contact -->
+        <div>
+          <h3 style="font-size:16px;font-weight:700;color:#ffffff;margin-bottom:20px;padding-bottom:12px;
+                     border-bottom:2px solid #166534;">Contact</h3>
+          <div style="display:flex;flex-direction:column;gap:18px;">
+
+            <!-- Address -->
+            <div class="pub-footer-recent-post">
+              <div style="width:44px;height:44px;border-radius:50%;background-color:#166534;flex-shrink:0;
+                          display:flex;align-items:center;justify-content:center;">
+                <svg style="width:18px;height:18px;" fill="none" stroke="white" stroke-width="1.8" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
+                </svg>
+              </div>
+              <div>
+                <p style="font-size:11.5px;font-weight:600;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">Address</p>
+                <p style="font-size:13.5px;color:rgba(255,255,255,0.8);line-height:1.5;">123 Dental Avenue,<br>Kigali, Rwanda</p>
+              </div>
+            </div>
+
+            <!-- Phone -->
+            <div class="pub-footer-recent-post">
+              <div style="width:44px;height:44px;border-radius:50%;background-color:#166534;flex-shrink:0;
+                          display:flex;align-items:center;justify-content:center;">
+                <svg style="width:18px;height:18px;" fill="none" stroke="white" stroke-width="1.8" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
+                </svg>
+              </div>
+              <div>
+                <p style="font-size:11.5px;font-weight:600;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">Phone Number</p>
+                <a href="tel:+250780000000"
+                   style="font-size:13.5px;color:rgba(255,255,255,0.8);text-decoration:none;transition:color .18s;"
+                   onmouseover="this.style.color='#86efac';" onmouseout="this.style.color='rgba(255,255,255,0.8)';">
+                  +250 780 000 000
+                </a>
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="pub-footer-recent-post">
+              <div style="width:44px;height:44px;border-radius:50%;background-color:#166534;flex-shrink:0;
+                          display:flex;align-items:center;justify-content:center;">
+                <svg style="width:18px;height:18px;" fill="none" stroke="white" stroke-width="1.8" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/>
+                </svg>
+              </div>
+              <div>
+                <p style="font-size:11.5px;font-weight:600;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">Email</p>
+                <a href="mailto:info@dentalcarepro.com"
+                   style="font-size:13.5px;color:rgba(255,255,255,0.8);text-decoration:none;transition:color .18s;"
+                   onmouseover="this.style.color='#86efac';" onmouseout="this.style.color='rgba(255,255,255,0.8)';">
+                  info@dentalcarepro.com
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- /pub-footer-grid -->
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       BOTTOM — Copyright bar
+  ══════════════════════════════════════════════ -->
+  <div style="border-top:1px solid rgba(255,255,255,0.08);padding:18px 0;position:relative;z-index:1;">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between flex-wrap" style="gap:12px;">
+        <p style="font-size:13px;color:rgba(255,255,255,0.45);margin:0;">
+          &copy; DentalCare 2026 &nbsp;|&nbsp; All Rights Reserved
+        </p>
+        <div class="flex items-center" style="gap:24px;">
+          <a href="#"
+             style="font-size:13px;color:rgba(255,255,255,0.45);text-decoration:none;transition:color .18s;"
+             onmouseover="this.style.color='#86efac';" onmouseout="this.style.color='rgba(255,255,255,0.45)';">
+            Terms &amp; Condition
+          </a>
+          <a href="#"
+             style="font-size:13px;color:rgba(255,255,255,0.45);text-decoration:none;transition:color .18s;"
+             onmouseover="this.style.color='#86efac';" onmouseout="this.style.color='rgba(255,255,255,0.45)';">
+            Privacy Policy
+          </a>
+          <a href="#"
+             style="font-size:13px;color:rgba(255,255,255,0.45);text-decoration:none;transition:color .18s;"
+             onmouseover="this.style.color='#86efac';" onmouseout="this.style.color='rgba(255,255,255,0.45)';">
+            Contact Us
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</footer>

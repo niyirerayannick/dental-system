@@ -17,8 +17,18 @@ from .forms import DentistEditForm, DentistForm
 from .models import DentistProfile
 
 
+def _dashboard_base_ctx(user):
+    from notifications.models import Notification
+    if user.role == User.Role.RECEPTIONIST:
+        return {
+            "base_template": "dashboard/receptionist_base.html",
+            "unread_count": Notification.objects.filter(user=user, is_read=False).count(),
+        }
+    return {"base_template": "dashboard/base.html"}
+
+
 def filtered_dentists(request):
-    qs = DentistProfile.objects.select_related("user")
+    qs = DentistProfile.objects.select_related("user").prefetch_related("day_schedules")
     q = request.GET.get("q", "").strip()
     if q:
         qs = qs.filter(Q(user__first_name__icontains=q) | Q(user__last_name__icontains=q) | Q(user__email__icontains=q) | Q(user__phone__icontains=q) | Q(license_number__icontains=q))
@@ -51,7 +61,8 @@ def dentist_list(request):
         {"label": "Specialists", "value": dentists.exclude(specialization="").count(), "icon": "medical_services"},
         {"label": "Appointments Today", "value": Appointment.objects.filter(appointment_date=today).count(), "icon": "calendar_today"},
     ]
-    return render(request, "dentists/dentist_list.html", {
+    ctx = _dashboard_base_ctx(request.user)
+    ctx.update({
         "dentists": dentists,
         "form": form,
         "edit_form": edit_form,
@@ -60,6 +71,7 @@ def dentist_list(request):
         "edit_modal_open": edit_modal_open,
         "kpis": kpis,
     })
+    return render(request, "dentists/dentist_list.html", ctx)
 
 
 @require_POST
@@ -92,6 +104,17 @@ def dentist_edit(request, pk):
 
 
 def dentist_payload(dentist):
+    day_schedules = {}
+    for sched in dentist.day_schedules.all():
+        day_schedules[sched.day] = {
+            "start": sched.start_time.strftime("%H:%M"),
+            "end": sched.end_time.strftime("%H:%M"),
+            "break_start": sched.break_start.strftime("%H:%M") if sched.break_start else "",
+            "break_end": sched.break_end.strftime("%H:%M") if sched.break_end else "",
+        }
+    working_days = list(day_schedules.keys()) if day_schedules else [
+        d.strip().lower() for d in dentist.available_days.split(",") if d.strip()
+    ]
     return {
         "id": dentist.pk,
         "first_name": dentist.user.first_name,
@@ -100,30 +123,25 @@ def dentist_payload(dentist):
         "phone": dentist.user.phone,
         "specialization": dentist.specialization,
         "license_number": dentist.license_number,
-        "available_days": [day.strip() for day in dentist.available_days.split(",") if day.strip()],
-        "available_from": dentist.available_from.strftime("%H:%M"),
-        "available_to": dentist.available_to.strftime("%H:%M"),
         "appointment_duration": dentist.appointment_duration,
         "max_patients_per_day": dentist.max_patients_per_day,
-        "break_start_time": dentist.break_start_time.strftime("%H:%M") if dentist.break_start_time else "",
-        "break_end_time": dentist.break_end_time.strftime("%H:%M") if dentist.break_end_time else "",
         "is_available": dentist.is_available,
         "is_active": dentist.user.is_active,
+        "day_schedules": day_schedules,
         "display": {
             "dentist": str(dentist),
             "email": dentist.user.email,
             "phone": dentist.user.phone or "-",
             "specialization": dentist.specialization or "-",
             "license": dentist.license_number,
-            "days": dentist.available_days,
-            "schedule": f"{dentist.available_from:%H:%M}-{dentist.available_to:%H:%M}",
+            "days": ", ".join(d.capitalize() for d in working_days),
         },
     }
 
 
 @role_required(User.Role.ADMIN)
 def dentist_json(request, pk):
-    dentist = get_object_or_404(DentistProfile.objects.select_related("user"), pk=pk)
+    dentist = get_object_or_404(DentistProfile.objects.select_related("user").prefetch_related("day_schedules"), pk=pk)
     return JsonResponse({"ok": True, "record": dentist_payload(dentist)})
 
 

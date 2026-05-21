@@ -7,7 +7,44 @@ from django.utils import timezone
 BOOKED_STATUSES = ("pending", "approved", "completed")
 
 
+# ── Per-day schedule helpers ────────────────────────────────────────────────
+
+def get_day_schedule(dentist, date_value):
+    """Return DentistDaySchedule for the weekday of date_value, or None."""
+    day_name = date_value.strftime("%A").lower()
+    return dentist.day_schedules.filter(day=day_name).first()
+
+
+def _day_start(dentist, date_value):
+    sched = get_day_schedule(dentist, date_value)
+    return sched.start_time if sched else dentist.available_from
+
+
+def _day_end(dentist, date_value):
+    sched = get_day_schedule(dentist, date_value)
+    return sched.end_time if sched else dentist.available_to
+
+
+def _day_break_start(dentist, date_value):
+    sched = get_day_schedule(dentist, date_value)
+    if sched:
+        return sched.break_start
+    return dentist.break_start_time
+
+
+def _day_break_end(dentist, date_value):
+    sched = get_day_schedule(dentist, date_value)
+    if sched:
+        return sched.break_end
+    return dentist.break_end_time
+
+
+# ── Legacy helpers (kept for fallback) ──────────────────────────────────────
+
 def dentist_available_days(dentist):
+    """Return set of lowercase day names from day_schedules or old available_days field."""
+    if dentist.day_schedules.exists():
+        return set(dentist.day_schedules.values_list("day", flat=True))
     return {day.strip().lower() for day in dentist.available_days.split(",") if day.strip()}
 
 
@@ -15,23 +52,33 @@ def is_dentist_active(dentist):
     return bool(dentist and dentist.user.role == dentist.user.Role.DENTIST and dentist.user.is_active and dentist.is_available)
 
 
+def is_working_date(dentist, date_value):
+    day_name = date_value.strftime("%A").lower()
+    if dentist.day_schedules.exists():
+        return dentist.day_schedules.filter(day=day_name).exists()
+    return day_name in dentist_available_days(dentist)
+
+
+# ── Slot generation ──────────────────────────────────────────────────────────
+
 def slot_time_range(date_value, time_value, duration_minutes):
     start = datetime.combine(date_value, time_value)
     return start, start + timedelta(minutes=duration_minutes)
 
 
 def time_overlaps_break(dentist, date_value, time_value):
-    if not dentist.break_start_time or not dentist.break_end_time:
+    bstart = _day_break_start(dentist, date_value)
+    bend = _day_break_end(dentist, date_value)
+    if not bstart or not bend:
         return False
     slot_start, slot_end = slot_time_range(date_value, time_value, dentist.appointment_duration)
-    break_start = datetime.combine(date_value, dentist.break_start_time)
-    break_end = datetime.combine(date_value, dentist.break_end_time)
+    break_start = datetime.combine(date_value, bstart)
+    break_end = datetime.combine(date_value, bend)
     return slot_start < break_end and slot_end > break_start
 
 
 def booked_appointments(dentist, date_value):
     from .models import Appointment
-
     return Appointment.objects.filter(
         dentist=dentist,
         appointment_date=date_value,
@@ -57,18 +104,16 @@ def is_fully_booked(dentist, date_value, exclude_pk=None):
     return booked_count(dentist, date_value, exclude_pk=exclude_pk) >= dentist.max_patients_per_day
 
 
-def is_working_date(dentist, date_value):
-    return date_value.strftime("%A").lower() in dentist_available_days(dentist)
-
-
 def generate_time_slots(dentist, date_value, include_booked=False, exclude_pk=None):
     if not is_dentist_active(dentist) or not is_working_date(dentist, date_value):
         return []
 
     booked = booked_times(dentist, date_value, exclude_pk=exclude_pk)
     now = timezone.localtime()
-    cursor = datetime.combine(date_value, dentist.available_from)
-    end = datetime.combine(date_value, dentist.available_to)
+    day_start = _day_start(dentist, date_value)
+    day_end = _day_end(dentist, date_value)
+    cursor = datetime.combine(date_value, day_start)
+    end = datetime.combine(date_value, day_end)
     step = timedelta(minutes=dentist.appointment_duration)
     slots = []
 
@@ -91,6 +136,16 @@ def availability_summary(dentist, days=60):
     available_dates = []
     fully_booked_dates = []
 
+    # Build per-day schedule info for API response
+    day_schedules = {}
+    for sched in dentist.day_schedules.all():
+        day_schedules[sched.day] = {
+            "start": sched.start_time.strftime("%H:%M"),
+            "end": sched.end_time.strftime("%H:%M"),
+            "break_start": sched.break_start.strftime("%H:%M") if sched.break_start else None,
+            "break_end": sched.break_end.strftime("%H:%M") if sched.break_end else None,
+        }
+
     for offset in range(days):
         date_value = today + timedelta(days=offset)
         iso_date = date_value.isoformat()
@@ -103,12 +158,9 @@ def availability_summary(dentist, days=60):
 
     return {
         "available_days": sorted(dentist_available_days(dentist)),
-        "available_from": dentist.available_from.strftime("%H:%M"),
-        "available_to": dentist.available_to.strftime("%H:%M"),
+        "day_schedules": day_schedules,
         "appointment_duration": dentist.appointment_duration,
         "max_patients_per_day": dentist.max_patients_per_day,
-        "break_start_time": dentist.break_start_time.strftime("%H:%M") if dentist.break_start_time else None,
-        "break_end_time": dentist.break_end_time.strftime("%H:%M") if dentist.break_end_time else None,
         "is_available": is_dentist_active(dentist),
         "fully_booked_dates": fully_booked_dates,
         "available_dates_next_60_days": available_dates,
@@ -136,8 +188,8 @@ def validate_appointment_slot(appointment):
     if dentist and date_value and time_value:
         now = timezone.localtime()
         slot_start, slot_end = slot_time_range(date_value, time_value, dentist.appointment_duration)
-        work_start = datetime.combine(date_value, dentist.available_from)
-        work_end = datetime.combine(date_value, dentist.available_to)
+        work_start = datetime.combine(date_value, _day_start(dentist, date_value))
+        work_end = datetime.combine(date_value, _day_end(dentist, date_value))
         if date_value == now.date() and slot_start <= now.replace(tzinfo=None):
             errors["appointment_time"] = "Appointment time cannot be in the past."
         elif slot_start < work_start or slot_end > work_end:

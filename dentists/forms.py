@@ -4,18 +4,21 @@ from django.db import transaction
 from django.utils.crypto import get_random_string
 
 from accounts.models import User
-from .models import DentistProfile
+from .models import DentistDaySchedule, DentistProfile, WEEKDAYS
+
+_TIME_INPUT = {"type": "time"}
+_FIELD_CLS = (
+    "w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm "
+    "focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100"
+)
 
 
-DAY_CHOICES = [
-    ("Monday", "Monday"),
-    ("Tuesday", "Tuesday"),
-    ("Wednesday", "Wednesday"),
-    ("Thursday", "Thursday"),
-    ("Friday", "Friday"),
-    ("Saturday", "Saturday"),
-    ("Sunday", "Sunday"),
-]
+def _time_field(**kwargs):
+    return forms.TimeField(
+        required=False,
+        widget=forms.TimeInput(attrs={"type": "time", "class": _FIELD_CLS}),
+        **kwargs,
+    )
 
 
 class DentistForm(forms.Form):
@@ -25,19 +28,50 @@ class DentistForm(forms.Form):
     phone = forms.CharField(max_length=30, required=False)
     specialization = forms.CharField(max_length=120)
     license_number = forms.CharField(max_length=80)
-    available_days = forms.MultipleChoiceField(
-        choices=DAY_CHOICES,
-        widget=forms.CheckboxSelectMultiple,
-        help_text="Choose the days this dentist accepts appointments.",
-    )
-    available_from = forms.TimeField(widget=forms.TimeInput(attrs={"type": "time"}))
-    available_to = forms.TimeField(widget=forms.TimeInput(attrs={"type": "time"}))
     appointment_duration = forms.IntegerField(min_value=5, initial=30, help_text="Minutes per appointment.")
     max_patients_per_day = forms.IntegerField(min_value=1, initial=12)
-    break_start_time = forms.TimeField(required=False, widget=forms.TimeInput(attrs={"type": "time"}))
-    break_end_time = forms.TimeField(required=False, widget=forms.TimeInput(attrs={"type": "time"}))
     is_available = forms.BooleanField(required=False, initial=True)
     is_active = forms.BooleanField(required=False, initial=True)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name in ("first_name", "last_name", "email", "phone",
+                     "specialization", "license_number",
+                     "appointment_duration", "max_patients_per_day"):
+            self.fields[name].widget.attrs["class"] = _FIELD_CLS
+        for day in WEEKDAYS:
+            self.fields[f"{day}_working"] = forms.BooleanField(required=False, label=day.capitalize())
+            self.fields[f"{day}_start"] = _time_field(label="Start")
+            self.fields[f"{day}_end"] = _time_field(label="End")
+            self.fields[f"{day}_break_start"] = _time_field(label="Break start")
+            self.fields[f"{day}_break_end"] = _time_field(label="Break end")
+
+    def clean(self):
+        cleaned = super().clean()
+        any_working = False
+        for day in WEEKDAYS:
+            if not cleaned.get(f"{day}_working"):
+                continue
+            any_working = True
+            start = cleaned.get(f"{day}_start")
+            end = cleaned.get(f"{day}_end")
+            bstart = cleaned.get(f"{day}_break_start")
+            bend = cleaned.get(f"{day}_break_end")
+            if not start:
+                self.add_error(f"{day}_start", "Start time required.")
+            if not end:
+                self.add_error(f"{day}_end", "End time required.")
+            if start and end:
+                if start >= end:
+                    self.add_error(f"{day}_end", "End must be after start.")
+                if bstart and bend:
+                    if bstart >= bend:
+                        self.add_error(f"{day}_break_end", "Break end must be after break start.")
+                    elif not (start <= bstart < bend <= end):
+                        self.add_error(f"{day}_break_start", "Break must be within working hours.")
+        if not any_working:
+            raise forms.ValidationError("Select at least one working day.")
+        return cleaned
 
     def clean_email(self):
         email = get_user_model().objects.normalize_email(self.cleaned_data["email"]).lower()
@@ -46,24 +80,23 @@ class DentistForm(forms.Form):
         return email
 
     def clean_license_number(self):
-        license_number = self.cleaned_data["license_number"]
-        if DentistProfile.objects.filter(license_number=license_number).exists():
+        ln = self.cleaned_data["license_number"]
+        if DentistProfile.objects.filter(license_number=ln).exists():
             raise forms.ValidationError("A dentist with this license number already exists.")
-        return license_number
+        return ln
 
-    def clean(self):
-        cleaned_data = super().clean()
-        if cleaned_data.get("available_from") and cleaned_data.get("available_to"):
-            if cleaned_data["available_from"] >= cleaned_data["available_to"]:
-                self.add_error("available_to", "Available to must be later than available from.")
-        if cleaned_data.get("break_start_time") and cleaned_data.get("break_end_time"):
-            if cleaned_data["break_start_time"] >= cleaned_data["break_end_time"]:
-                self.add_error("break_end_time", "Break end time must be later than break start time.")
-            elif cleaned_data.get("available_from") and cleaned_data.get("available_to") and not (
-                cleaned_data["available_from"] <= cleaned_data["break_start_time"] < cleaned_data["break_end_time"] <= cleaned_data["available_to"]
-            ):
-                self.add_error("break_start_time", "Break time must be inside working hours.")
-        return cleaned_data
+    def _save_day_schedules(self, profile):
+        profile.day_schedules.all().delete()
+        for day in WEEKDAYS:
+            if self.cleaned_data.get(f"{day}_working"):
+                DentistDaySchedule.objects.create(
+                    dentist=profile,
+                    day=day,
+                    start_time=self.cleaned_data[f"{day}_start"],
+                    end_time=self.cleaned_data[f"{day}_end"],
+                    break_start=self.cleaned_data.get(f"{day}_break_start") or None,
+                    break_end=self.cleaned_data.get(f"{day}_break_end") or None,
+                )
 
     @transaction.atomic
     def save(self):
@@ -77,33 +110,16 @@ class DentistForm(forms.Form):
             is_active=self.cleaned_data.get("is_active", False),
         )
         profile = DentistProfile.ensure_for_user(user)
-        for field in [
-            "specialization",
-            "license_number",
-            "available_from",
-            "available_to",
-            "appointment_duration",
-            "max_patients_per_day",
-            "break_start_time",
-            "break_end_time",
-            "is_available",
-        ]:
-            setattr(profile, field, self.cleaned_data[field])
-        profile.available_days = ",".join(self.cleaned_data["available_days"])
-        profile.save(
-            update_fields=[
-                "specialization",
-                "license_number",
-                "available_days",
-                "available_from",
-                "available_to",
-                "appointment_duration",
-                "max_patients_per_day",
-                "break_start_time",
-                "break_end_time",
-                "is_available",
-            ]
-        )
+        profile.specialization = self.cleaned_data["specialization"]
+        profile.license_number = self.cleaned_data["license_number"]
+        profile.appointment_duration = self.cleaned_data["appointment_duration"]
+        profile.max_patients_per_day = self.cleaned_data["max_patients_per_day"]
+        profile.is_available = self.cleaned_data.get("is_available", True)
+        profile.save(update_fields=[
+            "specialization", "license_number",
+            "appointment_duration", "max_patients_per_day", "is_available",
+        ])
+        self._save_day_schedules(profile)
         return profile
 
 
@@ -119,16 +135,18 @@ class DentistEditForm(DentistForm):
                 "phone": instance.user.phone,
                 "specialization": instance.specialization,
                 "license_number": instance.license_number,
-                "available_days": [day.strip() for day in instance.available_days.split(",") if day.strip()],
-                "available_from": instance.available_from,
-                "available_to": instance.available_to,
                 "appointment_duration": instance.appointment_duration,
                 "max_patients_per_day": instance.max_patients_per_day,
-                "break_start_time": instance.break_start_time,
-                "break_end_time": instance.break_end_time,
                 "is_available": instance.is_available,
                 "is_active": instance.user.is_active,
             })
+            for sched in instance.day_schedules.all():
+                d = sched.day
+                initial[f"{d}_working"] = True
+                initial[f"{d}_start"] = sched.start_time
+                initial[f"{d}_end"] = sched.end_time
+                initial[f"{d}_break_start"] = sched.break_start
+                initial[f"{d}_break_end"] = sched.break_end
         super().__init__(*args, initial=initial, **kwargs)
 
     def clean_email(self):
@@ -141,13 +159,13 @@ class DentistEditForm(DentistForm):
         return email
 
     def clean_license_number(self):
-        license_number = self.cleaned_data["license_number"]
-        qs = DentistProfile.objects.filter(license_number=license_number)
+        ln = self.cleaned_data["license_number"]
+        qs = DentistProfile.objects.filter(license_number=ln)
         if self.instance:
             qs = qs.exclude(pk=self.instance.pk)
         if qs.exists():
             raise forms.ValidationError("A dentist with this license number already exists.")
-        return license_number
+        return ln
 
     @transaction.atomic
     def save(self):
@@ -161,31 +179,14 @@ class DentistEditForm(DentistForm):
         user.is_active = self.cleaned_data.get("is_active", False)
         user.save(update_fields=["first_name", "last_name", "email", "phone", "role", "is_active"])
 
-        for field in [
-            "specialization",
-            "license_number",
-            "available_from",
-            "available_to",
-            "appointment_duration",
-            "max_patients_per_day",
-            "break_start_time",
-            "break_end_time",
-            "is_available",
-        ]:
-            setattr(profile, field, self.cleaned_data[field])
-        profile.available_days = ",".join(self.cleaned_data["available_days"])
-        profile.save(
-            update_fields=[
-                "specialization",
-                "license_number",
-                "available_days",
-                "available_from",
-                "available_to",
-                "appointment_duration",
-                "max_patients_per_day",
-                "break_start_time",
-                "break_end_time",
-                "is_available",
-            ]
-        )
+        profile.specialization = self.cleaned_data["specialization"]
+        profile.license_number = self.cleaned_data["license_number"]
+        profile.appointment_duration = self.cleaned_data["appointment_duration"]
+        profile.max_patients_per_day = self.cleaned_data["max_patients_per_day"]
+        profile.is_available = self.cleaned_data.get("is_available", True)
+        profile.save(update_fields=[
+            "specialization", "license_number",
+            "appointment_duration", "max_patients_per_day", "is_available",
+        ])
+        self._save_day_schedules(profile)
         return profile

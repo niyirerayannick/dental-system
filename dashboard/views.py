@@ -280,43 +280,56 @@ def update_appointment_status(request, pk, status):
     return redirect(redirect_url)
 
 
+def _receptionist_ctx(user):
+    from notifications.models import Notification
+    from django.utils import timezone as tz
+
+    today = tz.localdate()
+    today_count = Appointment.objects.filter(appointment_date=today).count()
+    pending_count = Appointment.objects.filter(status=Appointment.Status.PENDING).count()
+    registered_patients = PatientProfile.objects.count()
+    unpaid_count = Invoice.objects.filter(status=Invoice.Status.UNPAID).count()
+    unread_count = Notification.objects.filter(user=user, is_read=False).count()
+    return {
+        "unread_count": unread_count,
+        "kpis": [
+            {"label": "Today's Appointments", "value": today_count, "icon": "event_available"},
+            {"label": "Pending Requests", "value": pending_count, "icon": "pending_actions"},
+            {"label": "Registered Patients", "value": registered_patients, "icon": "groups"},
+            {"label": "Unpaid Invoices", "value": unpaid_count, "icon": "receipt_long"},
+        ],
+        "today": today,
+        "status_choices": Appointment.Status.choices,
+    }
+
+
 @role_required(User.Role.RECEPTIONIST)
 def receptionist_dashboard(request):
-    from notifications.models import Notification
     from django.utils import timezone as tz
 
     today = tz.localdate()
     appt_open = False
     patient_open = False
 
-    today_appts_qs = Appointment.objects.filter(appointment_date=today)
-    pending_qs = Appointment.objects.filter(status=Appointment.Status.PENDING)
-    unpaid_qs = Invoice.objects.filter(status=Invoice.Status.UNPAID)
-    registered_patients = PatientProfile.objects.count()
-
     today_schedule = (
-        today_appts_qs
+        Appointment.objects.filter(appointment_date=today)
         .select_related("patient__user", "dentist__user")
         .order_by("appointment_time")
     )
     pending_appointments = (
-        pending_qs
+        Appointment.objects.filter(status=Appointment.Status.PENDING)
         .select_related("patient__user", "dentist__user")
-        .order_by("appointment_date", "appointment_time")[:15]
+        .order_by("appointment_date", "appointment_time")[:5]
     )
     recent_patients = (
         PatientProfile.objects.select_related("user")
-        .order_by("-user__date_joined")[:10]
+        .order_by("-user__date_joined")[:6]
     )
     recent_invoices = (
         Invoice.objects
         .select_related("patient__user", "appointment")
-        .order_by("-created_at")[:10]
+        .order_by("-created_at")[:6]
     )
-
-    notifications_qs = Notification.objects.filter(user=request.user)
-    unread_count = notifications_qs.filter(is_read=False).count()
-    notifications = notifications_qs[:8]
 
     appointment_form = AppointmentManageForm(prefix="appointment")
     patient_form = PatientRegistrationForm(prefix="patient")
@@ -338,30 +351,40 @@ def receptionist_dashboard(request):
                 messages.success(request, "Patient registered successfully.")
                 return redirect("dashboard:receptionist")
 
-    return render(
-        request,
-        "dashboard/receptionist.html",
-        {
-            "today_schedule": today_schedule,
-            "pending_appointments": pending_appointments,
-            "recent_patients": recent_patients,
-            "recent_invoices": recent_invoices,
-            "appointment_form": appointment_form,
-            "patient_form": patient_form,
-            "appt_open": appt_open,
-            "patient_open": patient_open,
-            "notifications": notifications,
-            "unread_count": unread_count,
-            "kpis": [
-                {"label": "Today's Appointments", "value": today_appts_qs.count(), "icon": "event_available"},
-                {"label": "Pending Requests", "value": pending_qs.count(), "icon": "pending_actions"},
-                {"label": "Registered Patients", "value": registered_patients, "icon": "groups"},
-                {"label": "Unpaid Invoices", "value": unpaid_qs.count(), "icon": "receipt_long"},
-            ],
-            "today": today,
-            "status_choices": Appointment.Status.choices,
-        },
+    # Appointment chart — last 6 months
+    from datetime import date as _date
+    chart_labels, chart_booked, chart_completed = [], [], []
+    for i in range(5, -1, -1):
+        m = today.month - i
+        y = today.year + (m - 1) // 12
+        m = ((m - 1) % 12) + 1
+        mo_start = _date(y, m, 1)
+        mo_end = _date(y + (m // 12), (m % 12) + 1, 1)
+        qs = Appointment.objects.filter(appointment_date__gte=mo_start, appointment_date__lt=mo_end)
+        chart_labels.append(mo_start.strftime("%b"))
+        chart_booked.append(qs.count())
+        chart_completed.append(qs.filter(status=Appointment.Status.COMPLETED).count())
+
+    invoice_stats = Invoice.objects.aggregate(
+        paid=Count("id", filter=Q(status=Invoice.Status.PAID)),
+        unpaid=Count("id", filter=Q(status=Invoice.Status.UNPAID)),
+        cancelled=Count("id", filter=Q(status=Invoice.Status.CANCELLED)),
     )
+
+    ctx = _receptionist_ctx(request.user)
+    ctx.update({
+        "today_schedule": today_schedule,
+        "pending_appointments": pending_appointments,
+        "recent_patients": recent_patients,
+        "recent_invoices": recent_invoices,
+        "appointment_form": appointment_form,
+        "patient_form": patient_form,
+        "appt_open": appt_open,
+        "patient_open": patient_open,
+        "invoice_stats": invoice_stats,
+        "appointment_chart": json.dumps({"labels": chart_labels, "booked": chart_booked, "completed": chart_completed}),
+    })
+    return render(request, "dashboard/receptionist.html", ctx)
 
 
 @role_required(User.Role.PATIENT)
@@ -553,6 +576,60 @@ def patient_invoices_page(request):
     ctx = _patient_ctx(request.user)
     ctx["invoices"] = invoices
     return render(request, "dashboard/patient/invoices.html", ctx)
+
+
+@role_required(User.Role.RECEPTIONIST)
+def receptionist_appointments_page(request):
+    from django.utils import timezone as tz
+
+    today = tz.localdate()
+    appt_open = False
+
+    today_schedule = (
+        Appointment.objects.filter(appointment_date=today)
+        .select_related("patient__user", "dentist__user")
+        .order_by("appointment_time")
+    )
+    pending_appointments = (
+        Appointment.objects.filter(status=Appointment.Status.PENDING)
+        .select_related("patient__user", "dentist__user")
+        .order_by("appointment_date", "appointment_time")
+    )
+
+    appointment_form = AppointmentManageForm(prefix="appointment")
+
+    if request.method == "POST" and request.POST.get("form_type") == "appointment":
+        appt_open = True
+        appointment_form = AppointmentManageForm(request.POST, prefix="appointment")
+        if appointment_form.is_valid():
+            appointment_form.save()
+            messages.success(request, "Appointment created successfully.")
+            return redirect("dashboard:receptionist_appointments")
+
+    ctx = _receptionist_ctx(request.user)
+    ctx.update({
+        "today_schedule": today_schedule,
+        "pending_appointments": pending_appointments,
+        "appointment_form": appointment_form,
+        "appt_open": appt_open,
+    })
+    return render(request, "dashboard/receptionist/appointments.html", ctx)
+
+
+@role_required(User.Role.RECEPTIONIST)
+def receptionist_notifications_page(request):
+    from notifications.models import Notification
+
+    notifications_qs = Notification.objects.filter(user=request.user).order_by("-created_at")
+    ctx = _receptionist_ctx(request.user)
+    ctx["notifications"] = notifications_qs
+    return render(request, "dashboard/receptionist/notifications.html", ctx)
+
+
+@role_required(User.Role.RECEPTIONIST)
+def receptionist_profile_page(request):
+    ctx = _receptionist_ctx(request.user)
+    return render(request, "dashboard/receptionist/profile.html", ctx)
 
 
 @role_required(User.Role.PATIENT)

@@ -51,11 +51,11 @@
       <!-- Nav -->
       <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1 text-sm font-medium">
         <a href="{% url 'dashboard:receptionist' %}"
-           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-green-50 hover:text-green-700">
+           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {% if request.resolver_match.url_name == 'receptionist' %}bg-green-50 font-semibold text-green-700{% else %}text-gray-600 hover:bg-green-50 hover:text-green-700{% endif %}">
           <span class="material-symbols-rounded w-8 text-center text-green-700">dashboard</span> Dashboard
         </a>
-        <a href="#appointments"
-           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-green-50 hover:text-green-700">
+        <a href="{% url 'dashboard:receptionist_appointments' %}"
+           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {% if request.resolver_match.url_name == 'receptionist_appointments' %}bg-green-50 font-semibold text-green-700{% else %}text-gray-600 hover:bg-green-50 hover:text-green-700{% endif %}">
           <span class="material-symbols-rounded w-8 text-center text-green-700">calendar_month</span> Appointments
         </a>
         <a href="{% url 'patients:list' %}"
@@ -70,8 +70,8 @@
            class="flex items-center gap-3 rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-green-50 hover:text-green-700">
           <span class="material-symbols-rounded w-8 text-center text-green-700">receipt_long</span> Billing
         </a>
-        <a href="#notifications"
-           class="flex items-center justify-between rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-green-50 hover:text-green-700">
+        <a href="{% url 'dashboard:receptionist_notifications' %}"
+           class="flex items-center justify-between rounded-2xl px-4 py-3 transition {% if request.resolver_match.url_name == 'receptionist_notifications' %}bg-green-50 font-semibold text-green-700{% else %}text-gray-600 hover:bg-green-50 hover:text-green-700{% endif %}">
           <span class="flex items-center gap-3">
             <span class="material-symbols-rounded w-8 text-center text-green-700">notifications</span> Notifications
           </span>
@@ -79,8 +79,8 @@
           <span class="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-xs font-bold text-white">{{ unread_count }}</span>
           {% endif %}
         </a>
-        <a href="#profile"
-           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-green-50 hover:text-green-700">
+        <a href="{% url 'dashboard:receptionist_profile' %}"
+           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {% if request.resolver_match.url_name == 'receptionist_profile' %}bg-green-50 font-semibold text-green-700{% else %}text-gray-600 hover:bg-green-50 hover:text-green-700{% endif %}">
           <span class="material-symbols-rounded w-8 text-center text-green-700">person</span> My Profile
         </a>
       </nav>
@@ -115,7 +115,7 @@
           </div>
         </div>
         <div class="flex items-center gap-2 sm:gap-3">
-          <a href="#notifications"
+          <a href="{% url 'dashboard:receptionist_notifications' %}"
              class="relative flex h-10 w-10 items-center justify-center rounded-full text-gray-500 transition hover:bg-green-50 hover:text-green-700">
             <span class="material-symbols-rounded text-2xl">notifications</span>
             {% if unread_count > 0 %}
@@ -149,7 +149,7 @@
     {% endif %}
 
     <main class="flex-1 px-4 py-6 pb-6 sm:px-6 lg:px-8">
-      {% block receptionist_content %}{% endblock %}
+      {% block receptionist_content %}{% block dashboard_content %}{% endblock %}{% endblock %}
     </main>
 
   </div>
@@ -179,18 +179,6 @@
   if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
   if (receptionistBackdrop) receptionistBackdrop.addEventListener('click', closeSidebar);
 
-  document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
-    anchor.addEventListener('click', function(e) {
-      const id = this.getAttribute('href').slice(1);
-      const target = document.getElementById(id);
-      if (target) {
-        e.preventDefault();
-        closeSidebar();
-        const top = target.getBoundingClientRect().top + window.pageYOffset - 80;
-        window.scrollTo({ top, behavior: 'smooth' });
-      }
-    });
-  });
 </script>
 
 </body>

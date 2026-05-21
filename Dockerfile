@@ -16,8 +16,7 @@ RUN pip install --upgrade pip \
 
 COPY . .
 
-RUN chmod +x /app/entrypoint.sh \
-    && python manage.py collectstatic --noinput
+RUN chmod +x /app/entrypoint.sh
 
 EXPOSE 8000
 

@@ -17,6 +17,10 @@ def available_dentists():
 class AppointmentBookingForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        from services.models import DentalService
+        self.fields["service"].queryset = DentalService.objects.filter(is_active=True).select_related("category")
+        self.fields["service"].empty_label = "Select a service (optional)"
+        self.fields["service"].required = False
         self.fields["dentist"].queryset = available_dentists()
         self.fields["reason"].required = True
         base_classes = "w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm outline-none transition focus:border-green-500 focus:ring-4 focus:ring-green-100"
@@ -31,10 +35,11 @@ class AppointmentBookingForm(forms.ModelForm):
         self.fields["dentist"].widget.attrs["data-availability-dentist"] = "true"
         self.fields["appointment_date"].widget.attrs["data-availability-date"] = "true"
         self.fields["appointment_time"].widget.attrs["data-availability-time"] = "true"
+        self.fields["service"].widget.attrs["id"] = "id_service"
 
     class Meta:
         model = Appointment
-        fields = ["dentist", "appointment_date", "appointment_time", "reason", "notes"]
+        fields = ["service", "dentist", "appointment_date", "appointment_time", "reason", "notes"]
         widgets = {
             "appointment_date": forms.DateInput(attrs={"type": "date"}),
             "appointment_time": forms.TimeInput(attrs={"type": "time"}),
@@ -46,6 +51,12 @@ class AppointmentBookingForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+        svc = cleaned_data.get("service")
+        if svc:
+            cleaned_data.setdefault("estimated_cost", svc.base_price)
+            cleaned_data.setdefault("estimated_duration", svc.duration_minutes)
+            if not cleaned_data.get("reason"):
+                cleaned_data["reason"] = svc.name
         appointment = Appointment(
             dentist=cleaned_data.get("dentist"),
             appointment_date=cleaned_data.get("appointment_date"),
@@ -63,6 +74,16 @@ class AppointmentBookingForm(forms.ModelForm):
             else:
                 self.add_error(None, error)
         return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        svc = self.cleaned_data.get("service")
+        if svc:
+            instance.estimated_cost = svc.base_price
+            instance.estimated_duration = svc.duration_minutes
+        if commit:
+            instance.save()
+        return instance
 
 
 class AppointmentManageForm(forms.ModelForm):

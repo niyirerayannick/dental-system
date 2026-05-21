@@ -19,6 +19,7 @@ urlpatterns = [
     path("reports/", include("reports.urls")),
     path("settings/", include("clinic_settings.urls")),
     path("notifications/", include("notifications.urls")),
+    path("manage/services/", include("services.urls")),
 ]
 
 if settings.DEBUG:

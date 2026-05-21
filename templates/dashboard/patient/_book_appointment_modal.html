@@ -10,10 +10,11 @@
        role="dialog"
        aria-modal="true"
        aria-labelledby="bookAppointmentTitle">
+
     <div class="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-gray-100 bg-white px-5 py-5 sm:px-6">
       <div>
         <h2 id="bookAppointmentTitle" class="text-xl font-bold text-gray-900 sm:text-2xl">Book Appointment</h2>
-        <p class="mt-1 text-sm text-gray-500">Choose dentist, date, and time for your visit</p>
+        <p class="mt-1 text-sm text-gray-500">Select a service and choose your preferred date and dentist</p>
       </div>
       <button type="button"
               onclick="closeBookAppointmentModal()"
@@ -27,37 +28,116 @@
           action="{{ request.path }}"
           id="bookAppointmentForm"
           data-availability-form
-          class="grid gap-5 px-5 py-5 sm:px-6 md:grid-cols-2">
+          class="px-5 py-5 sm:px-6 space-y-5">
       {% csrf_token %}
       <input type="hidden" name="form_type" value="book_appointment">
 
       {% if booking_form.non_field_errors %}
-      <div class="md:col-span-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-        {% for error in booking_form.non_field_errors %}
-        <p>{{ error }}</p>
-        {% endfor %}
+      <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+        {% for error in booking_form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
       </div>
       {% endif %}
 
-      {% for field in booking_form %}
-      <div class="{% if field.name == 'reason' or field.name == 'notes' %}md:col-span-2{% endif %}">
-        <label for="{{ field.id_for_label }}" class="flex items-center gap-2 text-sm font-semibold text-gray-700">
-          <span class="material-symbols-rounded text-lg text-green-600">
-            {% if field.name == 'dentist' %}dentistry{% elif field.name == 'appointment_date' %}event{% elif field.name == 'appointment_time' %}schedule{% else %}edit_note{% endif %}
-          </span>
-          {{ field.label }}
+      {# ── STEP 1: Service Picker ── #}
+      <div>
+        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+          <span class="material-symbols-rounded text-lg text-green-600">medical_services</span>
+          Select Service
         </label>
-        <div class="mt-2">{{ field }}</div>
-        {% if field.help_text %}
-        <p class="mt-1 text-xs text-gray-400">{{ field.help_text }}</p>
-        {% endif %}
-        {% for error in field.errors %}
+        {{ booking_form.service }}
+        {% for error in booking_form.service.errors %}
         <p class="mt-1 text-sm font-medium text-red-600">{{ error }}</p>
         {% endfor %}
       </div>
-      {% endfor %}
 
-      <div class="flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 md:col-span-2 sm:flex-row sm:justify-end">
+      {# ── LIVE SUMMARY CARD ── #}
+      <div id="serviceSummaryCard"
+           class="hidden rounded-2xl border border-green-200 bg-green-50 px-4 py-4">
+        <p class="text-xs font-semibold uppercase tracking-wide text-green-600 mb-2">Selected Service</p>
+        <div class="flex items-start gap-3">
+          <span id="summaryIcon"
+                class="material-symbols-rounded flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-green-600 text-white text-xl">
+            medical_services
+          </span>
+          <div class="min-w-0 flex-1">
+            <p id="summaryName" class="font-bold text-gray-900 text-sm"></p>
+            <p id="summaryCategory" class="text-xs text-gray-500"></p>
+            <p id="summaryDescription" class="mt-1 text-xs text-gray-500 line-clamp-2"></p>
+          </div>
+        </div>
+        <div class="mt-3 flex gap-4">
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-rounded text-base text-green-600">schedule</span>
+            <span id="summaryDuration" class="text-sm font-semibold text-gray-800"></span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-rounded text-base text-green-600">payments</span>
+            <span id="summaryPrice" class="text-sm font-semibold text-gray-800"></span>
+          </div>
+        </div>
+      </div>
+
+      {# ── Dentist ── #}
+      <div>
+        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+          <span class="material-symbols-rounded text-lg text-green-600">dentistry</span>
+          {{ booking_form.dentist.label }}
+        </label>
+        {{ booking_form.dentist }}
+        {% for error in booking_form.dentist.errors %}
+        <p class="mt-1 text-sm font-medium text-red-600">{{ error }}</p>
+        {% endfor %}
+      </div>
+
+      {# ── Date & Time ── #}
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label class="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+            <span class="material-symbols-rounded text-lg text-green-600">event</span>
+            {{ booking_form.appointment_date.label }}
+          </label>
+          {{ booking_form.appointment_date }}
+          {% for error in booking_form.appointment_date.errors %}
+          <p class="mt-1 text-sm font-medium text-red-600">{{ error }}</p>
+          {% endfor %}
+        </div>
+        <div>
+          <label class="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+            <span class="material-symbols-rounded text-lg text-green-600">schedule</span>
+            {{ booking_form.appointment_time.label }}
+          </label>
+          {{ booking_form.appointment_time }}
+          {% for error in booking_form.appointment_time.errors %}
+          <p class="mt-1 text-sm font-medium text-red-600">{{ error }}</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      {# ── Reason ── #}
+      <div>
+        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+          <span class="material-symbols-rounded text-lg text-green-600">edit_note</span>
+          {{ booking_form.reason.label }}
+        </label>
+        {{ booking_form.reason }}
+        {% for error in booking_form.reason.errors %}
+        <p class="mt-1 text-sm font-medium text-red-600">{{ error }}</p>
+        {% endfor %}
+      </div>
+
+      {# ── Notes ── #}
+      <div>
+        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+          <span class="material-symbols-rounded text-lg text-green-600">sticky_note_2</span>
+          {{ booking_form.notes.label }}
+        </label>
+        {{ booking_form.notes }}
+        {% for error in booking_form.notes.errors %}
+        <p class="mt-1 text-sm font-medium text-red-600">{{ error }}</p>
+        {% endfor %}
+      </div>
+
+      <div class="flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 sm:flex-row sm:justify-end">
         <button type="button"
                 onclick="closeBookAppointmentModal()"
                 class="inline-flex items-center justify-center rounded-2xl border border-gray-200 px-5 py-3 text-sm font-bold text-gray-700 transition hover:bg-gray-50">
@@ -78,7 +158,7 @@
 <script>
   const bookAppointmentModal = document.getElementById('bookAppointmentModal');
   const bookAppointmentPanel = document.getElementById('bookAppointmentPanel');
-  const bookAppointmentForm = document.getElementById('bookAppointmentForm');
+  const bookAppointmentForm  = document.getElementById('bookAppointmentForm');
   const bookAppointmentSubmit = document.getElementById('bookAppointmentSubmit');
 
   function openBookAppointmentModal() {
@@ -99,8 +179,8 @@
     document.body.classList.remove('overflow-hidden');
   }
 
-  document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape' && bookAppointmentModal && bookAppointmentModal.getAttribute('aria-hidden') === 'false') {
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && bookAppointmentModal && bookAppointmentModal.getAttribute('aria-hidden') === 'false') {
       closeBookAppointmentModal();
     }
   });
@@ -108,7 +188,42 @@
   if (bookAppointmentForm && bookAppointmentSubmit) {
     bookAppointmentForm.addEventListener('submit', function() {
       bookAppointmentSubmit.disabled = true;
-      bookAppointmentSubmit.innerHTML = '<span class="material-symbols-rounded text-lg animate-spin">progress_activity</span><span>Submitting...</span>';
+      bookAppointmentSubmit.innerHTML = '<span class="material-symbols-rounded text-lg animate-spin">progress_activity</span><span>Submitting…</span>';
+    });
+  }
+
+  // ── Service live summary ─────────────────────────────────────────────────
+  const serviceSelect  = document.getElementById('id_service');
+  const summaryCard    = document.getElementById('serviceSummaryCard');
+  const summaryIcon    = document.getElementById('summaryIcon');
+  const summaryName    = document.getElementById('summaryName');
+  const summaryCategory = document.getElementById('summaryCategory');
+  const summaryDesc    = document.getElementById('summaryDescription');
+  const summaryDuration = document.getElementById('summaryDuration');
+  const summaryPrice   = document.getElementById('summaryPrice');
+  const reasonField    = document.querySelector('[name="reason"]');
+
+  if (serviceSelect) {
+    serviceSelect.addEventListener('change', function() {
+      const pk = this.value;
+      if (!pk) {
+        summaryCard.classList.add('hidden');
+        return;
+      }
+      fetch(`/services/api/${pk}/`)
+        .then(r => r.json())
+        .then(svc => {
+          summaryIcon.textContent     = svc.icon || 'medical_services';
+          summaryName.textContent     = svc.name;
+          summaryCategory.textContent = svc.category;
+          summaryDesc.textContent     = svc.description || '';
+          summaryDuration.textContent = svc.duration_minutes + ' min';
+          summaryPrice.textContent    = '$' + parseFloat(svc.base_price).toFixed(2);
+          if (reasonField && !reasonField.value) {
+            reasonField.value = svc.name;
+          }
+          summaryCard.classList.remove('hidden');
+        });
     });
   }
 </script>

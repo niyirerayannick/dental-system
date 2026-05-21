@@ -11,11 +11,20 @@ class Appointment(models.Model):
 
     patient = models.ForeignKey("patients.PatientProfile", on_delete=models.CASCADE, related_name="appointments")
     dentist = models.ForeignKey("dentists.DentistProfile", on_delete=models.PROTECT, related_name="appointments")
+    service = models.ForeignKey(
+        "services.DentalService",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="appointments",
+    )
     appointment_date = models.DateField()
     appointment_time = models.TimeField()
     reason = models.CharField(max_length=255, blank=True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     notes = models.TextField(blank=True)
+    estimated_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    estimated_duration = models.PositiveIntegerField(null=True, blank=True, help_text="Duration in minutes")
 
     class Meta:
         ordering = ["appointment_date", "appointment_time"]

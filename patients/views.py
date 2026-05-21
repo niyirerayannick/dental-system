@@ -93,6 +93,16 @@ def patient_kpis(patients):
         ]
 
 
+def _dashboard_base_ctx(user):
+    from notifications.models import Notification
+    if user.role == User.Role.RECEPTIONIST:
+        return {
+            "base_template": "dashboard/receptionist_base.html",
+            "unread_count": Notification.objects.filter(user=user, is_read=False).count(),
+        }
+    return {"base_template": "dashboard/base.html"}
+
+
 @role_required(User.Role.ADMIN, User.Role.DENTIST, User.Role.RECEPTIONIST)
 def patient_list(request):
     patient_form = PatientForm()
@@ -111,24 +121,22 @@ def patient_list(request):
         messages.error(request, "Please correct the patient form errors.")
 
     patients = base_patient_queryset(request)
-    return render(
-        request,
-        "patients/patient_list.html",
-        {
-            "kpis": patient_kpis(patients),
-            "patient_rows": build_patient_rows(patients),
-            "patient_form": patient_form,
-            "modal_open": modal_open,
-            "gender_choices": PatientProfile.Gender.choices,
-            "appointment_status_choices": Appointment.Status.choices,
-            "filters": {
-                "q": request.GET.get("q", ""),
-                "gender": request.GET.get("gender", ""),
-                "status": request.GET.get("status", ""),
-                "appointment_status": request.GET.get("appointment_status", ""),
-            },
+    ctx = _dashboard_base_ctx(request.user)
+    ctx.update({
+        "kpis": patient_kpis(patients),
+        "patient_rows": build_patient_rows(patients),
+        "patient_form": patient_form,
+        "modal_open": modal_open,
+        "gender_choices": PatientProfile.Gender.choices,
+        "appointment_status_choices": Appointment.Status.choices,
+        "filters": {
+            "q": request.GET.get("q", ""),
+            "gender": request.GET.get("gender", ""),
+            "status": request.GET.get("status", ""),
+            "appointment_status": request.GET.get("appointment_status", ""),
         },
-    )
+    })
+    return render(request, "patients/patient_list.html", ctx)
 
 
 @role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)

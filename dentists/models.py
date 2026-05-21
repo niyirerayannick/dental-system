@@ -89,3 +89,38 @@ class DentistProfile(models.Model):
 
         if errors:
             raise ValidationError(errors)
+
+
+WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+WEEKDAY_ORDER = {d: i for i, d in enumerate(WEEKDAYS)}
+
+
+class DentistDaySchedule(models.Model):
+    DAY_CHOICES = [(d, d.capitalize()) for d in WEEKDAYS]
+
+    dentist = models.ForeignKey(DentistProfile, on_delete=models.CASCADE, related_name="day_schedules")
+    day = models.CharField(max_length=10, choices=DAY_CHOICES)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    break_start = models.TimeField(null=True, blank=True)
+    break_end = models.TimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = [("dentist", "day")]
+
+    def __str__(self):
+        return f"{self.get_day_display()} {self.start_time:%H:%M}–{self.end_time:%H:%M}"
+
+    def clean(self):
+        errors = {}
+        if self.start_time and self.end_time and self.start_time >= self.end_time:
+            errors["end_time"] = "End time must be after start time."
+        if self.break_start and self.break_end:
+            if self.break_start >= self.break_end:
+                errors["break_end"] = "Break end must be after break start."
+            elif self.start_time and self.end_time and not (
+                self.start_time <= self.break_start < self.break_end <= self.end_time
+            ):
+                errors["break_start"] = "Break must be within working hours."
+        if errors:
+            raise ValidationError(errors)

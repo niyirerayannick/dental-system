@@ -1,0 +1,193 @@
+{# Weekly schedule editor — included in Add and Edit modals. Expects: form #}
+
+{# Desktop table #}
+<div class="hidden overflow-hidden rounded-2xl border border-gray-200 md:block">
+  <table class="w-full text-sm">
+    <thead class="bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
+      <tr>
+        <th class="px-4 py-2.5 text-left w-28">Day</th>
+        <th class="px-3 py-2.5 text-center w-16">Working</th>
+        <th class="px-3 py-2.5 text-left">Start</th>
+        <th class="px-3 py-2.5 text-left">End</th>
+        <th class="px-3 py-2.5 text-left">Break Start</th>
+        <th class="px-3 py-2.5 text-left">Break End</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+
+      {% with day="monday" %}
+      <tr class="hover:bg-green-50">
+        <td class="px-4 py-2.5 font-semibold text-gray-700">Monday</td>
+        <td class="px-3 py-2.5 text-center">{{ form.monday_working }}</td>
+        <td class="px-3 py-2.5">{{ form.monday_start }}{% if form.monday_start.errors %}<p class="text-xs text-red-600 mt-0.5">{{ form.monday_start.errors.0 }}</p>{% endif %}</td>
+        <td class="px-3 py-2.5">{{ form.monday_end }}{% if form.monday_end.errors %}<p class="text-xs text-red-600 mt-0.5">{{ form.monday_end.errors.0 }}</p>{% endif %}</td>
+        <td class="px-3 py-2.5">{{ form.monday_break_start }}</td>
+        <td class="px-3 py-2.5">{{ form.monday_break_end }}</td>
+      </tr>
+      {% endwith %}
+
+      {% with day="tuesday" %}
+      <tr class="hover:bg-green-50">
+        <td class="px-4 py-2.5 font-semibold text-gray-700">Tuesday</td>
+        <td class="px-3 py-2.5 text-center">{{ form.tuesday_working }}</td>
+        <td class="px-3 py-2.5">{{ form.tuesday_start }}{% if form.tuesday_start.errors %}<p class="text-xs text-red-600 mt-0.5">{{ form.tuesday_start.errors.0 }}</p>{% endif %}</td>
+        <td class="px-3 py-2.5">{{ form.tuesday_end }}{% if form.tuesday_end.errors %}<p class="text-xs text-red-600 mt-0.5">{{ form.tuesday_end.errors.0 }}</p>{% endif %}</td>
+        <td class="px-3 py-2.5">{{ form.tuesday_break_start }}</td>
+        <td class="px-3 py-2.5">{{ form.tuesday_break_end }}</td>
+      </tr>
+      {% endwith %}
+
+      {% with day="wednesday" %}
+      <tr class="hover:bg-green-50">
+        <td class="px-4 py-2.5 font-semibold text-gray-700">Wednesday</td>
+        <td class="px-3 py-2.5 text-center">{{ form.wednesday_working }}</td>
+        <td class="px-3 py-2.5">{{ form.wednesday_start }}{% if form.wednesday_start.errors %}<p class="text-xs text-red-600 mt-0.5">{{ form.wednesday_start.errors.0 }}</p>{% endif %}</td>
+        <td class="px-3 py-2.5">{{ form.wednesday_end }}{% if form.wednesday_end.errors %}<p class="text-xs text-red-600 mt-0.5">{{ form.wednesday_end.errors.0 }}</p>{% endif %}</td>
+        <td class="px-3 py-2.5">{{ form.wednesday_break_start }}</td>
+        <td class="px-3 py-2.5">{{ form.wednesday_break_end }}</td>
+      </tr>
+      {% endwith %}
+
+      {% with day="thursday" %}
+      <tr class="hover:bg-green-50">
+        <td class="px-4 py-2.5 font-semibold text-gray-700">Thursday</td>
+        <td class="px-3 py-2.5 text-center">{{ form.thursday_working }}</td>
+        <td class="px-3 py-2.5">{{ form.thursday_start }}{% if form.thursday_start.errors %}<p class="text-xs text-red-600 mt-0.5">{{ form.thursday_start.errors.0 }}</p>{% endif %}</td>
+        <td class="px-3 py-2.5">{{ form.thursday_end }}{% if form.thursday_end.errors %}<p class="text-xs text-red-600 mt-0.5">{{ form.thursday_end.errors.0 }}</p>{% endif %}</td>
+        <td class="px-3 py-2.5">{{ form.thursday_break_start }}</td>
+        <td class="px-3 py-2.5">{{ form.thursday_break_end }}</td>
+      </tr>
+      {% endwith %}
+
+      {% with day="friday" %}
+      <tr class="hover:bg-green-50">
+        <td class="px-4 py-2.5 font-semibold text-gray-700">Friday</td>
+        <td class="px-3 py-2.5 text-center">{{ form.friday_working }}</td>
+        <td class="px-3 py-2.5">{{ form.friday_start }}{% if form.friday_start.errors %}<p class="text-xs text-red-600 mt-0.5">{{ form.friday_start.errors.0 }}</p>{% endif %}</td>
+        <td class="px-3 py-2.5">{{ form.friday_end }}{% if form.friday_end.errors %}<p class="text-xs text-red-600 mt-0.5">{{ form.friday_end.errors.0 }}</p>{% endif %}</td>
+        <td class="px-3 py-2.5">{{ form.friday_break_start }}</td>
+        <td class="px-3 py-2.5">{{ form.friday_break_end }}</td>
+      </tr>
+      {% endwith %}
+
+      {% with day="saturday" %}
+      <tr class="hover:bg-green-50">
+        <td class="px-4 py-2.5 font-semibold text-gray-700">Saturday</td>
+        <td class="px-3 py-2.5 text-center">{{ form.saturday_working }}</td>
+        <td class="px-3 py-2.5">{{ form.saturday_start }}{% if form.saturday_start.errors %}<p class="text-xs text-red-600 mt-0.5">{{ form.saturday_start.errors.0 }}</p>{% endif %}</td>
+        <td class="px-3 py-2.5">{{ form.saturday_end }}{% if form.saturday_end.errors %}<p class="text-xs text-red-600 mt-0.5">{{ form.saturday_end.errors.0 }}</p>{% endif %}</td>
+        <td class="px-3 py-2.5">{{ form.saturday_break_start }}</td>
+        <td class="px-3 py-2.5">{{ form.saturday_break_end }}</td>
+      </tr>
+      {% endwith %}
+
+      {% with day="sunday" %}
+      <tr class="hover:bg-green-50">
+        <td class="px-4 py-2.5 font-semibold text-gray-700">Sunday</td>
+        <td class="px-3 py-2.5 text-center">{{ form.sunday_working }}</td>
+        <td class="px-3 py-2.5">{{ form.sunday_start }}{% if form.sunday_start.errors %}<p class="text-xs text-red-600 mt-0.5">{{ form.sunday_start.errors.0 }}</p>{% endif %}</td>
+        <td class="px-3 py-2.5">{{ form.sunday_end }}{% if form.sunday_end.errors %}<p class="text-xs text-red-600 mt-0.5">{{ form.sunday_end.errors.0 }}</p>{% endif %}</td>
+        <td class="px-3 py-2.5">{{ form.sunday_break_start }}</td>
+        <td class="px-3 py-2.5">{{ form.sunday_break_end }}</td>
+      </tr>
+      {% endwith %}
+
+    </tbody>
+  </table>
+</div>
+
+{# Mobile cards #}
+<div class="space-y-3 md:hidden">
+
+  <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+    <div class="mb-3 flex items-center justify-between">
+      <span class="font-bold text-gray-800">Monday</span>
+      <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">{{ form.monday_working }} Working</label>
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">Start</label>{{ form.monday_start }}</div>
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">End</label>{{ form.monday_end }}</div>
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">Break Start</label>{{ form.monday_break_start }}</div>
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">Break End</label>{{ form.monday_break_end }}</div>
+    </div>
+  </div>
+
+  <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+    <div class="mb-3 flex items-center justify-between">
+      <span class="font-bold text-gray-800">Tuesday</span>
+      <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">{{ form.tuesday_working }} Working</label>
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">Start</label>{{ form.tuesday_start }}</div>
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">End</label>{{ form.tuesday_end }}</div>
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">Break Start</label>{{ form.tuesday_break_start }}</div>
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">Break End</label>{{ form.tuesday_break_end }}</div>
+    </div>
+  </div>
+
+  <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+    <div class="mb-3 flex items-center justify-between">
+      <span class="font-bold text-gray-800">Wednesday</span>
+      <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">{{ form.wednesday_working }} Working</label>
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">Start</label>{{ form.wednesday_start }}</div>
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">End</label>{{ form.wednesday_end }}</div>
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">Break Start</label>{{ form.wednesday_break_start }}</div>
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">Break End</label>{{ form.wednesday_break_end }}</div>
+    </div>
+  </div>
+
+  <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+    <div class="mb-3 flex items-center justify-between">
+      <span class="font-bold text-gray-800">Thursday</span>
+      <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">{{ form.thursday_working }} Working</label>
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">Start</label>{{ form.thursday_start }}</div>
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">End</label>{{ form.thursday_end }}</div>
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">Break Start</label>{{ form.thursday_break_start }}</div>
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">Break End</label>{{ form.thursday_break_end }}</div>
+    </div>
+  </div>
+
+  <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+    <div class="mb-3 flex items-center justify-between">
+      <span class="font-bold text-gray-800">Friday</span>
+      <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">{{ form.friday_working }} Working</label>
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">Start</label>{{ form.friday_start }}</div>
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">End</label>{{ form.friday_end }}</div>
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">Break Start</label>{{ form.friday_break_start }}</div>
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">Break End</label>{{ form.friday_break_end }}</div>
+    </div>
+  </div>
+
+  <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+    <div class="mb-3 flex items-center justify-between">
+      <span class="font-bold text-gray-800">Saturday</span>
+      <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">{{ form.saturday_working }} Working</label>
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">Start</label>{{ form.saturday_start }}</div>
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">End</label>{{ form.saturday_end }}</div>
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">Break Start</label>{{ form.saturday_break_start }}</div>
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">Break End</label>{{ form.saturday_break_end }}</div>
+    </div>
+  </div>
+
+  <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+    <div class="mb-3 flex items-center justify-between">
+      <span class="font-bold text-gray-800">Sunday</span>
+      <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">{{ form.sunday_working }} Working</label>
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">Start</label>{{ form.sunday_start }}</div>
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">End</label>{{ form.sunday_end }}</div>
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">Break Start</label>{{ form.sunday_break_start }}</div>
+      <div><label class="text-xs font-semibold text-gray-500 mb-1 block">Break End</label>{{ form.sunday_break_end }}</div>
+    </div>
+  </div>
+
+</div>

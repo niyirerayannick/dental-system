@@ -15,6 +15,16 @@ from .forms import InvoiceForm
 from .models import Invoice
 
 
+def _dashboard_base_ctx(user):
+    from notifications.models import Notification
+    if user.role == User.Role.RECEPTIONIST:
+        return {
+            "base_template": "dashboard/receptionist_base.html",
+            "unread_count": Notification.objects.filter(user=user, is_read=False).count(),
+        }
+    return {"base_template": "dashboard/base.html"}
+
+
 def filtered_invoices(request):
     qs = Invoice.objects.select_related("patient__user", "appointment")
     q = request.GET.get("q", "").strip()
@@ -49,7 +59,9 @@ def invoice_list(request):
         {"label": "Unpaid Invoices", "value": invoices.filter(status=Invoice.Status.UNPAID).count(), "icon": "pending_actions"},
         {"label": "Cancelled Invoices", "value": invoices.filter(status=Invoice.Status.CANCELLED).count(), "icon": "cancel"},
     ]
-    return render(request, "billing/invoice_list.html", {"invoices": invoices, "form": form, "modal_open": modal_open, "kpis": kpis, "status_choices": Invoice.Status.choices})
+    ctx = _dashboard_base_ctx(request.user)
+    ctx.update({"invoices": invoices, "form": form, "modal_open": modal_open, "kpis": kpis, "status_choices": Invoice.Status.choices})
+    return render(request, "billing/invoice_list.html", ctx)
 
 
 @require_POST

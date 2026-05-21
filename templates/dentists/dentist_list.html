@@ -1,4 +1,4 @@
-{% extends "dashboard/base.html" %}
+{% extends base_template %}
 {% block title %}Dentists{% endblock %}
 
 {% block dashboard_content %}
@@ -9,12 +9,22 @@
     <p class="mt-2 text-sm text-gray-500">Manage dentist profiles, schedules, and specializations</p>
   </div>
   <div class="flex flex-wrap gap-2">
-    <a href="{% url 'dentists:export_pdf' %}?{{ request.GET.urlencode }}" class="inline-flex items-center gap-2 rounded-2xl border border-green-200 bg-white px-4 py-2.5 text-sm font-semibold text-green-700 shadow-sm hover:bg-green-50"><span class="material-symbols-rounded text-lg">picture_as_pdf</span> Export PDF</a>
-    <a href="{% url 'dentists:export_excel' %}?{{ request.GET.urlencode }}" class="inline-flex items-center gap-2 rounded-2xl border border-green-200 bg-white px-4 py-2.5 text-sm font-semibold text-green-700 shadow-sm hover:bg-green-50"><span class="material-symbols-rounded text-lg">table_view</span> Export Excel</a>
-    <button type="button" onclick="openModal()" class="inline-flex items-center gap-2 rounded-2xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-green-700"><span class="material-symbols-rounded text-lg">add_circle</span> Add New Dentist</button>
+    <a href="{% url 'dentists:export_pdf' %}?{{ request.GET.urlencode }}"
+       class="inline-flex items-center gap-2 rounded-2xl border border-green-200 bg-white px-4 py-2.5 text-sm font-semibold text-green-700 shadow-sm hover:bg-green-50">
+      <span class="material-symbols-rounded text-lg">picture_as_pdf</span> Export PDF
+    </a>
+    <a href="{% url 'dentists:export_excel' %}?{{ request.GET.urlencode }}"
+       class="inline-flex items-center gap-2 rounded-2xl border border-green-200 bg-white px-4 py-2.5 text-sm font-semibold text-green-700 shadow-sm hover:bg-green-50">
+      <span class="material-symbols-rounded text-lg">table_view</span> Export Excel
+    </a>
+    <button type="button" onclick="openModal()"
+            class="inline-flex items-center gap-2 rounded-2xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-green-700">
+      <span class="material-symbols-rounded text-lg">add_circle</span> Add New Dentist
+    </button>
   </div>
 </div>
 
+{# KPIs #}
 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
   {% for stat in kpis %}
   <div class="rounded-2xl bg-white p-4 shadow-sm hover:shadow-md">
@@ -29,54 +39,62 @@
   {% endfor %}
 </div>
 
+{# Filters #}
 <section class="mt-6 rounded-2xl bg-white p-5 shadow-sm">
   <form method="get" class="grid gap-4 lg:grid-cols-12 lg:items-end">
-    <div class="lg:col-span-5"><label class="flex items-center gap-2 text-sm font-semibold"><span class="material-symbols-rounded text-green-600">search</span>Search</label><input class="mt-2" name="q" value="{{ request.GET.q }}" placeholder="Name, email, phone, license"></div>
-    <div class="lg:col-span-3"><label class="block text-sm font-semibold">Specialization</label><input class="mt-2" name="specialization" value="{{ request.GET.specialization }}"></div>
-    <div class="lg:col-span-3"><label class="block text-sm font-semibold">Availability</label><input class="mt-2" name="availability" value="{{ request.GET.availability }}" placeholder="Monday"></div>
+    <div class="lg:col-span-5">
+      <label class="flex items-center gap-2 text-sm font-semibold"><span class="material-symbols-rounded text-green-600">search</span>Search</label>
+      <input class="mt-2 w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm" name="q" value="{{ request.GET.q }}" placeholder="Name, email, phone, license">
+    </div>
+    <div class="lg:col-span-3">
+      <label class="block text-sm font-semibold">Specialization</label>
+      <input class="mt-2 w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm" name="specialization" value="{{ request.GET.specialization }}">
+    </div>
+    <div class="lg:col-span-3">
+      <label class="block text-sm font-semibold">Availability</label>
+      <input class="mt-2 w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm" name="availability" value="{{ request.GET.availability }}" placeholder="Monday">
+    </div>
     <button class="rounded-2xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white">Filter</button>
   </form>
 </section>
 
+{# Dentist list #}
 <section class="mt-6 overflow-hidden rounded-2xl bg-white shadow-sm">
-  <div class="hidden grid-cols-8 gap-4 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 xl:grid">
-    <span>Dentist</span><span>Email</span><span>Phone</span><span>Specialization</span><span>License</span><span>Available Days</span><span>Schedule</span><span>Actions</span>
+  <div class="hidden grid-cols-7 gap-4 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 xl:grid">
+    <span>Dentist</span><span>Email</span><span>Phone</span><span>Specialization</span><span>License</span><span>Schedule</span><span>Actions</span>
   </div>
   <div class="divide-y divide-gray-100">
     {% for dentist in dentists %}
-    <div class="grid gap-4 px-5 py-4 hover:bg-green-50 xl:grid-cols-8 xl:items-center">
+    <div class="grid gap-4 px-5 py-4 hover:bg-green-50 xl:grid-cols-7 xl:items-center">
       <p class="font-semibold">{{ dentist }}</p>
       <p class="text-sm text-gray-600">{{ dentist.user.email }}</p>
       <p class="text-sm text-gray-600">{{ dentist.user.phone|default:"-" }}</p>
       <p class="text-sm text-gray-600">{{ dentist.specialization|default:"-" }}</p>
       <p class="text-sm text-gray-600">{{ dentist.license_number }}</p>
-      <p class="text-sm text-gray-600">{{ dentist.available_days }}</p>
-      <div class="text-sm text-gray-600">
-        <p>{{ dentist.available_from|time:"H:i" }}-{{ dentist.available_to|time:"H:i" }}</p>
-        <p class="text-xs text-gray-400">{{ dentist.appointment_duration }} min, max {{ dentist.max_patients_per_day }}/day</p>
-        {% if dentist.break_start_time and dentist.break_end_time %}<p class="text-xs text-gray-400">Break {{ dentist.break_start_time|time:"H:i" }}-{{ dentist.break_end_time|time:"H:i" }}</p>{% endif %}
-        <p class="text-xs font-semibold {% if dentist.user.is_active and dentist.is_available %}text-green-600{% else %}text-red-600{% endif %}">{% if dentist.user.is_active and dentist.is_available %}Available{% else %}Unavailable{% endif %}</p>
+
+      {# Per-day schedule summary #}
+      <div class="text-xs text-gray-600 space-y-0.5">
+        {% for sched in dentist.day_schedules.all %}
+        <div class="flex items-center gap-1">
+          <span class="w-8 font-semibold text-gray-500">{{ sched.day|slice:":3"|upper }}</span>
+          <span>{{ sched.start_time|time:"H:i" }}–{{ sched.end_time|time:"H:i" }}</span>
+          {% if sched.break_start and sched.break_end %}
+          <span class="text-gray-400">(brk {{ sched.break_start|time:"H:i" }}-{{ sched.break_end|time:"H:i" }})</span>
+          {% endif %}
+        </div>
+        {% empty %}
+        <p class="text-gray-400 italic">No schedule set</p>
+        {% endfor %}
+        <p class="mt-0.5 text-xs font-semibold {% if dentist.user.is_active and dentist.is_available %}text-green-600{% else %}text-red-500{% endif %}">
+          {% if dentist.user.is_active and dentist.is_available %}Available{% else %}Unavailable{% endif %}
+          · {{ dentist.appointment_duration }} min
+        </p>
       </div>
+
       <div class="flex flex-wrap gap-2">
         {% if request.user.role == "ADMIN" %}
         <button type="button"
-                onclick="openEditModal(this)"
-                data-action="{% url 'dentists:edit' dentist.pk %}"
-                data-first-name="{{ dentist.user.first_name|escapejs }}"
-                data-last-name="{{ dentist.user.last_name|escapejs }}"
-                data-email="{{ dentist.user.email|escapejs }}"
-                data-phone="{{ dentist.user.phone|escapejs }}"
-                data-specialization="{{ dentist.specialization|escapejs }}"
-                data-license-number="{{ dentist.license_number|escapejs }}"
-                data-available-days="{{ dentist.available_days|escapejs }}"
-                data-available-from="{{ dentist.available_from|time:'H:i' }}"
-                data-available-to="{{ dentist.available_to|time:'H:i' }}"
-                data-appointment-duration="{{ dentist.appointment_duration }}"
-                data-max-patients-per-day="{{ dentist.max_patients_per_day }}"
-                data-break-start-time="{% if dentist.break_start_time %}{{ dentist.break_start_time|time:'H:i' }}{% endif %}"
-                data-break-end-time="{% if dentist.break_end_time %}{{ dentist.break_end_time|time:'H:i' }}{% endif %}"
-                data-is-available="{% if dentist.is_available %}true{% else %}false{% endif %}"
-                data-is-active="{% if dentist.user.is_active %}true{% else %}false{% endif %}"
+                onclick="openEditModal({{ dentist.pk }})"
                 class="rounded-xl border border-green-200 px-3 py-2 text-xs font-bold text-green-700 hover:bg-green-50"
                 aria-label="Edit {{ dentist }}">
           <span class="material-symbols-rounded text-base">edit</span>
@@ -84,7 +102,9 @@
         {% endif %}
         <form method="post" action="{% url 'dentists:delete' dentist.pk %}">
           {% csrf_token %}
-          <button class="rounded-xl border border-red-200 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50"><span class="material-symbols-rounded text-base">delete</span></button>
+          <button class="rounded-xl border border-red-200 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
+            <span class="material-symbols-rounded text-base">delete</span>
+          </button>
         </form>
       </div>
     </div>
@@ -94,98 +114,209 @@
   </div>
 </section>
 
+{# ── ADD MODAL ── #}
 <div id="pageModal" class="{% if not modal_open %}hidden{% endif %} fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
   <div class="absolute inset-0 bg-gray-900 bg-opacity-60" onclick="closeModal()"></div>
   <div class="no-scrollbar relative z-10 max-h-full w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-xl">
-    <div class="sticky top-0 flex justify-between border-b bg-white px-6 py-5"><div><h2 class="text-2xl font-bold">Add New Dentist</h2><p class="text-sm text-gray-500">Fill dentist information</p></div><button type="button" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button></div>
-    <form method="post" id="modalForm" class="grid gap-5 px-6 py-6 md:grid-cols-2">
+    <div class="sticky top-0 flex justify-between border-b bg-white px-6 py-5">
+      <div><h2 class="text-2xl font-bold">Add New Dentist</h2><p class="text-sm text-gray-500">Fill dentist information and weekly schedule</p></div>
+      <button type="button" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button>
+    </div>
+    <form method="post" id="modalForm" class="px-6 py-6 space-y-5">
       {% csrf_token %}
-      {% for field in form %}
-      <div {% if field.name == "available_days" %}class="md:col-span-2"{% endif %}>
-        <label class="flex items-center gap-2 text-sm font-semibold"><span class="material-symbols-rounded text-green-600">edit_note</span>{{ field.label }}</label>
-        <div class="mt-2 {% if field.name == 'available_days' %}grid grid-cols-2 gap-2 text-sm sm:grid-cols-4{% endif %}">{{ field }}</div>
-        {% for error in field.errors %}<p class="text-sm text-red-600">{{ error }}</p>{% endfor %}
+
+      {% if form.non_field_errors %}
+      <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        {% for e in form.non_field_errors %}{{ e }}<br>{% endfor %}
       </div>
-      {% endfor %}
-      <div class="md:col-span-2 flex justify-end gap-3"><button type="button" onclick="closeModal()" class="rounded-2xl border px-5 py-3">Cancel</button><button id="submitBtn" class="rounded-2xl bg-green-600 px-5 py-3 font-semibold text-white">Save</button></div>
+      {% endif %}
+
+      {# Basic info #}
+      <div class="grid gap-4 md:grid-cols-2">
+        <div><label class="mb-1 block text-sm font-semibold text-gray-700">{{ form.first_name.label }}</label>{{ form.first_name }}{% for e in form.first_name.errors %}<p class="mt-1 text-xs text-red-600">{{ e }}</p>{% endfor %}</div>
+        <div><label class="mb-1 block text-sm font-semibold text-gray-700">{{ form.last_name.label }}</label>{{ form.last_name }}{% for e in form.last_name.errors %}<p class="mt-1 text-xs text-red-600">{{ e }}</p>{% endfor %}</div>
+        <div><label class="mb-1 block text-sm font-semibold text-gray-700">{{ form.email.label }}</label>{{ form.email }}{% for e in form.email.errors %}<p class="mt-1 text-xs text-red-600">{{ e }}</p>{% endfor %}</div>
+        <div><label class="mb-1 block text-sm font-semibold text-gray-700">{{ form.phone.label }}</label>{{ form.phone }}{% for e in form.phone.errors %}<p class="mt-1 text-xs text-red-600">{{ e }}</p>{% endfor %}</div>
+        <div><label class="mb-1 block text-sm font-semibold text-gray-700">{{ form.specialization.label }}</label>{{ form.specialization }}{% for e in form.specialization.errors %}<p class="mt-1 text-xs text-red-600">{{ e }}</p>{% endfor %}</div>
+        <div><label class="mb-1 block text-sm font-semibold text-gray-700">{{ form.license_number.label }}</label>{{ form.license_number }}{% for e in form.license_number.errors %}<p class="mt-1 text-xs text-red-600">{{ e }}</p>{% endfor %}</div>
+        <div><label class="mb-1 block text-sm font-semibold text-gray-700">{{ form.appointment_duration.label }}</label>{{ form.appointment_duration }}{% for e in form.appointment_duration.errors %}<p class="mt-1 text-xs text-red-600">{{ e }}</p>{% endfor %}</div>
+        <div><label class="mb-1 block text-sm font-semibold text-gray-700">{{ form.max_patients_per_day.label }}</label>{{ form.max_patients_per_day }}{% for e in form.max_patients_per_day.errors %}<p class="mt-1 text-xs text-red-600">{{ e }}</p>{% endfor %}</div>
+      </div>
+
+      {# Checkboxes #}
+      <div class="flex gap-6">
+        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700 cursor-pointer">{{ form.is_available }} {{ form.is_available.label }}</label>
+        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700 cursor-pointer">{{ form.is_active }} {{ form.is_active.label }}</label>
+      </div>
+
+      {# Weekly schedule #}
+      <div>
+        <p class="mb-3 text-sm font-bold text-gray-800">Weekly Schedule</p>
+        {% if form.errors %}
+        <p class="mb-2 text-xs text-red-600">Please correct schedule errors below.</p>
+        {% endif %}
+        {% include "dentists/_schedule_rows.html" with form=form prefix="" %}
+      </div>
+
+      <div class="flex justify-end gap-3 border-t border-gray-100 pt-4">
+        <button type="button" onclick="closeModal()" class="rounded-2xl border px-5 py-3 text-sm font-semibold text-gray-700">Cancel</button>
+        <button id="submitBtn" class="rounded-2xl bg-green-600 px-5 py-3 text-sm font-bold text-white">Save Dentist</button>
+      </div>
     </form>
   </div>
 </div>
 
-<div id="editModal" class="{% if not edit_modal_open %}hidden{% endif %} fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
+{# ── EDIT MODAL ── #}
+<div id="editModal" class="{% if edit_modal_open %}flex{% else %}hidden{% endif %} fixed inset-0 z-50 items-center justify-center px-4 py-6">
   <div class="absolute inset-0 bg-gray-900 bg-opacity-60" onclick="closeEditModal()"></div>
   <div class="no-scrollbar relative z-10 max-h-full w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-xl">
     <div class="sticky top-0 flex justify-between border-b bg-white px-6 py-5">
-      <div><h2 class="text-2xl font-bold">Edit Dentist</h2><p class="text-sm text-gray-500">Update dentist information and availability</p></div>
+      <div><h2 class="text-2xl font-bold">Edit Dentist</h2><p class="text-sm text-gray-500">Update dentist information and weekly schedule</p></div>
       <button type="button" onclick="closeEditModal()"><span class="material-symbols-rounded">close</span></button>
     </div>
-    <form method="post" id="editForm" action="{% if edit_dentist %}{% url 'dentists:edit' edit_dentist.pk %}{% else %}#{% endif %}" class="grid gap-5 px-6 py-6 md:grid-cols-2">
+    <form method="post" id="editForm"
+          action="{% if edit_dentist %}{% url 'dentists:edit' edit_dentist.pk %}{% else %}#{% endif %}"
+          class="px-6 py-6 space-y-5">
       {% csrf_token %}
-      {% for field in edit_form %}
-      <div {% if field.name == "available_days" %}class="md:col-span-2"{% endif %}>
-        <label class="flex items-center gap-2 text-sm font-semibold"><span class="material-symbols-rounded text-green-600">edit</span>{{ field.label }}</label>
-        <div class="mt-2 {% if field.name == 'available_days' %}grid grid-cols-2 gap-2 text-sm sm:grid-cols-4{% endif %}">{{ field }}</div>
-        {% for error in field.errors %}<p class="text-sm text-red-600">{{ error }}</p>{% endfor %}
+
+      {% if edit_form.non_field_errors %}
+      <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        {% for e in edit_form.non_field_errors %}{{ e }}<br>{% endfor %}
       </div>
-      {% endfor %}
-      {% if edit_form.non_field_errors %}<div class="md:col-span-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ edit_form.non_field_errors }}</div>{% endif %}
-      <div class="md:col-span-2 flex justify-end gap-3"><button type="button" onclick="closeEditModal()" class="rounded-2xl border px-5 py-3">Cancel</button><button id="editSubmitBtn" class="rounded-2xl bg-green-600 px-5 py-3 font-semibold text-white">Save Changes</button></div>
+      {% endif %}
+
+      {# Basic info #}
+      <div class="grid gap-4 md:grid-cols-2">
+        <div><label class="mb-1 block text-sm font-semibold text-gray-700">{{ edit_form.first_name.label }}</label>{{ edit_form.first_name }}{% for e in edit_form.first_name.errors %}<p class="mt-1 text-xs text-red-600">{{ e }}</p>{% endfor %}</div>
+        <div><label class="mb-1 block text-sm font-semibold text-gray-700">{{ edit_form.last_name.label }}</label>{{ edit_form.last_name }}{% for e in edit_form.last_name.errors %}<p class="mt-1 text-xs text-red-600">{{ e }}</p>{% endfor %}</div>
+        <div><label class="mb-1 block text-sm font-semibold text-gray-700">{{ edit_form.email.label }}</label>{{ edit_form.email }}{% for e in edit_form.email.errors %}<p class="mt-1 text-xs text-red-600">{{ e }}</p>{% endfor %}</div>
+        <div><label class="mb-1 block text-sm font-semibold text-gray-700">{{ edit_form.phone.label }}</label>{{ edit_form.phone }}{% for e in edit_form.phone.errors %}<p class="mt-1 text-xs text-red-600">{{ e }}</p>{% endfor %}</div>
+        <div><label class="mb-1 block text-sm font-semibold text-gray-700">{{ edit_form.specialization.label }}</label>{{ edit_form.specialization }}{% for e in edit_form.specialization.errors %}<p class="mt-1 text-xs text-red-600">{{ e }}</p>{% endfor %}</div>
+        <div><label class="mb-1 block text-sm font-semibold text-gray-700">{{ edit_form.license_number.label }}</label>{{ edit_form.license_number }}{% for e in edit_form.license_number.errors %}<p class="mt-1 text-xs text-red-600">{{ e }}</p>{% endfor %}</div>
+        <div><label class="mb-1 block text-sm font-semibold text-gray-700">{{ edit_form.appointment_duration.label }}</label>{{ edit_form.appointment_duration }}{% for e in edit_form.appointment_duration.errors %}<p class="mt-1 text-xs text-red-600">{{ e }}</p>{% endfor %}</div>
+        <div><label class="mb-1 block text-sm font-semibold text-gray-700">{{ edit_form.max_patients_per_day.label }}</label>{{ edit_form.max_patients_per_day }}{% for e in edit_form.max_patients_per_day.errors %}<p class="mt-1 text-xs text-red-600">{{ e }}</p>{% endfor %}</div>
+      </div>
+
+      <div class="flex gap-6">
+        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700 cursor-pointer">{{ edit_form.is_available }} {{ edit_form.is_available.label }}</label>
+        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700 cursor-pointer">{{ edit_form.is_active }} {{ edit_form.is_active.label }}</label>
+      </div>
+
+      {# Weekly schedule (edit) #}
+      <div>
+        <p class="mb-3 text-sm font-bold text-gray-800">Weekly Schedule</p>
+        {% include "dentists/_schedule_rows.html" with form=edit_form prefix="edit_" %}
+      </div>
+
+      <div class="flex justify-end gap-3 border-t border-gray-100 pt-4">
+        <button type="button" onclick="closeEditModal()" class="rounded-2xl border px-5 py-3 text-sm font-semibold text-gray-700">Cancel</button>
+        <button id="editSubmitBtn" class="rounded-2xl bg-green-600 px-5 py-3 text-sm font-bold text-white">Save Changes</button>
+      </div>
     </form>
   </div>
 </div>
 
 <script>
-  const modal = document.getElementById("pageModal");
-  const editModal = document.getElementById("editModal");
-  const editForm = document.getElementById("editForm");
+  const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+  const modal = document.getElementById('pageModal');
+  const editModal = document.getElementById('editModal');
 
-  function openModal(){modal.classList.remove("hidden");document.body.classList.add("overflow-hidden")}
-  function closeModal(){modal.classList.add("hidden");document.body.classList.remove("overflow-hidden")}
-  function closeEditModal(){editModal.classList.add("hidden");document.body.classList.remove("overflow-hidden")}
-
-  function setEditValue(name, value) {
-    const fields = editForm.elements[name];
-    if (!fields) return;
-    if (fields.length && fields[0] && fields[0].type === "checkbox") {
-      const selected = String(value || "").split(",").map((item) => item.trim());
-      Array.from(fields).forEach((field) => { field.checked = selected.includes(field.value); });
-    } else if (fields.type === "checkbox") {
-      fields.checked = value === "true";
-    } else {
-      fields.value = value || "";
-    }
+  function openModal() {
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.classList.add('overflow-hidden');
+  }
+  function closeModal() {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.body.classList.remove('overflow-hidden');
+  }
+  function closeEditModal() {
+    editModal.classList.add('hidden');
+    editModal.classList.remove('flex');
+    document.body.classList.remove('overflow-hidden');
   }
 
-  function openEditModal(button) {
-    editForm.action = button.dataset.action;
-    setEditValue("first_name", button.dataset.firstName);
-    setEditValue("last_name", button.dataset.lastName);
-    setEditValue("email", button.dataset.email);
-    setEditValue("phone", button.dataset.phone);
-    setEditValue("specialization", button.dataset.specialization);
-    setEditValue("license_number", button.datasetLicenseNumber || button.dataset.licenseNumber);
-    setEditValue("available_days", button.dataset.availableDays);
-    setEditValue("available_from", button.dataset.availableFrom);
-    setEditValue("available_to", button.dataset.availableTo);
-    setEditValue("appointment_duration", button.dataset.appointmentDuration);
-    setEditValue("max_patients_per_day", button.dataset.maxPatientsPerDay);
-    setEditValue("break_start_time", button.dataset.breakStartTime);
-    setEditValue("break_end_time", button.dataset.breakEndTime);
-    setEditValue("is_available", button.dataset.isAvailable);
-    setEditValue("is_active", button.dataset.isActive);
-    editModal.classList.remove("hidden");
-    document.body.classList.add("overflow-hidden");
+  // Fetch dentist JSON and populate edit modal
+  function openEditModal(pk) {
+    fetch(`/dentists/${pk}/json/`)
+      .then(r => r.json())
+      .then(data => {
+        const rec = data.record;
+        const f = document.getElementById('editForm');
+        f.action = `/dentists/${pk}/edit/`;
+
+        // Basic fields
+        ['first_name','last_name','email','phone','specialization',
+         'license_number','appointment_duration','max_patients_per_day'].forEach(name => {
+          const el = f.elements[name];
+          if (el) el.value = rec[name] || '';
+        });
+        const isAvail = f.elements['is_available'];
+        if (isAvail) isAvail.checked = rec.is_available;
+        const isActive = f.elements['is_active'];
+        if (isActive) isActive.checked = rec.is_active;
+
+        // Per-day schedule
+        DAYS.forEach(day => {
+          const workCb = f.elements[`${day}_working`];
+          const startEl = f.elements[`${day}_start`];
+          const endEl   = f.elements[`${day}_end`];
+          const bsEl    = f.elements[`${day}_break_start`];
+          const beEl    = f.elements[`${day}_break_end`];
+          const sched   = rec.day_schedules[day];
+          const working = !!sched;
+
+          if (workCb) workCb.checked = working;
+          if (startEl) startEl.value = sched ? sched.start : '';
+          if (endEl)   endEl.value   = sched ? sched.end   : '';
+          if (bsEl)    bsEl.value    = sched ? sched.break_start : '';
+          if (beEl)    beEl.value    = sched ? sched.break_end   : '';
+          toggleDayRow(f, day, working);
+        });
+
+        editModal.classList.remove('hidden');
+        editModal.classList.add('flex');
+        document.body.classList.add('overflow-hidden');
+      });
   }
 
-  document.addEventListener("keydown", e => {
-    if(e.key === "Escape"){
-      closeModal();
-      closeEditModal();
-    }
+  // Toggle time inputs when working checkbox changes
+  function toggleDayRow(form, day, isWorking) {
+    ['start','end','break_start','break_end'].forEach(field => {
+      const el = form.elements[`${day}_${field}`];
+      if (!el) return;
+      el.disabled = !isWorking;
+      const row = el.closest('td') || el.closest('div');
+      if (row) row.classList.toggle('opacity-40', !isWorking);
+    });
+  }
+
+  document.querySelectorAll('input[type="checkbox"][id$="_working"]').forEach(cb => {
+    cb.addEventListener('change', function() {
+      const day = this.id.replace('id_', '').replace('_working', '');
+      toggleDayRow(this.closest('form'), day, this.checked);
+    });
+    // Init state on load
+    toggleDayRow(cb.closest('form'), cb.id.replace('id_', '').replace('_working', ''), cb.checked);
   });
-  document.getElementById("modalForm")?.addEventListener("submit",()=>{document.getElementById("submitBtn").textContent="Saving..."});
-  document.getElementById("editForm")?.addEventListener("submit",()=>{document.getElementById("editSubmitBtn").textContent="Saving..."});
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeModal(); closeEditModal(); }
+  });
+
+  document.getElementById('modalForm')?.addEventListener('submit', () => {
+    document.getElementById('submitBtn').textContent = 'Saving…';
+  });
+  document.getElementById('editForm')?.addEventListener('submit', () => {
+    document.getElementById('editSubmitBtn').textContent = 'Saving…';
+  });
+
   {% if modal_open %}openModal();{% endif %}
-  {% if edit_modal_open %}editModal.classList.remove("hidden");document.body.classList.add("overflow-hidden");{% endif %}
+  {% if edit_modal_open %}
+    editModal.classList.remove('hidden');
+    editModal.classList.add('flex');
+    document.body.classList.add('overflow-hidden');
+  {% endif %}
 </script>
 {% endblock %}

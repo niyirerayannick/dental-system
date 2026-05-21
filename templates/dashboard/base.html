@@ -1,11 +1,9 @@
 {% extends "base.html" %}
 
-{% block site_header %}{% endblock %}
-
 {% block content %}
 <div class="min-h-screen bg-gray-50">
     <div data-sidebar-backdrop class="fixed inset-0 z-30 hidden bg-gray-900 bg-opacity-40 lg:hidden"></div>
-    {% include "components/sidebar.html" %}
+    {% block sidebar %}{% include "components/sidebar.html" %}{% endblock %}
     <div class="lg:pl-64">
         {% include "components/navbar.html" %}
         <main class="px-4 py-6 sm:px-6 lg:px-8">
