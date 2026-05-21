@@ -7,15 +7,19 @@ def home(request):
         return redirect("dashboard:redirect")
 
     featured_services = []
+    footer_services = []
     try:
         from services.models import DentalService
-        featured_services = list(
-            DentalService.objects.filter(is_active=True).select_related("category")[:3]
-        )
+        qs = DentalService.objects.filter(is_active=True).select_related("category")
+        featured_services = list(qs[:3])
+        footer_services = list(qs[3:8])
     except Exception:
         pass
 
-    return render(request, "public/home.html", {"featured_services": featured_services})
+    return render(request, "public/home.html", {
+        "featured_services": featured_services,
+        "footer_services": footer_services,
+    })
 
 
 def health(request):
