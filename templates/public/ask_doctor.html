@@ -1,0 +1,334 @@
+{% extends "public/base.html" %}
+{% load static %}
+
+{% block title %}Ask a Doctor — DentalCare Pro{% endblock %}
+
+{% block content %}
+{% include "public/partials/public_navbar.html" with active_page="ask_doctor" %}
+
+<!-- ══════════════════════════════════════════
+     PAGE HERO
+══════════════════════════════════════════ -->
+<section class="relative overflow-hidden"
+         style="background:linear-gradient(145deg,#EAF7F1 0%,#f5faf7 40%,#EAF7F1 100%);
+                padding-top:160px;padding-bottom:72px;">
+  <svg class="absolute pointer-events-none select-none"
+       style="left:0;bottom:0;width:380px;height:380px;opacity:.12;"
+       viewBox="0 0 380 380" fill="none" aria-hidden="true">
+    <circle cx="40" cy="340" r="200" stroke="#0B7A4B" stroke-width="55" fill="none"/>
+  </svg>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+    <div class="inline-flex items-center gap-2 mb-4"
+         style="color:#0B7A4B;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;">
+      <svg style="width:14px;height:14px;" fill="currentColor" viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M32 4c-5.5 0-9.5 3.5-11 7.5C19.5 9 17.5 8 15 8 10.5 8 7 11.5 7 16c0 7 5 11.5 9 16 2 2.5 3.5 5 4.5 8.5.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5c.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5C35 37 36.5 34.5 39 32c4-4 9-8.5 9-16C48 11.5 44 8 39.5 8c-2.5 0-4.5 1-6 3.5C32 8 31 4 32 4Z"/>
+      </svg>
+      Free Expert Advice
+    </div>
+    <h1 class="font-extrabold text-slate-900 leading-tight"
+        style="font-size:clamp(2rem,4.5vw,3.2rem);max-width:700px;margin:0 auto;">
+      Ask Our Dental Experts
+    </h1>
+    <p class="mt-4 text-slate-500 leading-relaxed"
+       style="font-size:16px;max-width:520px;margin:16px auto 0;">
+      Have a dental concern? Submit your question and one of our qualified dentists
+      will respond within 24 hours — completely free.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     FEATURES STRIP
+══════════════════════════════════════════ -->
+<section style="background:#fff;border-bottom:1px solid rgba(11,122,75,.08);">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);">
+      {% for feat in "123" %}
+      <div class="flex items-center gap-4"
+           style="padding:26px 24px;{% if not forloop.last %}border-right:1px solid rgba(11,122,75,.1);{% endif %}">
+        <div class="rounded-full flex items-center justify-center flex-none"
+             style="width:46px;height:46px;background:#EAF7F1;">
+          {% if forloop.counter == 1 %}
+          <svg style="width:20px;height:20px;" fill="none" stroke="#0B7A4B" viewBox="0 0 24 24" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+          {% elif forloop.counter == 2 %}
+          <svg style="width:20px;height:20px;" fill="none" stroke="#0B7A4B" viewBox="0 0 24 24" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>
+          </svg>
+          {% else %}
+          <svg style="width:20px;height:20px;" fill="none" stroke="#0B7A4B" viewBox="0 0 24 24" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+          </svg>
+          {% endif %}
+        </div>
+        <div>
+          <p class="font-bold text-slate-800" style="font-size:14.5px;margin:0 0 2px;">
+            {% if forloop.counter == 1 %}100% Confidential{% elif forloop.counter == 2 %}Reply Within 24h{% else %}Qualified Dentists{% endif %}
+          </p>
+          <p class="text-slate-400" style="font-size:12.5px;margin:0;line-height:1.5;">
+            {% if forloop.counter == 1 %}Your data is never shared{% elif forloop.counter == 2 %}Fast, reliable responses{% else %}Board-certified experts{% endif %}
+          </p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     MAIN CONTENT: Form + Doctors
+══════════════════════════════════════════ -->
+<section class="py-20 bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid lg:grid-cols-2 gap-12 items-start">
+
+      <!-- ── Left: Enquiry Form ── -->
+      <div>
+        <h2 class="font-extrabold text-slate-900" style="font-size:1.7rem;margin-bottom:8px;">
+          Submit Your Question
+        </h2>
+        <p class="text-slate-400" style="font-size:14.5px;margin-bottom:28px;line-height:1.6;">
+          Fill in the form below and our dental team will respond with personalised advice.
+        </p>
+
+        {% if messages %}
+          {% for msg in messages %}
+          <div style="background:#EAF7F1;border:1.5px solid #0B7A4B;border-radius:12px;
+                      padding:16px 20px;margin-bottom:20px;display:flex;align-items:flex-start;gap:12px;">
+            <svg style="width:20px;height:20px;flex-shrink:0;margin-top:1px;" fill="none" stroke="#0B7A4B"
+                 viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span style="font-size:14.5px;font-weight:600;color:#0B7A4B;">{{ msg }}</span>
+          </div>
+          {% endfor %}
+        {% endif %}
+
+        <form method="post" action="{% url 'pub_ask_doctor' %}"
+              style="display:flex;flex-direction:column;gap:18px;">
+          {% csrf_token %}
+
+          <!-- Name -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div>
+              <label for="ask_first" style="display:block;font-size:12.5px;font-weight:600;color:#475569;margin-bottom:6px;">
+                First Name <span style="color:#e11d48;">*</span>
+              </label>
+              <input type="text" id="ask_first" name="first_name" required placeholder="John"
+                     style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;
+                            padding:12px 14px;font-size:14px;outline:none;
+                            transition:border-color .18s,box-shadow .18s;box-sizing:border-box;"
+                     onfocus="this.style.borderColor='#0B7A4B';this.style.boxShadow='0 0 0 3px rgba(11,122,75,.1)'"
+                     onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+            </div>
+            <div>
+              <label for="ask_last" style="display:block;font-size:12.5px;font-weight:600;color:#475569;margin-bottom:6px;">
+                Last Name
+              </label>
+              <input type="text" id="ask_last" name="last_name" placeholder="Doe"
+                     style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;
+                            padding:12px 14px;font-size:14px;outline:none;
+                            transition:border-color .18s,box-shadow .18s;box-sizing:border-box;"
+                     onfocus="this.style.borderColor='#0B7A4B';this.style.boxShadow='0 0 0 3px rgba(11,122,75,.1)'"
+                     onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div>
+            <label for="ask_email" style="display:block;font-size:12.5px;font-weight:600;color:#475569;margin-bottom:6px;">
+              Email Address <span style="color:#e11d48;">*</span>
+            </label>
+            <input type="email" id="ask_email" name="email" required placeholder="john@example.com"
+                   style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;
+                          padding:12px 14px;font-size:14px;outline:none;
+                          transition:border-color .18s,box-shadow .18s;box-sizing:border-box;"
+                   onfocus="this.style.borderColor='#0B7A4B';this.style.boxShadow='0 0 0 3px rgba(11,122,75,.1)'"
+                   onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+          </div>
+
+          <!-- Preferred dentist -->
+          <div>
+            <label for="ask_dentist" style="display:block;font-size:12.5px;font-weight:600;color:#475569;margin-bottom:6px;">
+              Preferred Dentist (optional)
+            </label>
+            <select id="ask_dentist" name="dentist"
+                    style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;
+                           padding:12px 14px;font-size:14px;outline:none;background:#fff;
+                           transition:border-color .18s,box-shadow .18s;box-sizing:border-box;cursor:pointer;"
+                    onfocus="this.style.borderColor='#0B7A4B';this.style.boxShadow='0 0 0 3px rgba(11,122,75,.1)'"
+                    onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+              <option value="">Any available dentist</option>
+              {% for dentist in dentists %}
+              <option value="{{ dentist.pk }}">
+                Dr. {{ dentist.user.full_name }}{% if dentist.specialization %} — {{ dentist.specialization }}{% endif %}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Topic -->
+          <div>
+            <label for="ask_topic" style="display:block;font-size:12.5px;font-weight:600;color:#475569;margin-bottom:6px;">
+              Topic / Concern
+            </label>
+            <select id="ask_topic" name="topic"
+                    style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;
+                           padding:12px 14px;font-size:14px;outline:none;background:#fff;
+                           transition:border-color .18s,box-shadow .18s;box-sizing:border-box;cursor:pointer;"
+                    onfocus="this.style.borderColor='#0B7A4B';this.style.boxShadow='0 0 0 3px rgba(11,122,75,.1)'"
+                    onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+              <option value="">Select a topic</option>
+              <option>Tooth pain or sensitivity</option>
+              <option>Gum health / bleeding gums</option>
+              <option>Teeth whitening</option>
+              <option>Braces / orthodontics</option>
+              <option>Dental implants</option>
+              <option>Children's dentistry</option>
+              <option>Emergency dental care</option>
+              <option>General oral hygiene</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <!-- Question -->
+          <div>
+            <label for="ask_question" style="display:block;font-size:12.5px;font-weight:600;color:#475569;margin-bottom:6px;">
+              Your Question <span style="color:#e11d48;">*</span>
+            </label>
+            <textarea id="ask_question" name="question" rows="5" required
+                      placeholder="Describe your dental concern in detail so our experts can give you the most helpful answer..."
+                      style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;
+                             padding:12px 14px;font-size:14px;outline:none;resize:vertical;
+                             transition:border-color .18s,box-shadow .18s;box-sizing:border-box;"
+                      onfocus="this.style.borderColor='#0B7A4B';this.style.boxShadow='0 0 0 3px rgba(11,122,75,.1)'"
+                      onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'"></textarea>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit"
+                  style="width:100%;padding:14px 24px;border-radius:10px;border:none;cursor:pointer;
+                         background:linear-gradient(135deg,#0B7A4B,#075A38);
+                         color:#fff;font-size:15px;font-weight:700;
+                         display:flex;align-items:center;justify-content:center;gap:8px;
+                         box-shadow:0 4px 14px rgba(11,122,75,.3);transition:box-shadow .22s,transform .22s;"
+                  onmouseover="this.style.boxShadow='0 7px 24px rgba(11,122,75,.45)';this.style.transform='translateY(-1px)'"
+                  onmouseout="this.style.boxShadow='0 4px 14px rgba(11,122,75,.3)';this.style.transform='translateY(0)'">
+            <svg style="width:17px;height:17px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
+            </svg>
+            Submit Question
+          </button>
+
+          <p class="text-slate-400 text-center" style="font-size:12px;">
+            By submitting, you agree to our
+            <a href="#" style="color:#0B7A4B;">Privacy Policy</a>.
+            Your information is kept confidential.
+          </p>
+        </form>
+      </div>
+
+      <!-- ── Right: Meet the Team ── -->
+      <div>
+        <h2 class="font-extrabold text-slate-900" style="font-size:1.7rem;margin-bottom:8px;">
+          Our Expert Dentists
+        </h2>
+        <p class="text-slate-400" style="font-size:14.5px;margin-bottom:28px;line-height:1.6;">
+          Questions are reviewed and answered by our qualified dental professionals.
+        </p>
+
+        {% if dentists %}
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          {% for dentist in dentists %}
+          <div class="flex items-center gap-4 bg-white rounded-2xl"
+               style="padding:18px 20px;border:1.5px solid rgba(11,122,75,.1);
+                      box-shadow:0 2px 10px rgba(11,122,75,.07);
+                      transition:box-shadow .22s,transform .22s;"
+               onmouseover="this.style.boxShadow='0 8px 24px rgba(11,122,75,.14)';this.style.transform='translateX(4px)'"
+               onmouseout="this.style.boxShadow='0 2px 10px rgba(11,122,75,.07)';this.style.transform='translateX(0)'">
+            <!-- Avatar -->
+            <div style="width:58px;height:58px;border-radius:50%;flex-shrink:0;
+                        background:linear-gradient(145deg,#0B7A4B,#075A38);
+                        display:flex;align-items:center;justify-content:center;
+                        box-shadow:0 3px 12px rgba(11,122,75,.25);">
+              <span style="color:#fff;font-size:18px;font-weight:800;letter-spacing:-0.5px;">
+                {{ dentist.user.first_name|slice:":1"|upper }}{{ dentist.user.last_name|slice:":1"|upper }}
+              </span>
+            </div>
+            <div style="flex:1;">
+              <p class="font-bold text-slate-900" style="margin:0 0 2px;font-size:15px;">
+                Dr. {{ dentist.user.full_name }}
+              </p>
+              <p style="font-size:12.5px;color:#0B7A4B;font-weight:600;margin:0 0 6px;">
+                {{ dentist.specialization|default:"General Dentist" }}
+              </p>
+              <div class="flex items-center gap-2">
+                {% if dentist.is_available %}
+                <span style="display:inline-flex;align-items:center;gap:4px;
+                             font-size:11px;font-weight:600;color:#0B7A4B;background:#EAF7F1;
+                             padding:2px 10px;border-radius:9999px;">
+                  <span style="width:6px;height:6px;border-radius:50%;background:#0B7A4B;"></span>
+                  Available
+                </span>
+                {% endif %}
+                <span style="font-size:11.5px;color:#94a3b8;">
+                  {{ dentist.available_from|time:"H:i" }}–{{ dentist.available_to|time:"H:i" }}
+                </span>
+              </div>
+            </div>
+            <a href="{% url 'pub_book' %}?dentist={{ dentist.pk }}"
+               class="inline-flex items-center gap-1 font-semibold"
+               style="font-size:12.5px;color:#0B7A4B;white-space:nowrap;text-decoration:none;
+                      padding:7px 14px;border:1.5px solid rgba(11,122,75,.3);border-radius:9999px;
+                      transition:all .2s;"
+               onmouseover="this.style.background='#0B7A4B';this.style.color='#fff';this.style.borderColor='#0B7A4B'"
+               onmouseout="this.style.background='transparent';this.style.color='#0B7A4B';this.style.borderColor='rgba(11,122,75,.3)'">
+              Book
+              <svg style="width:11px;height:11px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+              </svg>
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center" style="padding:48px 20px;background:#F5F9F7;border-radius:16px;">
+          <p class="text-slate-400" style="font-size:14px;margin:0 0 16px;">
+            Our dentists are being listed soon. Your question will still reach our team.
+          </p>
+          <a href="{% url 'pub_contact' %}"
+             class="inline-flex items-center gap-2 font-semibold"
+             style="color:#0B7A4B;font-size:13.5px;text-decoration:none;">
+            Contact us directly
+            <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+            </svg>
+          </a>
+        </div>
+        {% endif %}
+
+        <!-- Info box -->
+        <div style="margin-top:24px;background:#EAF7F1;border-radius:14px;padding:20px 22px;">
+          <div class="flex items-start gap-3">
+            <svg style="width:20px;height:20px;flex-shrink:0;margin-top:2px;" fill="none" stroke="#0B7A4B" viewBox="0 0 24 24" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
+            </svg>
+            <div>
+              <p class="font-bold text-slate-700" style="font-size:13.5px;margin:0 0 4px;">How it works</p>
+              <p class="text-slate-500" style="font-size:13px;line-height:1.6;margin:0;">
+                Submit your question, and a qualified dentist will review it and send a personalised reply
+                to your email within 24 hours. For urgent concerns, please
+                <a href="tel:+250788000000" style="color:#0B7A4B;font-weight:600;">call us directly</a>.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% endblock %}

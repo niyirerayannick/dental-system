@@ -66,9 +66,9 @@
            class="flex items-center gap-3 rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-green-50 hover:text-green-700">
           <span class="material-symbols-rounded w-8 text-center text-green-700">dentistry</span> Dentists
         </a>
-        <a href="{% url 'billing:list' %}"
-           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-green-50 hover:text-green-700">
-          <span class="material-symbols-rounded w-8 text-center text-green-700">receipt_long</span> Billing
+        <a href="{% url 'followups:list' %}"
+           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {% if request.resolver_match.url_name == 'list' and request.resolver_match.namespace == 'followups' %}bg-green-50 font-semibold text-green-700{% else %}text-gray-600 hover:bg-green-50 hover:text-green-700{% endif %}">
+          <span class="material-symbols-rounded w-8 text-center text-green-700">next_plan</span> Follow-ups
         </a>
         <a href="{% url 'dashboard:receptionist_notifications' %}"
            class="flex items-center justify-between rounded-2xl px-4 py-3 transition {% if request.resolver_match.url_name == 'receptionist_notifications' %}bg-green-50 font-semibold text-green-700{% else %}text-gray-600 hover:bg-green-50 hover:text-green-700{% endif %}">

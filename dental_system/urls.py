@@ -3,12 +3,19 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-from .views import health, home
+from .views import health, home, public_ask_doctor, public_book, public_contact, public_services
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("health/", health, name="health"),
     path("", home, name="home"),
+    # Public pages
+    path("services/", public_services, name="pub_services"),
+    path("book/", public_book, name="pub_book"),
+    path("ask-doctor/", public_ask_doctor, name="pub_ask_doctor"),
+    path("education/", include("articles.urls", namespace="articles")),
+    path("contact/", public_contact, name="pub_contact"),
+    # Dashboard apps
     path("accounts/", include("accounts.urls")),
     path("dashboard/", include("dashboard.urls")),
     path("patients/", include("patients.urls")),
@@ -20,6 +27,8 @@ urlpatterns = [
     path("settings/", include("clinic_settings.urls")),
     path("notifications/", include("notifications.urls")),
     path("manage/services/", include("services.urls")),
+    path("followups/", include("followups.urls", namespace="followups")),
+    path("tinymce/", include("tinymce.urls")),
 ]
 
 if settings.DEBUG:

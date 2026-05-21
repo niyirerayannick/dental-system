@@ -1,0 +1,375 @@
+{% extends "public/base.html" %}
+{% load static %}
+
+{% block title %}Contact Us — DentalCare Pro{% endblock %}
+
+{% block content %}
+{% include "public/partials/public_navbar.html" with active_page="contact" %}
+
+<!-- ══════════════════════════════════════════
+     PAGE HERO
+══════════════════════════════════════════ -->
+<section class="relative overflow-hidden"
+         style="background:linear-gradient(145deg,#EAF7F1 0%,#f5faf7 40%,#EAF7F1 100%);
+                padding-top:160px;padding-bottom:72px;">
+  <svg class="absolute pointer-events-none select-none"
+       style="right:0;top:0;width:420px;height:420px;opacity:.12;"
+       viewBox="0 0 420 420" fill="none" aria-hidden="true">
+    <circle cx="370" cy="50" r="200" stroke="#0B7A4B" stroke-width="55" fill="none"/>
+  </svg>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <div class="inline-flex items-center gap-2 mb-4"
+         style="color:#0B7A4B;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;">
+      <svg style="width:14px;height:14px;" fill="currentColor" viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M32 4c-5.5 0-9.5 3.5-11 7.5C19.5 9 17.5 8 15 8 10.5 8 7 11.5 7 16c0 7 5 11.5 9 16 2 2.5 3.5 5 4.5 8.5.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5c.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5C35 37 36.5 34.5 39 32c4-4 9-8.5 9-16C48 11.5 44 8 39.5 8c-2.5 0-4.5 1-6 3.5C32 8 31 4 32 4Z"/>
+      </svg>
+      Get In Touch
+    </div>
+    <h1 class="font-extrabold text-slate-900 leading-tight"
+        style="font-size:clamp(2rem,4.5vw,3.2rem);max-width:640px;">
+      We'd Love to Hear<br>From You
+    </h1>
+    <p class="mt-4 text-slate-500 leading-relaxed"
+       style="font-size:16px;max-width:520px;">
+      Have questions, need to book an appointment, or just want to say hello?
+      Our friendly team is always happy to help.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     CONTACT INFO CARDS ROW
+══════════════════════════════════════════ -->
+<section style="background:#fff;border-bottom:1px solid rgba(11,122,75,.08);">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);" class="contact-info-grid">
+      <!-- Phone -->
+      <div class="flex flex-col items-center text-center"
+           style="padding:32px 20px;border-right:1px solid rgba(11,122,75,.09);">
+        <div style="width:54px;height:54px;border-radius:50%;background:#EAF7F1;
+                    display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+          <svg style="width:22px;height:22px;" fill="none" stroke="#0B7A4B" viewBox="0 0 24 24" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.338c0-.966.784-1.75 1.75-1.75h.38c.504 0 .958.296 1.163.757l1.32 2.977a1.25 1.25 0 01-.287 1.398L5.6 10.928a11.037 11.037 0 005.472 5.472l1.208-.976a1.25 1.25 0 011.398-.287l2.977 1.32c.461.205.757.659.757 1.163v.38a1.75 1.75 0 01-1.75 1.75H14C8.063 19.75 4.25 15.937 4.25 10V6.338z"/>
+          </svg>
+        </div>
+        <p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;margin:0 0 6px;">Phone</p>
+        <a href="tel:+250788000000" class="font-bold text-slate-800"
+           style="font-size:14.5px;text-decoration:none;transition:color .18s;"
+           onmouseover="this.style.color='#0B7A4B'" onmouseout="this.style.color=''">
+          +250 788 000 000
+        </a>
+        <p style="font-size:12px;color:#94a3b8;margin:4px 0 0;">Mon–Fri, 8am–5pm</p>
+      </div>
+      <!-- WhatsApp -->
+      <div class="flex flex-col items-center text-center"
+           style="padding:32px 20px;border-right:1px solid rgba(11,122,75,.09);">
+        <div style="width:54px;height:54px;border-radius:50%;background:#dcfce7;
+                    display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+          <svg style="width:22px;height:22px;" fill="#16a34a" viewBox="0 0 24 24">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+          </svg>
+        </div>
+        <p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;margin:0 0 6px;">WhatsApp</p>
+        <a href="https://wa.me/250788000000" target="_blank" rel="noopener"
+           class="font-bold" style="font-size:14.5px;text-decoration:none;color:#16a34a;transition:opacity .18s;"
+           onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">
+          Chat with us
+        </a>
+        <p style="font-size:12px;color:#94a3b8;margin:4px 0 0;">Quick response</p>
+      </div>
+      <!-- Email -->
+      <div class="flex flex-col items-center text-center"
+           style="padding:32px 20px;border-right:1px solid rgba(11,122,75,.09);">
+        <div style="width:54px;height:54px;border-radius:50%;background:#EAF7F1;
+                    display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+          <svg style="width:22px;height:22px;" fill="none" stroke="#0B7A4B" viewBox="0 0 24 24" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/>
+          </svg>
+        </div>
+        <p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;margin:0 0 6px;">Email</p>
+        <a href="mailto:info@dentalcare.com" class="font-bold text-slate-800"
+           style="font-size:14.5px;text-decoration:none;transition:color .18s;"
+           onmouseover="this.style.color='#0B7A4B'" onmouseout="this.style.color=''">
+          info@dentalcare.com
+        </a>
+        <p style="font-size:12px;color:#94a3b8;margin:4px 0 0;">Reply within 24h</p>
+      </div>
+      <!-- Address -->
+      <div class="flex flex-col items-center text-center"
+           style="padding:32px 20px;">
+        <div style="width:54px;height:54px;border-radius:50%;background:#EAF7F1;
+                    display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+          <svg style="width:22px;height:22px;" fill="none" stroke="#0B7A4B" viewBox="0 0 24 24" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
+          </svg>
+        </div>
+        <p style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;margin:0 0 6px;">Location</p>
+        <p class="font-bold text-slate-800" style="font-size:14.5px;margin:0;">123 Dental Avenue</p>
+        <p style="font-size:12px;color:#94a3b8;margin:2px 0 0;">Kigali, Rwanda</p>
+      </div>
+    </div>
+  </div>
+  <style>
+    @media (max-width: 1023px) { .contact-info-grid { grid-template-columns: repeat(2,1fr) !important; } }
+    @media (max-width: 599px)  { .contact-info-grid { grid-template-columns: 1fr !important; } }
+  </style>
+</section>
+
+<!-- ══════════════════════════════════════════
+     FORM + MAP (side by side)
+══════════════════════════════════════════ -->
+<section class="py-20 bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid lg:grid-cols-2 gap-12 items-start">
+
+      <!-- ── Left: Contact Form ── -->
+      <div>
+        <h2 class="font-extrabold text-slate-900" style="font-size:1.7rem;margin-bottom:8px;">
+          Send Us a Message
+        </h2>
+        <p class="text-slate-400" style="font-size:14.5px;margin-bottom:28px;line-height:1.6;">
+          Fill in the form and one of our team members will get back to you shortly.
+        </p>
+
+        {% if messages %}
+          {% for msg in messages %}
+          <div style="background:#EAF7F1;border:1.5px solid #0B7A4B;border-radius:12px;
+                      padding:16px 20px;margin-bottom:20px;display:flex;align-items:flex-start;gap:12px;">
+            <svg style="width:20px;height:20px;flex-shrink:0;margin-top:2px;" fill="none" stroke="#0B7A4B"
+                 viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span style="font-size:14.5px;font-weight:600;color:#0B7A4B;">{{ msg }}</span>
+          </div>
+          {% endfor %}
+        {% endif %}
+
+        <form method="post" action="{% url 'pub_contact' %}"
+              style="display:flex;flex-direction:column;gap:18px;">
+          {% csrf_token %}
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div>
+              <label style="display:block;font-size:12.5px;font-weight:600;color:#475569;margin-bottom:6px;">
+                First Name <span style="color:#e11d48;">*</span>
+              </label>
+              <input type="text" name="first_name" required placeholder="John"
+                     style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;
+                            padding:12px 14px;font-size:14px;outline:none;
+                            transition:border-color .18s,box-shadow .18s;box-sizing:border-box;"
+                     onfocus="this.style.borderColor='#0B7A4B';this.style.boxShadow='0 0 0 3px rgba(11,122,75,.1)'"
+                     onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+            </div>
+            <div>
+              <label style="display:block;font-size:12.5px;font-weight:600;color:#475569;margin-bottom:6px;">
+                Last Name
+              </label>
+              <input type="text" name="last_name" placeholder="Doe"
+                     style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;
+                            padding:12px 14px;font-size:14px;outline:none;
+                            transition:border-color .18s,box-shadow .18s;box-sizing:border-box;"
+                     onfocus="this.style.borderColor='#0B7A4B';this.style.boxShadow='0 0 0 3px rgba(11,122,75,.1)'"
+                     onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+            </div>
+          </div>
+
+          <div>
+            <label style="display:block;font-size:12.5px;font-weight:600;color:#475569;margin-bottom:6px;">
+              Email Address <span style="color:#e11d48;">*</span>
+            </label>
+            <input type="email" name="email" required placeholder="john@example.com"
+                   style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;
+                          padding:12px 14px;font-size:14px;outline:none;
+                          transition:border-color .18s,box-shadow .18s;box-sizing:border-box;"
+                   onfocus="this.style.borderColor='#0B7A4B';this.style.boxShadow='0 0 0 3px rgba(11,122,75,.1)'"
+                   onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+          </div>
+
+          <div>
+            <label style="display:block;font-size:12.5px;font-weight:600;color:#475569;margin-bottom:6px;">
+              Phone Number
+            </label>
+            <input type="tel" name="phone" placeholder="+250 788 000 000"
+                   style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;
+                          padding:12px 14px;font-size:14px;outline:none;
+                          transition:border-color .18s,box-shadow .18s;box-sizing:border-box;"
+                   onfocus="this.style.borderColor='#0B7A4B';this.style.boxShadow='0 0 0 3px rgba(11,122,75,.1)'"
+                   onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+          </div>
+
+          <div>
+            <label style="display:block;font-size:12.5px;font-weight:600;color:#475569;margin-bottom:6px;">
+              Subject
+            </label>
+            <select name="subject"
+                    style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;
+                           padding:12px 14px;font-size:14px;outline:none;background:#fff;
+                           transition:border-color .18s,box-shadow .18s;box-sizing:border-box;cursor:pointer;"
+                    onfocus="this.style.borderColor='#0B7A4B';this.style.boxShadow='0 0 0 3px rgba(11,122,75,.1)'"
+                    onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+              <option value="">Select a subject</option>
+              <option>Book an Appointment</option>
+              <option>General Enquiry</option>
+              <option>Emergency Dental Care</option>
+              <option>Billing or Insurance</option>
+              <option>Feedback or Complaint</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="display:block;font-size:12.5px;font-weight:600;color:#475569;margin-bottom:6px;">
+              Message <span style="color:#e11d48;">*</span>
+            </label>
+            <textarea name="message" rows="5" required
+                      placeholder="How can we help you today?"
+                      style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;
+                             padding:12px 14px;font-size:14px;outline:none;resize:vertical;
+                             transition:border-color .18s,box-shadow .18s;box-sizing:border-box;"
+                      onfocus="this.style.borderColor='#0B7A4B';this.style.boxShadow='0 0 0 3px rgba(11,122,75,.1)'"
+                      onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'"></textarea>
+          </div>
+
+          <button type="submit"
+                  style="width:100%;padding:14px 24px;border-radius:10px;border:none;cursor:pointer;
+                         background:linear-gradient(135deg,#0B7A4B,#075A38);
+                         color:#fff;font-size:15px;font-weight:700;
+                         display:flex;align-items:center;justify-content:center;gap:8px;
+                         box-shadow:0 4px 14px rgba(11,122,75,.3);transition:box-shadow .22s,transform .22s;"
+                  onmouseover="this.style.boxShadow='0 7px 24px rgba(11,122,75,.45)';this.style.transform='translateY(-1px)'"
+                  onmouseout="this.style.boxShadow='0 4px 14px rgba(11,122,75,.3)';this.style.transform='translateY(0)'">
+            <svg style="width:17px;height:17px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
+            </svg>
+            Send Message
+          </button>
+        </form>
+      </div>
+
+      <!-- ── Right: Map placeholder + hours + socials ── -->
+      <div style="display:flex;flex-direction:column;gap:24px;">
+
+        <!-- Map placeholder -->
+        <div style="border-radius:20px;overflow:hidden;height:280px;
+                    background:linear-gradient(135deg,#EAF7F1,#C5E8D8);
+                    position:relative;border:1.5px solid rgba(11,122,75,.15);">
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;
+                      align-items:center;justify-content:center;gap:14px;">
+            <div style="width:60px;height:60px;border-radius:50%;background:#0B7A4B;
+                        display:flex;align-items:center;justify-content:center;
+                        box-shadow:0 4px 18px rgba(11,122,75,.35);">
+              <svg style="width:28px;height:28px;" fill="white" viewBox="0 0 24 24">
+                <path fill-rule="evenodd" clip-rule="evenodd"
+                      d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-2.003 3.5-4.697 3.5-8.327a8 8 0 10-16 0c0 3.63 1.556 6.326 3.5 8.327a19.583 19.583 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7z"/>
+              </svg>
+            </div>
+            <div class="text-center">
+              <p class="font-bold text-slate-700" style="font-size:15px;margin:0 0 4px;">123 Dental Avenue</p>
+              <p class="text-slate-400" style="font-size:13.5px;margin:0;">Kigali, Rwanda</p>
+            </div>
+            <a href="https://maps.google.com/?q=Kigali+Rwanda" target="_blank" rel="noopener"
+               class="inline-flex items-center gap-2 font-semibold"
+               style="color:#0B7A4B;font-size:13px;text-decoration:none;
+                      border:1.5px solid rgba(11,122,75,.3);padding:7px 18px;border-radius:9999px;
+                      background:#fff;transition:all .2s;"
+               onmouseover="this.style.background='#0B7A4B';this.style.color='#fff'"
+               onmouseout="this.style.background='#fff';this.style.color='#0B7A4B'">
+              Open in Maps
+            </a>
+          </div>
+        </div>
+
+        <!-- Working hours -->
+        <div class="bg-white rounded-2xl" style="padding:24px;border:1.5px solid rgba(11,122,75,.1);box-shadow:0 2px 10px rgba(11,122,75,.06);">
+          <h3 class="font-bold text-slate-900" style="font-size:15.5px;margin:0 0 16px;">
+            Working Hours
+          </h3>
+          {% for day in "1234" %}
+          <div class="flex items-center justify-between"
+               style="padding:8px 0;{% if not forloop.last %}border-bottom:1px solid rgba(11,122,75,.06);{% endif %}">
+            <span class="font-medium text-slate-600" style="font-size:14px;">
+              {% if forloop.counter == 1 %}Monday – Friday
+              {% elif forloop.counter == 2 %}Saturday
+              {% elif forloop.counter == 3 %}Sunday
+              {% else %}Public Holidays{% endif %}
+            </span>
+            <span style="font-size:13.5px;font-weight:700;
+                         {% if forloop.counter == 1 %}color:#0B7A4B;{% elif forloop.counter == 2 %}color:#0B7A4B;{% else %}color:#94a3b8;{% endif %}">
+              {% if forloop.counter == 1 %}8:00 – 17:00
+              {% elif forloop.counter == 2 %}9:00 – 13:00
+              {% elif forloop.counter == 3 %}Closed
+              {% else %}Closed{% endif %}
+            </span>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Social links -->
+        <div class="bg-white rounded-2xl" style="padding:24px;border:1.5px solid rgba(11,122,75,.1);box-shadow:0 2px 10px rgba(11,122,75,.06);">
+          <h3 class="font-bold text-slate-900" style="font-size:15.5px;margin:0 0 16px;">
+            Follow Us
+          </h3>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <!-- WhatsApp -->
+            <a href="https://wa.me/250788000000" target="_blank" rel="noopener"
+               class="flex items-center gap-3"
+               style="padding:12px 16px;border-radius:12px;background:#f0fdf4;
+                      text-decoration:none;transition:background .2s;"
+               onmouseover="this.style.background='#dcfce7'" onmouseout="this.style.background='#f0fdf4'">
+              <div style="width:38px;height:38px;border-radius:10px;background:#16a34a;
+                          display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg style="width:19px;height:19px;" fill="white" viewBox="0 0 24 24">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="font-bold text-slate-800" style="font-size:14px;margin:0 0 1px;">WhatsApp</p>
+                <p style="font-size:12px;color:#16a34a;margin:0;font-weight:600;">+250 788 000 000</p>
+              </div>
+            </a>
+            <!-- Instagram -->
+            <a href="https://instagram.com/dentalcarepro" target="_blank" rel="noopener"
+               class="flex items-center gap-3"
+               style="padding:12px 16px;border-radius:12px;background:#fdf4ff;
+                      text-decoration:none;transition:background .2s;"
+               onmouseover="this.style.background='#fae8ff'" onmouseout="this.style.background='#fdf4ff'">
+              <div style="width:38px;height:38px;border-radius:10px;
+                          background:linear-gradient(135deg,#f59e0b,#e11d48,#7c3aed);
+                          display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg style="width:19px;height:19px;" fill="white" viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="font-bold text-slate-800" style="font-size:14px;margin:0 0 1px;">Instagram</p>
+                <p style="font-size:12px;color:#7c3aed;margin:0;font-weight:600;">@dentalcarepro</p>
+              </div>
+            </a>
+            <!-- TikTok -->
+            <a href="https://tiktok.com/@dentalcarepro" target="_blank" rel="noopener"
+               class="flex items-center gap-3"
+               style="padding:12px 16px;border-radius:12px;background:#f8f8f8;
+                      text-decoration:none;transition:background .2s;"
+               onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#f8f8f8'">
+              <div style="width:38px;height:38px;border-radius:10px;background:#000;
+                          display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg style="width:19px;height:19px;" fill="white" viewBox="0 0 24 24">
+                  <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.31 6.31 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.26 8.26 0 004.83 1.56V6.79a4.85 4.85 0 01-1.06-.1z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="font-bold text-slate-800" style="font-size:14px;margin:0 0 1px;">TikTok</p>
+                <p style="font-size:12px;color:#475569;margin:0;font-weight:600;">@dentalcarepro</p>
+              </div>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

@@ -12,7 +12,7 @@
          style="min-height:100vh;
                 background:linear-gradient(145deg,#EAF7F1 0%,#f5faf7 38%,#ffffff 62%,#EAF7F1 100%);">
 
-  {% include "public/partials/public_navbar.html" %}
+  {% include "public/partials/public_navbar.html" with active_page="home" %}
 
   <!-- Bottom-left wave arcs — brand green palette -->
   <svg class="absolute bottom-0 left-0 pointer-events-none select-none"
@@ -70,7 +70,7 @@
     </p>
 
     <div class="mt-10 flex items-center gap-4 flex-wrap justify-center">
-      <a href="{% url 'accounts:login' %}"
+      <a href="{% url 'pub_book' %}"
          class="inline-flex items-center gap-2.5 font-semibold text-white"
          style="background-color:#0B7A4B;padding:14px 36px;border-radius:9999px;
                 font-size:15px;box-shadow:0 4px 18px rgba(11,122,75,.35);transition:all .22s;"
@@ -180,7 +180,7 @@
 
         <!-- CTA buttons -->
         <div class="mt-8 flex items-center gap-5 flex-wrap">
-          <a href="{% url 'accounts:login' %}"
+          <a href="{% url 'pub_book' %}"
              class="inline-flex items-center gap-2 font-semibold text-white"
              style="background-color:#0B7A4B;padding:12px 28px;border-radius:9999px;
                     font-size:14px;box-shadow:0 3px 12px rgba(11,122,75,.3);transition:all .22s;"
@@ -434,7 +434,7 @@
           follow-up visit, every step is designed around your comfort and confidence.
         </p>
 
-        <a href="{% url 'accounts:login' %}"
+        <a href="{% url 'pub_book' %}"
            class="inline-flex items-center gap-2 font-semibold mt-8"
            style="border:2px solid rgba(255,255,255,.5);color:white;padding:11px 26px;
                   border-radius:9999px;font-size:14px;transition:all .22s;"
@@ -556,6 +556,480 @@
         </div>
 
       </div><!-- /process grid -->
+    </div>
+  </div>
+</section>
+
+
+<!-- Doctor card grid + card styles used below -->
+<style>
+  .pub-doctors-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  @media (max-width: 1023px) {
+    .pub-doctors-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 639px) {
+    .pub-doctors-grid { grid-template-columns: 1fr; gap: 16px; }
+  }
+  .pub-doc-card {
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 2px 14px rgba(11,122,75,.09);
+    transition: transform .24s, box-shadow .24s;
+  }
+  .pub-doc-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 44px rgba(11,122,75,.16);
+  }
+</style>
+
+<!-- ══════════════════════════════════════════
+     TESTIMONIALS SECTION
+══════════════════════════════════════════ -->
+<section class="py-20" style="background-color:#F5F9F7;">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <div class="text-center" style="margin-bottom:48px;">
+      <div class="inline-flex items-center gap-2 mb-3"
+           style="color:#0B7A4B;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;">
+        <svg style="width:14px;height:14px;" fill="currentColor" viewBox="0 0 64 64" aria-hidden="true">
+          <path d="M32 4c-5.5 0-9.5 3.5-11 7.5C19.5 9 17.5 8 15 8 10.5 8 7 11.5 7 16c0 7 5 11.5 9 16 2 2.5 3.5 5 4.5 8.5.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5c.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5C35 37 36.5 34.5 39 32c4-4 9-8.5 9-16C48 11.5 44 8 39.5 8c-2.5 0-4.5 1-6 3.5C32 8 31 4 32 4Z"/>
+        </svg>
+        Patient Reviews
+      </div>
+      <h2 class="font-extrabold text-slate-900 leading-tight"
+          style="font-size:clamp(1.7rem,3.2vw,2.4rem);">
+        What Our Patients Say
+      </h2>
+      <p class="text-slate-500 mx-auto" style="font-size:15px;max-width:460px;margin-top:12px;">
+        Real stories from patients whose smiles we have helped transform.
+      </p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;" class="reviews-grid">
+      {% for rev in "123" %}
+      <div class="bg-white rounded-2xl"
+           style="padding:28px 26px;box-shadow:0 2px 12px rgba(11,122,75,.08);
+                  border:1.5px solid rgba(11,122,75,.08);
+                  transition:transform .22s,box-shadow .22s;"
+           onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(11,122,75,.14)'"
+           onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 12px rgba(11,122,75,.08)'">
+        <!-- Stars -->
+        <div class="flex items-center gap-1" style="margin-bottom:16px;">
+          {% for s in "12345" %}
+          <svg style="width:16px;height:16px;" fill="#f59e0b" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+          </svg>
+          {% endfor %}
+        </div>
+        <!-- Quote -->
+        <blockquote class="text-slate-600" style="font-size:14.5px;line-height:1.75;margin:0 0 20px;font-style:italic;">
+          "{% if forloop.counter == 1 %}The team at DentalCare made me feel completely at ease. My checkup was thorough and the staff were so kind. I've never left a dentist feeling this good about my smile!
+          {% elif forloop.counter == 2 %}I was nervous about my filling but the procedure was quick and painless. The dentist explained every step and the result is perfect. Highly recommend this clinic.
+          {% else %}I brought my children here for their first dental visit and the experience was wonderful. They actually look forward to coming back. The doctors are patient and great with kids.{% endif %}"
+        </blockquote>
+        <!-- Author -->
+        <div class="flex items-center gap-3">
+          <div style="width:44px;height:44px;border-radius:50%;flex-shrink:0;
+                      background:linear-gradient(145deg,#0B7A4B,#075A38);
+                      display:flex;align-items:center;justify-content:center;">
+            <span style="color:#fff;font-size:15px;font-weight:800;">
+              {% if forloop.counter == 1 %}AM{% elif forloop.counter == 2 %}JM{% else %}CN{% endif %}
+            </span>
+          </div>
+          <div>
+            <p class="font-bold text-slate-900" style="font-size:14px;margin:0 0 1px;">
+              {% if forloop.counter == 1 %}Amina Mukakalisa{% elif forloop.counter == 2 %}Jean-Marie Nkurunziza{% else %}Claudette Uwimana{% endif %}
+            </p>
+            <p style="font-size:12px;color:#0B7A4B;font-weight:600;margin:0;">
+              {% if forloop.counter == 1 %}Regular Patient{% elif forloop.counter == 2 %}First-time Patient{% else %}Parent{% endif %}
+            </p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <style>
+      @media (max-width: 1023px) { .reviews-grid { grid-template-columns: repeat(2,1fr) !important; } }
+      @media (max-width: 639px)  { .reviews-grid { grid-template-columns: 1fr !important; } }
+    </style>
+
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     OUR DOCTORS SECTION
+══════════════════════════════════════════ -->
+<section id="doctors" class="py-20 bg-white" style="border-top:1px solid rgba(11,122,75,.07);">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <!-- Section header -->
+    <div class="text-center" style="margin-bottom:48px;">
+      <div class="inline-flex items-center gap-2 mb-3"
+           style="color:#0B7A4B;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;">
+        <svg style="width:14px;height:14px;" fill="currentColor" viewBox="0 0 64 64" aria-hidden="true">
+          <path d="M32 4c-5.5 0-9.5 3.5-11 7.5C19.5 9 17.5 8 15 8 10.5 8 7 11.5 7 16c0 7 5 11.5 9 16 2 2.5 3.5 5 4.5 8.5.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5c.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5C35 37 36.5 34.5 39 32c4-4 9-8.5 9-16C48 11.5 44 8 39.5 8c-2.5 0-4.5 1-6 3.5C32 8 31 4 32 4Z"/>
+        </svg>
+        Meet The Team
+      </div>
+      <h2 class="font-extrabold text-slate-900 leading-tight"
+          style="font-size:clamp(1.7rem,3.2vw,2.4rem);">
+        Our Experienced Dentists
+      </h2>
+      <p class="text-slate-500 mx-auto"
+         style="font-size:15px;max-width:480px;margin-top:12px;">
+        Meet our professional dental team ready to care for your smile with expertise,
+        compassion, and the latest in modern dentistry.
+      </p>
+    </div>
+
+    {% if dentists %}
+
+    <div class="pub-doctors-grid">
+      {% for dentist in dentists %}
+
+      <div class="pub-doc-card">
+
+        <!-- Card header with gradient + initials avatar -->
+        <div style="height:130px;position:relative;overflow:hidden;
+                    {% if forloop.counter == 2 %}background:linear-gradient(135deg,#C5E8D8 0%,#4FA882 100%);
+                    {% elif forloop.counter == 3 %}background:linear-gradient(135deg,#EAF7F1 0%,#8DC9AE 100%);
+                    {% else %}background:linear-gradient(135deg,#EAF7F1 0%,#C5E8D8 100%);{% endif %}">
+
+          <!-- Tooth watermark -->
+          <svg style="position:absolute;right:-12px;bottom:-12px;width:90px;height:90px;opacity:.13;"
+               fill="#0B7A4B" viewBox="0 0 64 64" aria-hidden="true">
+            <path d="M32 4c-5.5 0-9.5 3.5-11 7.5C19.5 9 17.5 8 15 8 10.5 8 7 11.5 7 16c0 7 5 11.5 9 16 2 2.5 3.5 5 4.5 8.5.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5c.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5C35 37 36.5 34.5 39 32c4-4 9-8.5 9-16C48 11.5 44 8 39.5 8c-2.5 0-4.5 1-6 3.5C32 8 31 4 32 4Z"/>
+          </svg>
+          <!-- Small decorative dot -->
+          <div style="position:absolute;top:14px;left:16px;width:8px;height:8px;border-radius:50%;
+                      background:rgba(11,122,75,0.25);"></div>
+          <div style="position:absolute;top:14px;left:30px;width:5px;height:5px;border-radius:50%;
+                      background:rgba(11,122,75,0.15);"></div>
+
+          <!-- Initials avatar — overlaps card body -->
+          <div style="position:absolute;bottom:-36px;left:50%;transform:translateX(-50%);
+                      width:74px;height:74px;border-radius:50%;
+                      background:linear-gradient(145deg,#0B7A4B,#075A38);
+                      border:4px solid #fff;
+                      display:flex;align-items:center;justify-content:center;
+                      box-shadow:0 4px 18px rgba(11,122,75,.3);">
+            <span style="color:#fff;font-size:23px;font-weight:800;letter-spacing:-1px;line-height:1;">
+              {{ dentist.user.first_name|slice:":1"|upper }}{{ dentist.user.last_name|slice:":1"|upper }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Card body -->
+        <div style="padding:52px 22px 26px;text-align:center;">
+
+          <!-- Name -->
+          <h3 class="font-extrabold text-slate-900" style="font-size:17px;margin-bottom:4px;">
+            Dr. {{ dentist.user.full_name }}
+          </h3>
+
+          <!-- Specialization -->
+          <p style="font-size:13px;font-weight:600;color:#0B7A4B;margin-bottom:14px;">
+            {{ dentist.specialization|default:"General Dentist" }}
+          </p>
+
+          <!-- Availability pill -->
+          {% if dentist.is_available %}
+          <span style="display:inline-flex;align-items:center;gap:5px;
+                       font-size:11.5px;font-weight:600;background:#EAF7F1;color:#0B7A4B;
+                       padding:4px 13px;border-radius:9999px;margin-bottom:16px;">
+            <span style="width:7px;height:7px;border-radius:50%;background:#0B7A4B;flex-shrink:0;"></span>
+            Available
+          </span>
+          {% else %}
+          <span style="display:inline-flex;align-items:center;gap:5px;
+                       font-size:11.5px;font-weight:600;background:#f1f5f9;color:#64748b;
+                       padding:4px 13px;border-radius:9999px;margin-bottom:16px;">
+            <span style="width:7px;height:7px;border-radius:50%;background:#94a3b8;flex-shrink:0;"></span>
+            Unavailable
+          </span>
+          {% endif %}
+
+          <!-- Working hours -->
+          <p class="text-slate-400" style="font-size:12px;margin-bottom:22px;line-height:1.5;">
+            <svg style="width:12px;height:12px;display:inline;margin-right:4px;vertical-align:-1px;"
+                 fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>
+            </svg>
+            {{ dentist.available_from|time:"H:i" }} – {{ dentist.available_to|time:"H:i" }}
+            &nbsp;&bull;&nbsp; Mon–Fri
+          </p>
+
+          <!-- Book Appointment CTA -->
+          {% if dentist.is_available %}
+          <a href="{% url 'pub_book' %}?dentist={{ dentist.pk }}"
+             class="inline-flex items-center justify-center gap-2 font-semibold text-white"
+             style="width:100%;padding:11px 20px;border-radius:12px;
+                    background:linear-gradient(135deg,#0B7A4B,#075A38);
+                    font-size:14px;text-decoration:none;
+                    box-shadow:0 3px 12px rgba(11,122,75,.28);
+                    transition:box-shadow .22s,transform .22s;"
+             onmouseover="this.style.boxShadow='0 6px 22px rgba(11,122,75,.42)';this.style.transform='translateY(-1px)';"
+             onmouseout="this.style.boxShadow='0 3px 12px rgba(11,122,75,.28)';this.style.transform='translateY(0)';">
+            <svg style="width:15px;height:15px;flex-shrink:0;" fill="none"
+                 stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            Book Appointment
+          </a>
+          {% else %}
+          <div class="inline-flex items-center justify-center"
+               style="width:100%;padding:11px 20px;border-radius:12px;
+                      background:#f1f5f9;color:#94a3b8;font-size:14px;font-weight:600;
+                      cursor:not-allowed;">
+            Currently Unavailable
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+
+      {% endfor %}
+    </div>
+
+    {% else %}
+
+    <!-- Empty state -->
+    <div class="text-center" style="padding:64px 20px;">
+      <div style="width:84px;height:84px;border-radius:50%;background:#EAF7F1;
+                  display:flex;align-items:center;justify-content:center;margin:0 auto 22px;">
+        <svg style="width:38px;height:38px;" fill="none" stroke="#0B7A4B"
+             viewBox="0 0 24 24" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+        </svg>
+      </div>
+      <h3 class="font-bold text-slate-700" style="font-size:18px;margin-bottom:10px;">
+        No Dentists Available Yet
+      </h3>
+      <p class="text-slate-400" style="font-size:14px;max-width:360px;margin:0 auto 26px;line-height:1.65;">
+        Our team is being assembled. Please check back soon or contact us directly to schedule a visit.
+      </p>
+      <a href="{% url 'pub_book' %}"
+         class="inline-flex items-center gap-2 font-semibold text-white"
+         style="background:#0B7A4B;padding:12px 30px;border-radius:9999px;
+                font-size:14px;text-decoration:none;
+                box-shadow:0 3px 12px rgba(11,122,75,.28);">
+        Book Anyway
+        <svg style="width:14px;height:14px;" fill="none" stroke="currentColor"
+             viewBox="0 0 24 24" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        </svg>
+      </a>
+    </div>
+
+    {% endif %}
+
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════
+     CONTACT SECTION
+══════════════════════════════════════════ -->
+<section id="contact" class="py-20" style="background-color:#F5F9F7;border-top:1px solid rgba(11,122,75,.07);">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <!-- Section header -->
+    <div class="text-center" style="margin-bottom:52px;">
+      <div class="inline-flex items-center gap-2 mb-3"
+           style="color:#0B7A4B;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;">
+        <svg style="width:14px;height:14px;" fill="currentColor" viewBox="0 0 64 64" aria-hidden="true">
+          <path d="M32 4c-5.5 0-9.5 3.5-11 7.5C19.5 9 17.5 8 15 8 10.5 8 7 11.5 7 16c0 7 5 11.5 9 16 2 2.5 3.5 5 4.5 8.5.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5c.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5C35 37 36.5 34.5 39 32c4-4 9-8.5 9-16C48 11.5 44 8 39.5 8c-2.5 0-4.5 1-6 3.5C32 8 31 4 32 4Z"/>
+        </svg>
+        Contact Us
+      </div>
+      <h2 class="font-extrabold text-slate-900 leading-tight"
+          style="font-size:clamp(1.7rem,3.2vw,2.4rem);">
+        Get In Touch With Our Team
+      </h2>
+      <p class="text-slate-500 mx-auto" style="font-size:15px;max-width:480px;margin-top:12px;">
+        We're here to help. Reach out to schedule an appointment, ask a question,
+        or simply find out how we can serve your dental needs.
+      </p>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-12 items-start">
+
+      <!-- ── Left: contact info cards ── -->
+      <div style="display:flex;flex-direction:column;gap:18px;">
+
+        <!-- Phone -->
+        <div class="bg-white rounded-2xl flex items-center gap-4"
+             style="padding:22px 26px;box-shadow:0 2px 12px rgba(11,122,75,.08);">
+          <div class="rounded-full flex items-center justify-center flex-none"
+               style="width:52px;height:52px;background-color:#EAF7F1;">
+            <svg style="width:22px;height:22px;" fill="none" stroke="#0B7A4B"
+                 viewBox="0 0 24 24" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M2.25 6.338c0-.966.784-1.75 1.75-1.75h.38c.504 0 .958.296 1.163.757l1.32 2.977a1.25 1.25 0 01-.287 1.398L5.6 10.928a11.037 11.037 0 005.472 5.472l1.208-.976a1.25 1.25 0 011.398-.287l2.977 1.32c.461.205.757.659.757 1.163v.38a1.75 1.75 0 01-1.75 1.75H14C8.063 19.75 4.25 15.937 4.25 10V6.338z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider" style="margin-bottom:2px;">Phone</p>
+            <a href="tel:+250788000000" class="text-base font-bold text-slate-800"
+               onmouseover="this.style.color='#0B7A4B'" onmouseout="this.style.color=''">
+              +250 788 000 000
+            </a>
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="bg-white rounded-2xl flex items-center gap-4"
+             style="padding:22px 26px;box-shadow:0 2px 12px rgba(11,122,75,.08);">
+          <div class="rounded-full flex items-center justify-center flex-none"
+               style="width:52px;height:52px;background-color:#EAF7F1;">
+            <svg style="width:22px;height:22px;" fill="none" stroke="#0B7A4B"
+                 viewBox="0 0 24 24" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider" style="margin-bottom:2px;">Email</p>
+            <a href="mailto:info@dentalcare.com" class="text-base font-bold text-slate-800"
+               onmouseover="this.style.color='#0B7A4B'" onmouseout="this.style.color=''">
+              info@dentalcare.com
+            </a>
+          </div>
+        </div>
+
+        <!-- Location -->
+        <div class="bg-white rounded-2xl flex items-center gap-4"
+             style="padding:22px 26px;box-shadow:0 2px 12px rgba(11,122,75,.08);">
+          <div class="rounded-full flex items-center justify-center flex-none"
+               style="width:52px;height:52px;background-color:#EAF7F1;">
+            <svg style="width:22px;height:22px;" fill="none" stroke="#0B7A4B"
+                 viewBox="0 0 24 24" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider" style="margin-bottom:2px;">Address</p>
+            <p class="text-base font-bold text-slate-800">6391 Elgin St, Celina, 10299</p>
+          </div>
+        </div>
+
+        <!-- Hours -->
+        <div class="bg-white rounded-2xl flex items-center gap-4"
+             style="padding:22px 26px;box-shadow:0 2px 12px rgba(11,122,75,.08);">
+          <div class="rounded-full flex items-center justify-center flex-none"
+               style="width:52px;height:52px;background-color:#EAF7F1;">
+            <svg style="width:22px;height:22px;" fill="none" stroke="#0B7A4B"
+                 viewBox="0 0 24 24" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider" style="margin-bottom:2px;">Working Hours</p>
+            <p class="text-base font-bold text-slate-800">Mon–Fri &nbsp;8:00 – 17:00</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Right: enquiry form ── -->
+      <div class="bg-white rounded-2xl" style="padding:36px 32px;box-shadow:0 4px 24px rgba(11,122,75,.10);">
+        <h3 class="font-extrabold text-slate-900" style="font-size:20px;margin-bottom:22px;">
+          Send Us a Message
+        </h3>
+        {% if messages %}
+          {% for msg in messages %}
+          <div style="background:#EAF7F1;border:1.5px solid #0B7A4B;border-radius:10px;
+                      padding:13px 18px;margin-bottom:4px;display:flex;align-items:center;gap:10px;">
+            <svg style="width:18px;height:18px;flex-shrink:0;" fill="none" stroke="#0B7A4B"
+                 viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span style="font-size:14px;font-weight:600;color:#0B7A4B;">{{ msg }}</span>
+          </div>
+          {% endfor %}
+        {% endif %}
+        <form method="post" action="{% url 'home' %}#contact"
+              style="display:flex;flex-direction:column;gap:16px;">
+          {% csrf_token %}
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div>
+              <label style="display:block;font-size:12.5px;font-weight:600;color:#475569;margin-bottom:5px;">First Name</label>
+              <input type="text" name="first_name" placeholder="John"
+                     style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;
+                            padding:11px 14px;font-size:14px;outline:none;
+                            transition:border-color .18s;box-sizing:border-box;"
+                     onfocus="this.style.borderColor='#0B7A4B'"
+                     onblur="this.style.borderColor='#e2e8f0'">
+            </div>
+            <div>
+              <label style="display:block;font-size:12.5px;font-weight:600;color:#475569;margin-bottom:5px;">Last Name</label>
+              <input type="text" name="last_name" placeholder="Doe"
+                     style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;
+                            padding:11px 14px;font-size:14px;outline:none;
+                            transition:border-color .18s;box-sizing:border-box;"
+                     onfocus="this.style.borderColor='#0B7A4B'"
+                     onblur="this.style.borderColor='#e2e8f0'">
+            </div>
+          </div>
+          <div>
+            <label style="display:block;font-size:12.5px;font-weight:600;color:#475569;margin-bottom:5px;">Email Address</label>
+            <input type="email" name="email" placeholder="john@example.com"
+                   style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;
+                          padding:11px 14px;font-size:14px;outline:none;
+                          transition:border-color .18s;box-sizing:border-box;"
+                   onfocus="this.style.borderColor='#0B7A4B'"
+                   onblur="this.style.borderColor='#e2e8f0'">
+          </div>
+          <div>
+            <label style="display:block;font-size:12.5px;font-weight:600;color:#475569;margin-bottom:5px;">Phone Number</label>
+            <input type="tel" name="phone" placeholder="+250 788 000 000"
+                   style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;
+                          padding:11px 14px;font-size:14px;outline:none;
+                          transition:border-color .18s;box-sizing:border-box;"
+                   onfocus="this.style.borderColor='#0B7A4B'"
+                   onblur="this.style.borderColor='#e2e8f0'">
+          </div>
+          <div>
+            <label style="display:block;font-size:12.5px;font-weight:600;color:#475569;margin-bottom:5px;">Message</label>
+            <textarea name="message" rows="4" placeholder="How can we help you?"
+                      style="width:100%;border:1.5px solid #e2e8f0;border-radius:10px;
+                             padding:11px 14px;font-size:14px;outline:none;resize:vertical;
+                             transition:border-color .18s;box-sizing:border-box;"
+                      onfocus="this.style.borderColor='#0B7A4B'"
+                      onblur="this.style.borderColor='#e2e8f0'"></textarea>
+          </div>
+          <button type="submit"
+                  class="inline-flex items-center justify-center gap-2 font-semibold text-white"
+                  style="width:100%;padding:13px 24px;border-radius:10px;border:none;cursor:pointer;
+                         background:linear-gradient(135deg,#0B7A4B,#075A38);font-size:15px;
+                         box-shadow:0 3px 12px rgba(11,122,75,.28);
+                         transition:box-shadow .22s,transform .22s;"
+                  onmouseover="this.style.boxShadow='0 6px 22px rgba(11,122,75,.42)';this.style.transform='translateY(-1px)';"
+                  onmouseout="this.style.boxShadow='0 3px 12px rgba(11,122,75,.28)';this.style.transform='translateY(0)';">
+            <svg style="width:16px;height:16px;flex-shrink:0;" fill="none"
+                 stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
+            </svg>
+            Send Message
+          </button>
+        </form>
+      </div>
+
     </div>
   </div>
 </section>

@@ -1,0 +1,125 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+{% block title %}New Article{% endblock %}
+
+{% block dashboard_content %}
+
+{# ── HEADER ── #}
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <p class="text-xs font-semibold uppercase tracking-wide text-green-600">Articles</p>
+    <h1 class="mt-1 text-2xl font-bold text-gray-900">New Article</h1>
+  </div>
+  <a href="{% url 'articles:dashboard_list' %}"
+     class="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
+    <span class="material-symbols-rounded text-base">arrow_back</span> Back to Articles
+  </a>
+</div>
+
+<form method="post" enctype="multipart/form-data" id="articleForm">
+  {% csrf_token %}
+  <div class="grid gap-6 xl:grid-cols-3">
+
+    {# ── LEFT COLUMN: Editor ── #}
+    <div class="space-y-5 xl:col-span-2">
+
+      {# Title #}
+      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+        <label class="mb-2 block text-sm font-semibold text-gray-700">
+          Title <span class="text-red-500">*</span>
+        </label>
+        {{ form.title }}
+        {% if form.title.errors %}
+        <p class="mt-1 text-xs text-red-600">{{ form.title.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      {# Excerpt #}
+      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+        <label class="mb-2 block text-sm font-semibold text-gray-700">Excerpt</label>
+        <p class="mb-2 text-xs text-gray-400">Short summary shown on listing cards. Max 400 characters.</p>
+        {{ form.excerpt }}
+        {% if form.excerpt.errors %}
+        <p class="mt-1 text-xs text-red-600">{{ form.excerpt.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      {# Content #}
+      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+        <label class="mb-2 block text-sm font-semibold text-gray-700">
+          Content <span class="text-red-500">*</span>
+        </label>
+        {% if form.content.errors %}
+        <p class="mb-2 text-xs text-red-600">{{ form.content.errors.0 }}</p>
+        {% endif %}
+        {{ form.content }}
+      </div>
+
+    </div>
+
+    {# ── RIGHT COLUMN: Settings ── #}
+    <div class="space-y-5">
+
+      {# Publish settings #}
+      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+        <h3 class="mb-4 text-sm font-bold text-gray-900">Publish Settings</h3>
+        <label class="flex cursor-pointer items-center gap-3">
+          {{ form.is_published }}
+          <span class="text-sm font-semibold text-gray-700">Publish immediately</span>
+        </label>
+        <p class="mt-2 text-xs text-gray-400">Uncheck to save as draft. You can publish later.</p>
+        <div class="mt-5 flex gap-3">
+          <button type="submit"
+                  class="flex-1 rounded-2xl bg-green-700 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-green-800">
+            Save Article
+          </button>
+          <a href="{% url 'articles:dashboard_list' %}"
+             class="flex-1 rounded-2xl bg-gray-100 py-2.5 text-center text-sm font-semibold text-gray-700 hover:bg-gray-200">
+            Cancel
+          </a>
+        </div>
+      </div>
+
+      {# Category #}
+      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+        <label class="mb-2 block text-sm font-semibold text-gray-700">Category</label>
+        {{ form.category }}
+        {% if form.category.errors %}
+        <p class="mt-1 text-xs text-red-600">{{ form.category.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      {# Featured image #}
+      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+        <label class="mb-2 block text-sm font-semibold text-gray-700">Featured Image</label>
+        <p class="mb-2 text-xs text-gray-400">Recommended: 1200×630 px (16:9)</p>
+        {{ form.featured_image }}
+        {% if form.featured_image.errors %}
+        <p class="mt-1 text-xs text-red-600">{{ form.featured_image.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      {# Video URL #}
+      <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+        <label class="mb-2 block text-sm font-semibold text-gray-700">Video / Embed URL</label>
+        <p class="mb-2 text-xs text-gray-400">YouTube embed URL (youtube.com/embed/…) or Spotify embed URL. Shown below the article content.</p>
+        {{ form.video_url }}
+        {% if form.video_url.errors %}
+        <p class="mt-1 text-xs text-red-600">{{ form.video_url.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      {# Non-field errors #}
+      {% if form.non_field_errors %}
+      <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        {% for e in form.non_field_errors %}{{ e }}{% endfor %}
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</form>
+
+{{ form.media }}
+
+{% endblock %}

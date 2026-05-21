@@ -26,46 +26,76 @@ def role_dashboard_redirect(request):
 
 
 def admin_dashboard_context():
-    revenue = Invoice.objects.filter(status=Invoice.Status.PAID).aggregate(total=Sum("amount"))["total"] or 0
+    from django.utils import timezone as tz
+    from followups.models import FollowUp
+
+    today = tz.localdate()
+    pending = Appointment.objects.filter(status=Appointment.Status.PENDING).count()
+    confirmed = Appointment.objects.filter(status=Appointment.Status.APPROVED).count()
+    today_count = Appointment.objects.filter(appointment_date=today).count()
+    missed = Appointment.objects.filter(
+        appointment_date__lt=today,
+        status=Appointment.Status.PENDING,
+    ).count()
+    followups_today = FollowUp.objects.filter(
+        followup_date=today, status=FollowUp.Status.PENDING
+    ).count()
+
     stats = [
         {"label": "Total Patients", "value": PatientProfile.objects.count(), "change": "+10%", "tone": "green", "icon": "groups"},
-        {"label": "Total Appointments", "value": Appointment.objects.count(), "change": "+15%", "tone": "green", "icon": "event_available"},
-        {"label": "Total Dentists", "value": DentistProfile.objects.count(), "change": "+6%", "tone": "green", "icon": "dentistry"},
-        {"label": "Revenue", "value": f"${revenue:,.0f}", "change": "+12%", "tone": "green", "icon": "paid"},
-        {"label": "Pending Appointments", "value": Appointment.objects.filter(status=Appointment.Status.PENDING).count(), "change": "Review", "tone": "amber", "icon": "pending_actions"},
-        {"label": "Completed Treatments", "value": Treatment.objects.count(), "change": "+8%", "tone": "green", "icon": "medication"},
+        {"label": "Today's Appointments", "value": today_count, "change": "Today", "tone": "green", "icon": "event_available"},
+        {"label": "Total Dentists", "value": DentistProfile.objects.count(), "change": "Active", "tone": "green", "icon": "dentistry"},
+        {"label": "Pending Approvals", "value": pending, "change": "Review", "tone": "amber", "icon": "pending_actions"},
+        {"label": "Confirmed Appointments", "value": confirmed, "change": "Approved", "tone": "green", "icon": "task_alt"},
+        {"label": "Follow-ups Today", "value": followups_today, "change": "Due", "tone": "amber", "icon": "next_plan"},
     ]
-    invoice_stats = Invoice.objects.aggregate(
-        paid=Count("id", filter=Q(status=Invoice.Status.PAID)),
-        unpaid=Count("id", filter=Q(status=Invoice.Status.UNPAID)),
-        cancelled=Count("id", filter=Q(status=Invoice.Status.CANCELLED)),
-    )
-    appointments = Appointment.objects.select_related("patient__user", "dentist__user")[:8]
+
+    appointments = Appointment.objects.select_related("patient__user", "dentist__user").order_by("-appointment_date")[:8]
     recent_patients = PatientProfile.objects.select_related("user")[:6]
-    today_schedule = Appointment.objects.select_related("patient__user", "dentist__user").order_by("appointment_time")[:5]
+    today_schedule = Appointment.objects.filter(appointment_date=today).select_related("patient__user", "dentist__user").order_by("appointment_time")[:8]
     appointment_requests = Appointment.objects.filter(status=Appointment.Status.PENDING).select_related("patient__user", "dentist__user")[:5]
+
+    # Real chart data — last 6 months
+    from datetime import date as _date
+    chart_labels, chart_booked, chart_completed = [], [], []
+    for i in range(5, -1, -1):
+        m = today.month - i
+        y = today.year + (m - 1) // 12
+        m = ((m - 1) % 12) + 1
+        mo_start = _date(y, m, 1)
+        mo_end = _date(y + (m // 12), (m % 12) + 1, 1)
+        qs = Appointment.objects.filter(appointment_date__gte=mo_start, appointment_date__lt=mo_end)
+        chart_labels.append(mo_start.strftime("%b"))
+        chart_booked.append(qs.count())
+        chart_completed.append(qs.filter(status=Appointment.Status.COMPLETED).count())
+
+    # Status breakdown for donut chart
+    appt_status = Appointment.objects.aggregate(
+        pending=Count("id", filter=Q(status=Appointment.Status.PENDING)),
+        approved=Count("id", filter=Q(status=Appointment.Status.APPROVED)),
+        completed=Count("id", filter=Q(status=Appointment.Status.COMPLETED)),
+        cancelled=Count("id", filter=Q(status=Appointment.Status.CANCELLED)),
+    )
 
     return {
         "stats": stats,
-        "invoice_stats": invoice_stats,
         "appointments": appointments,
         "recent_patients": recent_patients,
         "today_schedule": today_schedule,
         "appointment_requests": appointment_requests,
-        "revenue": revenue,
-        "appointment_chart": json.dumps(
-            {
-                "labels": ["Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"],
-                "booked": [18, 24, 26, 25, 29, 27, 31, 28, 32],
-                "completed": [14, 21, 24, 22, 25, 24, 27, 25, 29],
-            }
-        ),
-        "treatment_chart": json.dumps(
-            {
-                "labels": ["Root Canal", "Cleaning", "Whitening", "Extraction"],
-                "values": [35, 30, 20, 15],
-            }
-        ),
+        "today": today,
+        "missed_count": missed,
+        "appt_status": appt_status,
+        "appointment_chart": json.dumps({"labels": chart_labels, "booked": chart_booked, "completed": chart_completed}),
+        "status_chart": json.dumps({
+            "labels": ["Pending", "Confirmed", "Completed", "Cancelled"],
+            "values": [
+                appt_status["pending"],
+                appt_status["approved"],
+                appt_status["completed"],
+                appt_status["cancelled"],
+            ],
+        }),
     }
 
 
@@ -282,21 +312,22 @@ def update_appointment_status(request, pk, status):
 
 def _receptionist_ctx(user):
     from notifications.models import Notification
+    from followups.models import FollowUp
     from django.utils import timezone as tz
 
     today = tz.localdate()
     today_count = Appointment.objects.filter(appointment_date=today).count()
     pending_count = Appointment.objects.filter(status=Appointment.Status.PENDING).count()
-    registered_patients = PatientProfile.objects.count()
-    unpaid_count = Invoice.objects.filter(status=Invoice.Status.UNPAID).count()
+    confirmed_count = Appointment.objects.filter(status=Appointment.Status.APPROVED).count()
+    followups_due = FollowUp.objects.filter(followup_date=today, status=FollowUp.Status.PENDING).count()
     unread_count = Notification.objects.filter(user=user, is_read=False).count()
     return {
         "unread_count": unread_count,
         "kpis": [
             {"label": "Today's Appointments", "value": today_count, "icon": "event_available"},
             {"label": "Pending Requests", "value": pending_count, "icon": "pending_actions"},
-            {"label": "Registered Patients", "value": registered_patients, "icon": "groups"},
-            {"label": "Unpaid Invoices", "value": unpaid_count, "icon": "receipt_long"},
+            {"label": "Confirmed", "value": confirmed_count, "icon": "task_alt"},
+            {"label": "Follow-ups Due", "value": followups_due, "icon": "next_plan"},
         ],
         "today": today,
         "status_choices": Appointment.Status.choices,
@@ -325,10 +356,13 @@ def receptionist_dashboard(request):
         PatientProfile.objects.select_related("user")
         .order_by("-user__date_joined")[:6]
     )
-    recent_invoices = (
-        Invoice.objects
-        .select_related("patient__user", "appointment")
-        .order_by("-created_at")[:6]
+    from followups.models import FollowUp
+
+    recent_followups = (
+        FollowUp.objects
+        .select_related("patient__user", "assigned_to")
+        .filter(status__in=[FollowUp.Status.PENDING, FollowUp.Status.CONTACTED])
+        .order_by("followup_date")[:5]
     )
 
     appointment_form = AppointmentManageForm(prefix="appointment")
@@ -365,10 +399,12 @@ def receptionist_dashboard(request):
         chart_booked.append(qs.count())
         chart_completed.append(qs.filter(status=Appointment.Status.COMPLETED).count())
 
-    invoice_stats = Invoice.objects.aggregate(
-        paid=Count("id", filter=Q(status=Invoice.Status.PAID)),
-        unpaid=Count("id", filter=Q(status=Invoice.Status.UNPAID)),
-        cancelled=Count("id", filter=Q(status=Invoice.Status.CANCELLED)),
+    # Appointment status breakdown
+    appt_status = Appointment.objects.aggregate(
+        pending=Count("id", filter=Q(status=Appointment.Status.PENDING)),
+        approved=Count("id", filter=Q(status=Appointment.Status.APPROVED)),
+        completed=Count("id", filter=Q(status=Appointment.Status.COMPLETED)),
+        cancelled=Count("id", filter=Q(status=Appointment.Status.CANCELLED)),
     )
 
     ctx = _receptionist_ctx(request.user)
@@ -376,13 +412,17 @@ def receptionist_dashboard(request):
         "today_schedule": today_schedule,
         "pending_appointments": pending_appointments,
         "recent_patients": recent_patients,
-        "recent_invoices": recent_invoices,
+        "recent_followups": recent_followups,
         "appointment_form": appointment_form,
         "patient_form": patient_form,
         "appt_open": appt_open,
         "patient_open": patient_open,
-        "invoice_stats": invoice_stats,
+        "appt_status": appt_status,
         "appointment_chart": json.dumps({"labels": chart_labels, "booked": chart_booked, "completed": chart_completed}),
+        "status_chart": json.dumps({
+            "labels": ["Pending", "Confirmed", "Completed", "Cancelled"],
+            "values": [appt_status["pending"], appt_status["approved"], appt_status["completed"], appt_status["cancelled"]],
+        }),
     })
     return render(request, "dashboard/receptionist.html", ctx)
 
@@ -513,7 +553,18 @@ def patient_book_page(request):
     from notifications.models import Notification
 
     profile = get_patient_profile(request.user)
-    booking_form = AppointmentBookingForm()
+
+    # Pre-select dentist when arriving from the public doctors section
+    initial = {}
+    dentist_id = request.GET.get("dentist")
+    if dentist_id:
+        try:
+            from dentists.models import DentistProfile
+            initial["dentist"] = DentistProfile.objects.get(pk=dentist_id, is_available=True)
+        except (DentistProfile.DoesNotExist, ValueError, TypeError):
+            pass
+
+    booking_form = AppointmentBookingForm(initial=initial)
 
     if request.method == "POST":
         booking_form = AppointmentBookingForm(request.POST)
@@ -581,6 +632,7 @@ def patient_invoices_page(request):
 @role_required(User.Role.RECEPTIONIST)
 def receptionist_appointments_page(request):
     from django.utils import timezone as tz
+    from django.db.models import Q as _Q
 
     today = tz.localdate()
     appt_open = False
@@ -596,6 +648,27 @@ def receptionist_appointments_page(request):
         .order_by("appointment_date", "appointment_time")
     )
 
+    # Search / filter
+    search = request.GET.get("q", "").strip()
+    status_filter = request.GET.get("status", "")
+    date_filter = request.GET.get("date", "")
+
+    all_appointments = None
+    if search or status_filter or date_filter:
+        qs = Appointment.objects.select_related("patient__user", "dentist__user").order_by("-appointment_date", "-appointment_time")
+        if search:
+            qs = qs.filter(
+                _Q(patient__user__first_name__icontains=search)
+                | _Q(patient__user__last_name__icontains=search)
+                | _Q(dentist__user__last_name__icontains=search)
+                | _Q(reason__icontains=search)
+            )
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+        if date_filter:
+            qs = qs.filter(appointment_date=date_filter)
+        all_appointments = qs
+
     appointment_form = AppointmentManageForm(prefix="appointment")
 
     if request.method == "POST" and request.POST.get("form_type") == "appointment":
@@ -606,12 +679,28 @@ def receptionist_appointments_page(request):
             messages.success(request, "Appointment created successfully.")
             return redirect("dashboard:receptionist_appointments")
 
+    # KPIs for the appointments page
+    from notifications.models import Notification
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
+    kpis = [
+        {"label": "Today's Appointments", "value": today_schedule.count(), "icon": "event_available"},
+        {"label": "Pending Requests", "value": pending_appointments.count(), "icon": "pending_actions"},
+        {"label": "Confirmed", "value": Appointment.objects.filter(status=Appointment.Status.APPROVED).count(), "icon": "task_alt"},
+        {"label": "Completed", "value": Appointment.objects.filter(status=Appointment.Status.COMPLETED).count(), "icon": "check_circle"},
+    ]
+
     ctx = _receptionist_ctx(request.user)
     ctx.update({
         "today_schedule": today_schedule,
         "pending_appointments": pending_appointments,
+        "all_appointments": all_appointments,
         "appointment_form": appointment_form,
         "appt_open": appt_open,
+        "search": search,
+        "status_filter": status_filter,
+        "date_filter": date_filter,
+        "kpis": kpis,
+        "unread_count": unread_count,
     })
     return render(request, "dashboard/receptionist/appointments.html", ctx)
 
@@ -620,9 +709,21 @@ def receptionist_appointments_page(request):
 def receptionist_notifications_page(request):
     from notifications.models import Notification
 
+    type_filter = request.GET.get("type", "")
+    unread_only = request.GET.get("unread", "") == "1"
+
     notifications_qs = Notification.objects.filter(user=request.user).order_by("-created_at")
+    if type_filter:
+        notifications_qs = notifications_qs.filter(notification_type=type_filter)
+    if unread_only:
+        notifications_qs = notifications_qs.filter(is_read=False)
+
     ctx = _receptionist_ctx(request.user)
-    ctx["notifications"] = notifications_qs
+    ctx.update({
+        "notifications": notifications_qs,
+        "type_filter": type_filter,
+        "unread_only": unread_only,
+    })
     return render(request, "dashboard/receptionist/notifications.html", ctx)
 
 

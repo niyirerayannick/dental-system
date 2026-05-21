@@ -18,11 +18,13 @@
             <a href="{% url 'patients:list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700"><span class="material-symbols-rounded w-8 text-center text-green-600">groups</span> Patients</a>
             <a href="{% url 'dentists:list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700"><span class="material-symbols-rounded w-8 text-center text-green-600">medical_services</span> Dentists</a>
             <a href="{% url 'appointments:list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700"><span class="material-symbols-rounded w-8 text-center text-green-600">calendar_month</span> Appointments</a>
-            <a href="{% url 'treatments:list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700"><span class="material-symbols-rounded w-8 text-center text-green-600">healing</span> Treatments</a>
-            <a href="{% url 'billing:list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700"><span class="material-symbols-rounded w-8 text-center text-green-600">payments</span> Billing</a>
+            <a href="{% url 'followups:list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700"><span class="material-symbols-rounded w-8 text-center text-green-600">next_plan</span> Follow-ups</a>
             <a href="{% url 'services:list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700"><span class="material-symbols-rounded w-8 text-center text-green-600">category</span> Services</a>
+            {% if request.user.role == 'ADMIN' or request.user.role == 'DENTIST' or request.user.is_superuser %}
+            <a href="{% url 'articles:dashboard_list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700"><span class="material-symbols-rounded w-8 text-center text-green-600">article</span> Dental Articles</a>
+            {% endif %}
             <a href="{% url 'reports:list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700"><span class="material-symbols-rounded w-8 text-center text-green-600">analytics</span> Reports</a>
-            {% if request.user.role == 'admin' or request.user.is_superuser %}<a href="{% url 'clinic_settings:settings' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700"><span class="material-symbols-rounded w-8 text-center text-green-600">settings</span> Settings</a>{% endif %}
+            {% if request.user.role == 'ADMIN' or request.user.is_superuser %}<a href="{% url 'clinic_settings:settings' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700"><span class="material-symbols-rounded w-8 text-center text-green-600">settings</span> Settings</a>{% endif %}
         </nav>
 
         <div class="border-t border-gray-100 p-3">

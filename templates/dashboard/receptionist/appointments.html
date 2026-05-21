@@ -3,10 +3,11 @@
 
 {% block receptionist_content %}
 
+{# ── HEADER ── #}
 <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
   <div>
     <h1 class="text-2xl font-bold text-gray-900">Appointments</h1>
-    <p class="mt-1 text-sm text-gray-500">Manage appointment requests and view today's schedule</p>
+    <p class="mt-1 text-sm text-gray-500">Manage and track all clinic appointments</p>
   </div>
   <button type="button" onclick="openApptModal()"
           class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-green-700 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-green-800 sm:w-auto">
@@ -14,49 +15,130 @@
   </button>
 </div>
 
+{# ── KPI STRIP ── #}
+<div class="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
+  {% for kpi in kpis %}
+  <div class="rounded-2xl bg-white p-4 shadow-sm">
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-rounded flex h-9 w-9 flex-none items-center justify-center rounded-xl bg-green-50 text-green-600">{{ kpi.icon }}</span>
+      <div class="min-w-0">
+        <p class="text-xl font-bold leading-tight text-gray-900">{{ kpi.value }}</p>
+        <p class="mt-0.5 truncate text-xs font-semibold uppercase tracking-wide text-gray-400">{{ kpi.label }}</p>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{# ── SEARCH + FILTER BAR ── #}
+<form method="get" class="mb-6 flex flex-wrap items-end gap-3">
+  <div class="flex-1 min-w-[200px]">
+    <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Search patient / reason</label>
+    <input type="text" name="q" value="{{ search|default:'' }}" placeholder="Name or keyword…"
+           class="w-full rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
+  </div>
+  <div>
+    <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Status</label>
+    <select name="status"
+            class="rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
+      <option value="">All Statuses</option>
+      {% for val, label in status_choices %}
+      <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Date</label>
+    <input type="date" name="date" value="{{ date_filter|default:'' }}"
+           class="rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
+  </div>
+  <button type="submit"
+          class="rounded-2xl bg-green-700 px-5 py-2.5 text-sm font-bold text-white hover:bg-green-800">Filter</button>
+  {% if search or status_filter or date_filter %}
+  <a href="{% url 'dashboard:receptionist_appointments' %}"
+     class="rounded-2xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50">Clear</a>
+  {% endif %}
+</form>
+
+{# ── STATUS QUICK-FILTER TABS ── #}
+<div class="mb-6 flex flex-wrap gap-2">
+  <a href="{% url 'dashboard:receptionist_appointments' %}"
+     class="rounded-full px-4 py-1.5 text-xs font-semibold transition
+            {% if not status_filter %}bg-green-700 text-white{% else %}bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-green-50{% endif %}">
+    All
+  </a>
+  <a href="?status=pending"
+     class="rounded-full px-4 py-1.5 text-xs font-semibold transition
+            {% if status_filter == 'pending' %}bg-amber-500 text-white{% else %}bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-amber-50{% endif %}">
+    Pending
+    {% if kpis.1.value > 0 %}<span class="ml-1.5 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-bold text-white {% if status_filter == 'pending' %}bg-white text-amber-700{% endif %}">{{ kpis.1.value }}</span>{% endif %}
+  </a>
+  <a href="?status=approved"
+     class="rounded-full px-4 py-1.5 text-xs font-semibold transition
+            {% if status_filter == 'approved' %}bg-green-600 text-white{% else %}bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-green-50{% endif %}">
+    Confirmed
+  </a>
+  <a href="?status=completed"
+     class="rounded-full px-4 py-1.5 text-xs font-semibold transition
+            {% if status_filter == 'completed' %}bg-teal-600 text-white{% else %}bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-teal-50{% endif %}">
+    Completed
+  </a>
+  <a href="?status=cancelled"
+     class="rounded-full px-4 py-1.5 text-xs font-semibold transition
+            {% if status_filter == 'cancelled' %}bg-red-500 text-white{% else %}bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-red-50{% endif %}">
+    Cancelled
+  </a>
+  <a href="?date={{ today|date:'Y-m-d' }}"
+     class="rounded-full px-4 py-1.5 text-xs font-semibold transition
+            {% if date_filter == today|date:'Y-m-d' %}bg-indigo-600 text-white{% else %}bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-indigo-50{% endif %}">
+    Today
+  </a>
+</div>
+
 {# ── PENDING REQUESTS ── #}
+{% if not status_filter or status_filter == 'pending' %}
 <section class="mb-8">
   <div class="mb-4 flex items-center justify-between">
     <h2 class="text-lg font-bold text-gray-900">
       Pending Requests
-      {% if kpis.1.value > 0 %}
-      <span class="ml-2 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-500 px-1.5 text-xs font-bold text-white">{{ kpis.1.value }}</span>
+      {% if pending_appointments %}
+      <span class="ml-2 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-500 px-1.5 text-xs font-bold text-white">{{ pending_appointments|length }}</span>
       {% endif %}
     </h2>
-    <a href="{% url 'appointments:list' %}" class="text-sm font-semibold text-green-700 hover:text-green-800">All appointments →</a>
+    <a href="{% url 'appointments:list' %}" class="text-sm font-semibold text-green-700 hover:text-green-800">Full list →</a>
   </div>
 
   {% if pending_appointments %}
-  {# Desktop table #}
-  <div class="hidden overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100 lg:block">
-    <table class="w-full text-sm">
+  <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100">
+    <table class="hidden w-full text-sm lg:table">
       <thead class="border-b border-gray-100 bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
         <tr>
-          <th class="px-6 py-3 text-left">Patient</th>
-          <th class="px-6 py-3 text-left">Dentist</th>
-          <th class="px-6 py-3 text-left">Date &amp; Time</th>
-          <th class="px-6 py-3 text-left">Reason</th>
-          <th class="px-6 py-3 text-right">Actions</th>
+          <th class="px-5 py-3 text-left">Patient</th>
+          <th class="px-5 py-3 text-left">Dentist</th>
+          <th class="px-5 py-3 text-left">Date &amp; Time</th>
+          <th class="px-5 py-3 text-left">Reason</th>
+          <th class="px-5 py-3 text-right">Actions</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-50">
         {% for appt in pending_appointments %}
-        <tr class="transition hover:bg-gray-50">
-          <td class="px-6 py-4 font-medium text-gray-900">{{ appt.patient }}</td>
-          <td class="px-6 py-4 text-gray-600">{{ appt.dentist }}</td>
-          <td class="px-6 py-4 text-gray-600">
+        <tr class="transition hover:bg-amber-50">
+          <td class="px-5 py-4 font-semibold text-gray-900">{{ appt.patient }}</td>
+          <td class="px-5 py-4 text-gray-600">{{ appt.dentist }}</td>
+          <td class="px-5 py-4 text-gray-600">
             {{ appt.appointment_date|date:"M j, Y" }}<br>
             <span class="text-xs text-gray-400">{{ appt.appointment_time|time:"g:i A" }}</span>
           </td>
-          <td class="px-6 py-4 text-gray-600">{{ appt.reason|truncatechars:40 }}</td>
-          <td class="px-6 py-4">
-            <div class="flex items-center justify-end gap-2">
-              <form method="post" action="{% url 'appointments:status' appt.pk 'approved' %}">
-                {% csrf_token %}
-                <button type="submit" class="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700">Approve</button>
+          <td class="px-5 py-4 text-gray-500">{{ appt.reason|default:"—"|truncatechars:40 }}</td>
+          <td class="px-5 py-4">
+            <div class="flex items-center justify-end gap-2 flex-wrap">
+              <form method="post" action="{% url 'appointments:status' appt.pk 'approved' %}">{% csrf_token %}
+                <button type="submit" class="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700">Confirm</button>
               </form>
-              <form method="post" action="{% url 'appointments:status' appt.pk 'cancelled' %}">
-                {% csrf_token %}
+              <form method="post" action="{% url 'appointments:status' appt.pk 'completed' %}">{% csrf_token %}
+                <button type="submit" class="rounded-lg bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-700 hover:bg-teal-100">Complete</button>
+              </form>
+              <form method="post" action="{% url 'appointments:status' appt.pk 'cancelled' %}">{% csrf_token %}
                 <button type="submit" class="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-100">Cancel</button>
               </form>
             </div>
@@ -65,45 +147,44 @@
         {% endfor %}
       </tbody>
     </table>
-  </div>
 
-  {# Mobile cards #}
-  <div class="space-y-3 lg:hidden">
-    {% for appt in pending_appointments %}
-    <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
-      <p class="font-bold text-gray-900 text-sm">{{ appt.patient }}</p>
-      <p class="text-xs text-gray-500">{{ appt.dentist }}</p>
-      <p class="text-xs text-gray-500 mt-0.5">{{ appt.appointment_date|date:"M j, Y" }} · {{ appt.appointment_time|time:"g:i A" }}</p>
-      {% if appt.reason %}<p class="text-xs text-gray-400 mt-0.5">{{ appt.reason|truncatechars:50 }}</p>{% endif %}
-      <div class="mt-3 flex gap-2">
-        <form method="post" action="{% url 'appointments:status' appt.pk 'approved' %}">
-          {% csrf_token %}
-          <button type="submit" class="rounded-xl bg-green-600 px-3 py-1.5 text-xs font-semibold text-white">Approve</button>
-        </form>
-        <form method="post" action="{% url 'appointments:status' appt.pk 'cancelled' %}">
-          {% csrf_token %}
-          <button type="submit" class="rounded-xl bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600">Cancel</button>
-        </form>
+    <div class="space-y-3 p-4 lg:hidden">
+      {% for appt in pending_appointments %}
+      <div class="rounded-2xl bg-amber-50 p-4 ring-1 ring-amber-200">
+        <p class="font-bold text-gray-900 text-sm">{{ appt.patient }}</p>
+        <p class="text-xs text-gray-500">{{ appt.dentist }}</p>
+        <p class="text-xs text-gray-500 mt-0.5">{{ appt.appointment_date|date:"M j, Y" }} · {{ appt.appointment_time|time:"g:i A" }}</p>
+        {% if appt.reason %}<p class="text-xs text-gray-400 mt-0.5">{{ appt.reason|truncatechars:50 }}</p>{% endif %}
+        <div class="mt-3 flex flex-wrap gap-2">
+          <form method="post" action="{% url 'appointments:status' appt.pk 'approved' %}">{% csrf_token %}
+            <button class="rounded-xl bg-green-600 px-3 py-1.5 text-xs font-semibold text-white">Confirm</button>
+          </form>
+          <form method="post" action="{% url 'appointments:status' appt.pk 'completed' %}">{% csrf_token %}
+            <button class="rounded-xl bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-700">Complete</button>
+          </form>
+          <form method="post" action="{% url 'appointments:status' appt.pk 'cancelled' %}">{% csrf_token %}
+            <button class="rounded-xl bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600">Cancel</button>
+          </form>
+        </div>
       </div>
+      {% endfor %}
     </div>
-    {% endfor %}
   </div>
-
   {% else %}
-  <div class="flex flex-col items-center justify-center rounded-2xl bg-white py-12 text-center shadow-sm ring-1 ring-gray-100">
+  <div class="flex flex-col items-center justify-center rounded-2xl bg-white py-10 text-center shadow-sm ring-1 ring-gray-100">
     <span class="material-symbols-rounded mb-3 text-5xl text-gray-300">check_circle</span>
     <p class="text-sm font-semibold text-gray-500">No pending appointment requests.</p>
   </div>
   {% endif %}
 </section>
+{% endif %}
 
 {# ── TODAY'S SCHEDULE ── #}
-<section>
+{% if not status_filter %}
+<section class="mb-8">
   <div class="mb-4 flex items-center justify-between">
     <h2 class="text-lg font-bold text-gray-900">Today's Schedule</h2>
-    <span class="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-      {{ today|date:"M j, Y" }}
-    </span>
+    <span class="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">{{ today|date:"M j, Y" }}</span>
   </div>
 
   {% if today_schedule %}
@@ -116,23 +197,41 @@
           <th class="px-5 py-3 text-left">Dentist</th>
           <th class="px-5 py-3 text-left">Reason</th>
           <th class="px-5 py-3 text-left">Status</th>
+          <th class="px-5 py-3 text-right">Actions</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-50">
         {% for appt in today_schedule %}
         <tr class="transition hover:bg-gray-50">
           <td class="px-5 py-3 font-semibold text-gray-800">{{ appt.appointment_time|time:"g:i A" }}</td>
-          <td class="px-5 py-3 text-gray-900">{{ appt.patient }}</td>
+          <td class="px-5 py-3 font-medium text-gray-900">{{ appt.patient }}</td>
           <td class="px-5 py-3 text-gray-600">{{ appt.dentist }}</td>
-          <td class="px-5 py-3 text-gray-500">{{ appt.reason|truncatechars:35 }}</td>
+          <td class="px-5 py-3 text-gray-500">{{ appt.reason|default:"—"|truncatechars:30 }}</td>
           <td class="px-5 py-3">
             <span class="rounded-full px-2.5 py-1 text-xs font-semibold
-              {% if appt.status == 'pending' %}bg-yellow-100 text-yellow-700
+              {% if appt.status == 'pending' %}bg-amber-100 text-amber-700
               {% elif appt.status == 'approved' %}bg-green-100 text-green-700
-              {% elif appt.status == 'completed' %}bg-green-100 text-green-700
+              {% elif appt.status == 'completed' %}bg-teal-100 text-teal-700
               {% else %}bg-gray-100 text-gray-500{% endif %}">
               {{ appt.get_status_display }}
             </span>
+          </td>
+          <td class="px-5 py-3">
+            <div class="flex items-center justify-end gap-1.5">
+              {% if appt.status == 'pending' %}
+              <form method="post" action="{% url 'appointments:status' appt.pk 'approved' %}">{% csrf_token %}
+                <button class="rounded-lg bg-green-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-green-700">Confirm</button>
+              </form>
+              {% endif %}
+              {% if appt.status in 'pending,approved' %}
+              <form method="post" action="{% url 'appointments:status' appt.pk 'completed' %}">{% csrf_token %}
+                <button class="rounded-lg bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-700 hover:bg-teal-100">Complete</button>
+              </form>
+              <form method="post" action="{% url 'appointments:status' appt.pk 'cancelled' %}">{% csrf_token %}
+                <button class="rounded-lg bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-100">Cancel</button>
+              </form>
+              {% endif %}
+            </div>
           </td>
         </tr>
         {% endfor %}
@@ -140,12 +239,104 @@
     </table>
   </div>
   {% else %}
-  <div class="flex flex-col items-center justify-center rounded-2xl bg-white py-12 text-center shadow-sm ring-1 ring-gray-100">
+  <div class="flex flex-col items-center justify-center rounded-2xl bg-white py-10 text-center shadow-sm ring-1 ring-gray-100">
     <span class="material-symbols-rounded mb-3 text-5xl text-gray-300">event_busy</span>
     <p class="text-sm font-semibold text-gray-500">No appointments scheduled for today.</p>
   </div>
   {% endif %}
 </section>
+{% endif %}
+
+{# ── FULL APPOINTMENT LIST (when filter active) ── #}
+{% if status_filter or search or date_filter %}
+<section>
+  <h2 class="mb-4 text-lg font-bold text-gray-900">
+    Filtered Results
+    {% if all_appointments %}<span class="ml-2 text-sm font-normal text-gray-400">({{ all_appointments|length }} found)</span>{% endif %}
+  </h2>
+  {% if all_appointments %}
+  <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100">
+    <table class="hidden w-full text-sm lg:table">
+      <thead class="border-b border-gray-100 bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
+        <tr>
+          <th class="px-5 py-3 text-left">Patient</th>
+          <th class="px-5 py-3 text-left">Dentist</th>
+          <th class="px-5 py-3 text-left">Date &amp; Time</th>
+          <th class="px-5 py-3 text-left">Reason</th>
+          <th class="px-5 py-3 text-left">Status</th>
+          <th class="px-5 py-3 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        {% for appt in all_appointments %}
+        <tr class="transition hover:bg-gray-50">
+          <td class="px-5 py-4 font-semibold text-gray-900">{{ appt.patient }}</td>
+          <td class="px-5 py-4 text-gray-600">{{ appt.dentist }}</td>
+          <td class="px-5 py-4 text-gray-600">
+            {{ appt.appointment_date|date:"M j, Y" }}<br>
+            <span class="text-xs text-gray-400">{{ appt.appointment_time|time:"g:i A" }}</span>
+          </td>
+          <td class="px-5 py-4 text-gray-500">{{ appt.reason|default:"—"|truncatechars:35 }}</td>
+          <td class="px-5 py-4">
+            <span class="rounded-full px-2.5 py-1 text-xs font-semibold
+              {% if appt.status == 'pending' %}bg-amber-100 text-amber-700
+              {% elif appt.status == 'approved' %}bg-green-100 text-green-700
+              {% elif appt.status == 'completed' %}bg-teal-100 text-teal-700
+              {% else %}bg-gray-100 text-gray-500{% endif %}">
+              {{ appt.get_status_display }}
+            </span>
+          </td>
+          <td class="px-5 py-4">
+            <div class="flex items-center justify-end gap-1.5">
+              {% if appt.status == 'pending' %}
+              <form method="post" action="{% url 'appointments:status' appt.pk 'approved' %}">{% csrf_token %}
+                <button class="rounded-lg bg-green-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-green-700">Confirm</button>
+              </form>
+              {% endif %}
+              {% if appt.status == 'pending' or appt.status == 'approved' %}
+              <form method="post" action="{% url 'appointments:status' appt.pk 'completed' %}">{% csrf_token %}
+                <button class="rounded-lg bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-700 hover:bg-teal-100">Complete</button>
+              </form>
+              <form method="post" action="{% url 'appointments:status' appt.pk 'cancelled' %}">{% csrf_token %}
+                <button class="rounded-lg bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-100">Cancel</button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="space-y-3 p-4 lg:hidden">
+      {% for appt in all_appointments %}
+      <div class="rounded-2xl bg-white p-4 ring-1 ring-gray-100">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <p class="font-bold text-gray-900 text-sm">{{ appt.patient }}</p>
+            <p class="text-xs text-gray-500">{{ appt.dentist }}</p>
+            <p class="text-xs text-gray-400 mt-0.5">{{ appt.appointment_date|date:"M j, Y" }} · {{ appt.appointment_time|time:"g:i A" }}</p>
+          </div>
+          <span class="rounded-full px-2 py-0.5 text-xs font-semibold
+            {% if appt.status == 'pending' %}bg-amber-100 text-amber-700
+            {% elif appt.status == 'approved' %}bg-green-100 text-green-700
+            {% elif appt.status == 'completed' %}bg-teal-100 text-teal-700
+            {% else %}bg-gray-100 text-gray-500{% endif %}">
+            {{ appt.get_status_display }}
+          </span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="flex flex-col items-center justify-center rounded-2xl bg-white py-12 text-center shadow-sm ring-1 ring-gray-100">
+    <span class="material-symbols-rounded mb-3 text-5xl text-gray-300">search_off</span>
+    <p class="text-sm font-semibold text-gray-500">No appointments match your filters.</p>
+    <a href="{% url 'dashboard:receptionist_appointments' %}" class="mt-2 text-xs font-semibold text-green-600">Clear filters</a>
+  </div>
+  {% endif %}
+</section>
+{% endif %}
 
 {# ── NEW APPOINTMENT MODAL ── #}
 <div id="apptModal"
@@ -162,13 +353,11 @@
       {% csrf_token %}
       <input type="hidden" name="form_type" value="appointment">
       <div class="max-h-[70vh] overflow-y-auto px-6 py-5 space-y-4">
-
         {% if appointment_form.non_field_errors %}
         <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {% for e in appointment_form.non_field_errors %}{{ e }}{% endfor %}
         </div>
         {% endif %}
-
         <div>
           <label class="mb-1 block text-sm font-semibold text-gray-700">Patient <span class="text-red-500">*</span></label>
           {{ appointment_form.patient }}
@@ -183,18 +372,15 @@
           <div>
             <label class="mb-1 block text-sm font-semibold text-gray-700">Date <span class="text-red-500">*</span></label>
             {{ appointment_form.appointment_date }}
-            {% if appointment_form.appointment_date.errors %}<p class="mt-1 text-xs text-red-600">{{ appointment_form.appointment_date.errors.0 }}</p>{% endif %}
           </div>
           <div>
             <label class="mb-1 block text-sm font-semibold text-gray-700">Time <span class="text-red-500">*</span></label>
             {{ appointment_form.appointment_time }}
-            {% if appointment_form.appointment_time.errors %}<p class="mt-1 text-xs text-red-600">{{ appointment_form.appointment_time.errors.0 }}</p>{% endif %}
           </div>
         </div>
         <div>
           <label class="mb-1 block text-sm font-semibold text-gray-700">Reason <span class="text-red-500">*</span></label>
           {{ appointment_form.reason }}
-          {% if appointment_form.reason.errors %}<p class="mt-1 text-xs text-red-600">{{ appointment_form.reason.errors.0 }}</p>{% endif %}
         </div>
         <div>
           <label class="mb-1 block text-sm font-semibold text-gray-700">Status</label>
@@ -217,32 +403,14 @@
 
 <script>
   const apptModal = document.getElementById('apptModal');
-
-  function openApptModal() {
-    apptModal.classList.remove('hidden');
-    apptModal.classList.add('flex');
-    document.body.classList.add('overflow-hidden');
-  }
-  function closeApptModal() {
-    apptModal.classList.add('hidden');
-    apptModal.classList.remove('flex');
-    document.body.classList.remove('overflow-hidden');
-  }
-
+  function openApptModal()  { apptModal.classList.remove('hidden'); apptModal.classList.add('flex'); document.body.classList.add('overflow-hidden'); }
+  function closeApptModal() { apptModal.classList.add('hidden'); apptModal.classList.remove('flex'); document.body.classList.remove('overflow-hidden'); }
   apptModal.addEventListener('click', function(e) { if (e.target === apptModal) closeApptModal(); });
   {% if appt_open %}openApptModal();{% endif %}
 
-  [
-    '#apptForm input:not([type="hidden"]):not([type="checkbox"])',
-    '#apptForm select',
-    '#apptForm textarea',
-  ].forEach(function(sel) {
+  ['#apptForm input:not([type="hidden"]):not([type="checkbox"])', '#apptForm select', '#apptForm textarea'].forEach(function(sel) {
     document.querySelectorAll(sel).forEach(function(el) {
-      el.classList.add(
-        'w-full', 'rounded-2xl', 'border', 'border-gray-200', 'bg-gray-50',
-        'px-4', 'py-2.5', 'text-sm',
-        'focus:border-green-400', 'focus:outline-none', 'focus:ring-2', 'focus:ring-green-100'
-      );
+      el.classList.add('w-full','rounded-2xl','border','border-gray-200','bg-gray-50','px-4','py-2.5','text-sm','focus:border-green-400','focus:outline-none','focus:ring-2','focus:ring-green-100');
     });
   });
 </script>

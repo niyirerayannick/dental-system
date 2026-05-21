@@ -1,0 +1,250 @@
+{% extends "public/base.html" %}
+{% load static %}
+
+{% block title %}Our Services — DentalCare Pro{% endblock %}
+
+{% block content %}
+{% include "public/partials/public_navbar.html" with active_page="services" %}
+
+<!-- ══════════════════════════════════════════
+     PAGE HERO
+══════════════════════════════════════════ -->
+<section class="relative overflow-hidden"
+         style="background:linear-gradient(145deg,#EAF7F1 0%,#f5faf7 40%,#EAF7F1 100%);
+                padding-top:160px;padding-bottom:72px;">
+  <!-- Background arcs -->
+  <svg class="absolute pointer-events-none select-none"
+       style="right:0;top:0;width:420px;height:420px;opacity:.18;"
+       viewBox="0 0 420 420" fill="none" aria-hidden="true">
+    <circle cx="340" cy="80" r="200" stroke="#0B7A4B" stroke-width="60" fill="none"/>
+  </svg>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <div class="inline-flex items-center gap-2 mb-4"
+         style="color:#0B7A4B;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;">
+      <svg style="width:14px;height:14px;" fill="currentColor" viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M32 4c-5.5 0-9.5 3.5-11 7.5C19.5 9 17.5 8 15 8 10.5 8 7 11.5 7 16c0 7 5 11.5 9 16 2 2.5 3.5 5 4.5 8.5.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5c.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5C35 37 36.5 34.5 39 32c4-4 9-8.5 9-16C48 11.5 44 8 39.5 8c-2.5 0-4.5 1-6 3.5C32 8 31 4 32 4Z"/>
+      </svg>
+      Dental Services
+    </div>
+    <h1 class="font-extrabold text-slate-900 leading-tight"
+        style="font-size:clamp(2rem,4.5vw,3.2rem);max-width:640px;">
+      Complete Dental Care<br>Under One Roof
+    </h1>
+    <p class="mt-4 text-slate-500 leading-relaxed"
+       style="font-size:16px;max-width:520px;">
+      From routine check-ups to advanced restorations, our full-spectrum services
+      are designed to keep your smile healthy, bright, and beautiful for life.
+    </p>
+    <div class="mt-8 flex items-center gap-4 flex-wrap">
+      <a href="{% url 'pub_book' %}"
+         class="inline-flex items-center gap-2 font-semibold text-white"
+         style="background:#0B7A4B;padding:13px 30px;border-radius:9999px;font-size:14px;
+                box-shadow:0 4px 16px rgba(11,122,75,.35);transition:all .22s;"
+         onmouseover="this.style.backgroundColor='#075A38'" onmouseout="this.style.backgroundColor='#0B7A4B'">
+        Book Appointment
+        <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        </svg>
+      </a>
+      <a href="{% url 'pub_ask_doctor' %}"
+         class="inline-flex items-center gap-2 font-semibold"
+         style="color:#0B7A4B;font-size:14px;border:2px solid rgba(11,122,75,.3);
+                padding:11px 26px;border-radius:9999px;transition:all .22s;"
+         onmouseover="this.style.background='#EAF7F1';this.style.borderColor='#0B7A4B'"
+         onmouseout="this.style.background='transparent';this.style.borderColor='rgba(11,122,75,.3)'">
+        Ask a Doctor
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     STATS STRIP
+══════════════════════════════════════════ -->
+<section style="background:#fff;border-bottom:1px solid rgba(11,122,75,.08);">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);">
+      {% for stat in "1234" %}
+      <div class="flex flex-col items-center justify-center text-center"
+           style="padding:24px 16px;{% if not forloop.last %}border-right:1px solid rgba(11,122,75,.1);{% endif %}">
+        <p class="font-extrabold" style="font-size:clamp(1.4rem,2.5vw,2rem);color:#0B7A4B;line-height:1.1;margin:0;">
+          {% if forloop.counter == 1 %}50+{% elif forloop.counter == 2 %}15+{% elif forloop.counter == 3 %}98%{% else %}4.9★{% endif %}
+        </p>
+        <p class="text-slate-500 font-medium" style="font-size:12.5px;margin:3px 0 0;">
+          {% if forloop.counter == 1 %}Services Offered{% elif forloop.counter == 2 %}Years Experience{% elif forloop.counter == 3 %}Patient Satisfaction{% else %}Average Rating{% endif %}
+        </p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SERVICES BY CATEGORY
+══════════════════════════════════════════ -->
+<section class="py-20 bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    {% if categories %}
+
+      {% for group in categories %}
+      <div style="margin-bottom:56px;">
+
+        <!-- Category header -->
+        <div class="flex items-center gap-4" style="margin-bottom:28px;">
+          <div class="rounded-full flex items-center justify-center flex-none"
+               style="width:48px;height:48px;background-color:#EAF7F1;">
+            <svg style="width:22px;height:22px;" fill="#0B7A4B" viewBox="0 0 64 64" aria-hidden="true">
+              <path d="M32 4c-5.5 0-9.5 3.5-11 7.5C19.5 9 17.5 8 15 8 10.5 8 7 11.5 7 16c0 7 5 11.5 9 16 2 2.5 3.5 5 4.5 8.5.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5c.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5C35 37 36.5 34.5 39 32c4-4 9-8.5 9-16C48 11.5 44 8 39.5 8c-2.5 0-4.5 1-6 3.5C32 8 31 4 32 4Z"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="font-extrabold text-slate-900" style="font-size:1.35rem;margin:0;">
+              {{ group.category.name }}
+            </h2>
+            {% if group.category.description %}
+            <p class="text-slate-400" style="font-size:13.5px;margin:2px 0 0;">{{ group.category.description }}</p>
+            {% endif %}
+          </div>
+          <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(11,122,75,.15),transparent);margin-left:8px;"></div>
+        </div>
+
+        <!-- Services grid -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;">
+          {% for svc in group.services %}
+          <div class="bg-white rounded-2xl overflow-hidden"
+               style="border:1.5px solid rgba(11,122,75,.1);
+                      box-shadow:0 2px 10px rgba(11,122,75,.06);
+                      transition:transform .22s,box-shadow .22s;"
+               onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(11,122,75,.14)'"
+               onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 10px rgba(11,122,75,.06)'">
+
+            <!-- Card top strip -->
+            <div style="height:6px;background:linear-gradient(90deg,#0B7A4B,#4FA882);"></div>
+
+            <div style="padding:24px;">
+              <!-- Icon + name -->
+              <div class="flex items-start gap-4" style="margin-bottom:14px;">
+                <div class="rounded-xl flex items-center justify-center flex-none"
+                     style="width:48px;height:48px;background-color:#EAF7F1;">
+                  <svg style="width:22px;height:22px;" fill="#0B7A4B" viewBox="0 0 64 64" aria-hidden="true">
+                    <path d="M32 4c-5.5 0-9.5 3.5-11 7.5C19.5 9 17.5 8 15 8 10.5 8 7 11.5 7 16c0 7 5 11.5 9 16 2 2.5 3.5 5 4.5 8.5.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5c.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5C35 37 36.5 34.5 39 32c4-4 9-8.5 9-16C48 11.5 44 8 39.5 8c-2.5 0-4.5 1-6 3.5C32 8 31 4 32 4Z"/>
+                  </svg>
+                </div>
+                <div style="flex:1;">
+                  <h3 class="font-bold text-slate-900" style="font-size:15.5px;margin:0 0 4px;">{{ svc.name }}</h3>
+                  <span style="font-size:11px;font-weight:600;color:#0B7A4B;background:#EAF7F1;
+                               padding:2px 9px;border-radius:9999px;">{{ group.category.name }}</span>
+                </div>
+              </div>
+
+              <!-- Description -->
+              {% if svc.description %}
+              <p class="text-slate-500" style="font-size:13.5px;line-height:1.65;margin-bottom:18px;">
+                {{ svc.description|truncatechars:120 }}
+              </p>
+              {% else %}
+              <p class="text-slate-400" style="font-size:13.5px;line-height:1.65;margin-bottom:18px;font-style:italic;">
+                Professional dental care by our experienced team.
+              </p>
+              {% endif %}
+
+              <!-- Meta row -->
+              <div class="flex items-center justify-between flex-wrap" style="gap:8px;margin-bottom:18px;">
+                <span class="flex items-center gap-1.5"
+                      style="font-size:12.5px;font-weight:600;color:#475569;">
+                  <svg style="width:13px;height:13px;" fill="none" stroke="#0B7A4B" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>
+                  </svg>
+                  {{ svc.duration_minutes }} min
+                </span>
+                <span style="font-size:11.5px;font-weight:600;color:#0B7A4B;background:#EAF7F1;
+                             padding:3px 10px;border-radius:9999px;">
+                  Free consultation
+                </span>
+              </div>
+
+              <!-- Book button -->
+              <a href="{% url 'pub_book' %}"
+                 class="flex items-center justify-center gap-2 font-semibold text-white"
+                 style="width:100%;padding:10px 20px;border-radius:10px;font-size:13.5px;
+                        background:linear-gradient(135deg,#0B7A4B,#075A38);
+                        text-decoration:none;transition:opacity .2s;"
+                 onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+                <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                Book This Service
+              </a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+
+    {% else %}
+    <!-- Empty state -->
+    <div class="text-center" style="padding:80px 20px;">
+      <div style="width:90px;height:90px;border-radius:50%;background:#EAF7F1;
+                  display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">
+        <svg style="width:42px;height:42px;" fill="none" stroke="#0B7A4B" viewBox="0 0 24 24" stroke-width="1.4">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+        </svg>
+      </div>
+      <h3 class="font-bold text-slate-700" style="font-size:20px;margin-bottom:10px;">Services Coming Soon</h3>
+      <p class="text-slate-400" style="font-size:15px;max-width:380px;margin:0 auto 28px;line-height:1.65;">
+        We're setting up our service catalog. Contact us directly and our team will be happy to help.
+      </p>
+      <a href="{% url 'pub_contact' %}"
+         class="inline-flex items-center gap-2 font-semibold text-white"
+         style="background:#0B7A4B;padding:12px 30px;border-radius:9999px;
+                font-size:14px;text-decoration:none;box-shadow:0 3px 12px rgba(11,122,75,.28);">
+        Contact Us
+      </a>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     BOTTOM CTA BAND
+══════════════════════════════════════════ -->
+<section style="background:linear-gradient(135deg,#0B7A4B,#075A38);padding:56px 0;">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <h2 class="font-extrabold text-white leading-tight"
+        style="font-size:clamp(1.6rem,3vw,2.2rem);margin-bottom:12px;">
+      Ready to Start Your Smile Journey?
+    </h2>
+    <p style="color:rgba(255,255,255,.75);font-size:15px;max-width:480px;margin:0 auto 28px;line-height:1.65;">
+      Book an appointment today and let our expert team create a personalised care plan just for you.
+    </p>
+    <div class="flex items-center justify-center gap-4 flex-wrap">
+      <a href="{% url 'pub_book' %}"
+         class="inline-flex items-center gap-2 font-semibold"
+         style="background:#EAF7F1;color:#0B7A4B;padding:13px 32px;border-radius:9999px;
+                font-size:14px;text-decoration:none;transition:all .22s;"
+         onmouseover="this.style.background='#fff'" onmouseout="this.style.background='#EAF7F1'">
+        Book Appointment
+        <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        </svg>
+      </a>
+      <a href="tel:+250788000000"
+         class="inline-flex items-center gap-2 font-semibold"
+         style="color:rgba(255,255,255,.85);border:2px solid rgba(255,255,255,.4);
+                padding:11px 28px;border-radius:9999px;font-size:14px;text-decoration:none;transition:all .22s;"
+         onmouseover="this.style.borderColor='#fff';this.style.color='#fff'"
+         onmouseout="this.style.borderColor='rgba(255,255,255,.4)';this.style.color='rgba(255,255,255,.85)'">
+        <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
+        </svg>
+        Call Us Now
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

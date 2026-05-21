@@ -42,6 +42,9 @@ INSTALLED_APPS = [
     "clinic_settings",
     "notifications",
     "services",
+    "articles",
+    "followups",
+    "tinymce",
 ]
 
 MIDDLEWARE = [
@@ -121,6 +124,20 @@ LOGOUT_REDIRECT_URL = "home"
 AUTH_USER_MODEL = "accounts.User"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+TINYMCE_DEFAULT_CONFIG = {
+    "height": 500,
+    "plugins": "advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount",
+    "toolbar": "undo redo | blocks | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media | blockquote code | table | removeformat | help",
+    "menubar": "file edit view insert format tools table help",
+    "images_upload_url": "/education/dashboard/image-upload/",
+    "images_upload_credentials": True,
+    "automatic_uploads": True,
+    "file_picker_types": "image",
+    "media_live_embeds": True,
+    "extended_valid_elements": "iframe[src|frameborder|style|scrolling|class|width|height|name|align|allow|allowfullscreen]",
+    "valid_elements": "*[*]",
+}
 
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 365  # 1 year — session never times out; only logout clears it
 SESSION_SAVE_EVERY_REQUEST = True
