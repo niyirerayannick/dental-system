@@ -101,6 +101,8 @@ def dashboard_article_list(request):
 
     categories = ArticleCategory.objects.all()
 
+    is_dentist = request.user.role == User.Role.DENTIST
+
     return render(request, "dashboard/articles/list.html", {
         "articles": page,
         "page_obj": page,
@@ -109,6 +111,7 @@ def dashboard_article_list(request):
         "category_filter": category_filter,
         "categories": categories,
         "total": qs.count(),
+        "is_dentist": is_dentist,
     })
 
 
@@ -181,6 +184,18 @@ def dashboard_article_toggle_publish(request, pk):
     state = "published" if article.is_published else "unpublished"
     messages.success(request, f'"{article.title}" {state}.')
     return redirect("articles:dashboard_list")
+
+
+@role_required(User.Role.ADMIN, User.Role.DENTIST)
+def dashboard_article_preview(request, pk):
+    article = get_object_or_404(Article, pk=pk)
+
+    # Dentists can only preview their own articles
+    if request.user.role == User.Role.DENTIST and article.author != request.user:
+        messages.error(request, "You do not have permission to preview this article.")
+        return redirect("articles:dashboard_list")
+
+    return render(request, "dashboard/articles/preview.html", {"article": article})
 
 
 @role_required(User.Role.ADMIN, User.Role.DENTIST)
