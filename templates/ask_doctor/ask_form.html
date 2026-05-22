@@ -1,0 +1,91 @@
+{% extends "dashboard/patient_base.html" %}
+{% block title %}Ask a Doctor — DentalCare{% endblock %}
+
+{% block patient_content %}
+
+<div class="mb-6 flex items-center gap-4">
+  <a href="{% url 'ask_doctor:landing' %}"
+     class="inline-flex items-center justify-center rounded-xl p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+    <span class="material-symbols-rounded">arrow_back</span>
+  </a>
+  <div>
+    <p class="text-xs font-semibold uppercase tracking-wide text-green-600">Ask Doctor</p>
+    <h1 class="mt-0.5 text-2xl font-bold text-gray-900">Ask a Detailed Question</h1>
+  </div>
+</div>
+
+{# Messages #}
+{% if messages %}
+<div class="mb-4 space-y-2">
+  {% for msg in messages %}
+  <div class="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium
+    {% if msg.tags == 'error' %}bg-red-50 text-red-700 ring-1 ring-red-200
+    {% else %}bg-green-50 text-green-800 ring-1 ring-green-200{% endif %}">
+    {{ msg }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="max-w-2xl">
+  <div class="rounded-2xl bg-white shadow-sm ring-1 ring-gray-100 p-6 sm:p-8">
+
+    <div class="mb-6 flex items-center gap-3">
+      <div style="width:44px;height:44px;border-radius:14px;background:#EAF7F1;
+                  display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <span class="material-symbols-rounded" style="color:#0B7A4B;">edit_note</span>
+      </div>
+      <div>
+        <p class="font-bold text-gray-900 text-sm">Structured Question Form</p>
+        <p class="text-xs text-gray-400">Our team will respond within 24 hours.</p>
+      </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="space-y-5">
+      {% csrf_token %}
+
+      <div>
+        <label class="mb-1.5 block text-xs font-bold uppercase tracking-wide text-gray-500">
+          Subject <span class="text-red-400">*</span>
+        </label>
+        {{ form.subject }}
+      </div>
+
+      <div>
+        <label class="mb-1.5 block text-xs font-bold uppercase tracking-wide text-gray-500">
+          Topic / Category
+        </label>
+        {{ form.category }}
+      </div>
+
+      <div>
+        <label class="mb-1.5 block text-xs font-bold uppercase tracking-wide text-gray-500">
+          Your Question <span class="text-red-400">*</span>
+        </label>
+        {{ form.message }}
+        <p class="mt-1 text-xs text-gray-400">Max 4,000 characters. Be as detailed as possible.</p>
+      </div>
+
+      <div>
+        <label class="mb-1.5 block text-xs font-bold uppercase tracking-wide text-gray-500">
+          Attachment <span class="text-xs font-normal text-gray-400">(optional — image, pdf, doc)</span>
+        </label>
+        {{ form.attachment }}
+        <p class="mt-1 text-xs text-gray-400">You can attach X-rays, photos, or documents up to 10MB.</p>
+      </div>
+
+      <div class="pt-2 flex items-center justify-between flex-wrap gap-3">
+        <p class="text-xs text-gray-400">
+          🔒 Your question is private and only visible to our dental team.
+        </p>
+        <button type="submit"
+                class="inline-flex items-center gap-2 rounded-2xl bg-green-700 px-6 py-3 text-sm font-bold text-white hover:bg-green-800 transition">
+          <span class="material-symbols-rounded text-base">send</span>
+          Submit Question
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

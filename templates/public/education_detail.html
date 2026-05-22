@@ -58,7 +58,7 @@
         </div>
         <div>
           <p style="font-size:14px;font-weight:600;color:#1e293b;margin:0;">
-            {{ article.author.get_full_name|default:article.author.email }}
+            {{ article.author.full_name|default:article.author.email }}
           </p>
           <p style="font-size:12px;color:#94a3b8;margin:0;">Dental Professional</p>
         </div>
@@ -79,6 +79,25 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>
           </svg>
           {{ article.read_time }} min read
+        </span>
+        <span class="flex items-center gap-1.5">
+          <svg style="width:13px;height:13px;" fill="none" stroke="#0B7A4B" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+          </svg>
+          {{ views_count }} view{{ views_count|pluralize }}
+        </span>
+        <span class="flex items-center gap-1.5">
+          <svg style="width:13px;height:13px;" fill="{% if user_liked %}#0B7A4B{% else %}none{% endif %}" stroke="#0B7A4B" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+          </svg>
+          {{ likes_count }} like{{ likes_count|pluralize }}
+        </span>
+        <span class="flex items-center gap-1.5">
+          <svg style="width:13px;height:13px;" fill="none" stroke="#0B7A4B" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+          </svg>
+          {{ comments_count }} comment{{ comments_count|pluralize }}
         </span>
       </div>
     </div>
@@ -121,8 +140,46 @@
       {{ article.content|safe }}
     </div>
 
+    <!-- Like button -->
+    <div style="margin-top:48px;display:flex;align-items:center;gap:16px;">
+      <form id="like-form" method="post" action="{% url 'articles:like' article.pk %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" id="like-btn"
+                style="display:inline-flex;align-items:center;gap:8px;
+                       padding:11px 22px;border-radius:9999px;border:2px solid;
+                       font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;
+                       {% if user_liked %}background:#EAF7F1;border-color:#0B7A4B;color:#0B7A4B;
+                       {% else %}background:#fff;border-color:#cbd5e1;color:#64748b;{% endif %}">
+          <svg id="like-icon" style="width:18px;height:18px;transition:all .18s;"
+               fill="{% if user_liked %}#0B7A4B{% else %}none{% endif %}"
+               stroke="{% if user_liked %}#0B7A4B{% else %}#94a3b8{% endif %}"
+               viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+          </svg>
+          <span id="like-label">{% if user_liked %}Liked{% else %}Like{% endif %}</span>
+          <span id="like-count"
+                style="background:{% if user_liked %}#0B7A4B{% else %}#f1f5f9{% endif %};
+                       color:{% if user_liked %}#fff{% else %}#64748b{% endif %};
+                       font-size:12px;padding:2px 8px;border-radius:9999px;">
+            {{ likes_count }}
+          </span>
+        </button>
+      </form>
+      <a href="#comments"
+         style="display:inline-flex;align-items:center;gap:7px;font-size:13.5px;
+                font-weight:600;color:#64748b;text-decoration:none;transition:color .15s;"
+         onmouseover="this.style.color='#0B7A4B'" onmouseout="this.style.color='#64748b'">
+        <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+        </svg>
+        {{ comments_count }} comment{{ comments_count|pluralize }}
+      </a>
+    </div>
+
     <!-- Share bar -->
-    <div style="margin-top:56px;padding:28px 32px;border-radius:16px;
+    <div style="margin-top:32px;padding:28px 32px;border-radius:16px;
                 background:#EAF7F1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
       <div>
         <p class="font-bold text-slate-800" style="font-size:15px;margin:0 0 4px;">
@@ -171,6 +228,192 @@
     </div>
   </div>
 </section>
+
+<!-- ══════════════════════════════════════════
+     COMMENTS SECTION
+══════════════════════════════════════════ -->
+<section id="comments" style="background:#fff;padding:64px 0 72px;">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <h2 class="font-extrabold text-slate-900" style="font-size:1.5rem;margin-bottom:36px;">
+      Comments
+      {% if comments_count %}
+      <span style="font-size:14px;font-weight:600;color:#64748b;margin-left:8px;">({{ comments_count }})</span>
+      {% endif %}
+    </h2>
+
+    <!-- Django messages -->
+    {% if messages %}
+    <div style="margin-bottom:24px;">
+      {% for msg in messages %}
+      <div style="padding:14px 18px;border-radius:12px;font-size:14px;font-weight:500;margin-bottom:8px;
+                  {% if 'error' in msg.tags %}background:#FEF2F2;color:#B91C1C;border:1px solid #FECACA;
+                  {% else %}background:#EAF7F1;color:#065F46;border:1px solid #A7F3D0;{% endif %}">
+        {{ msg }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Existing approved comments -->
+    {% if top_comments %}
+    <div style="margin-bottom:56px;">
+      {% for comment in top_comments %}
+      <div style="margin-bottom:32px;">
+        <!-- Top-level comment -->
+        <div style="display:flex;gap:14px;">
+          <div style="width:40px;height:40px;border-radius:50%;background:#EAF7F1;flex-shrink:0;
+                      display:flex;align-items:center;justify-content:center;
+                      font-size:14px;font-weight:700;color:#0B7A4B;">
+            {{ comment.name|slice:":1"|upper }}
+          </div>
+          <div style="flex:1;background:#f8fafc;border-radius:16px;padding:16px 20px;
+                      border:1px solid rgba(11,122,75,.07);">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+              <span style="font-weight:700;font-size:14px;color:#1e293b;">{{ comment.name }}</span>
+              <span style="font-size:12px;color:#94a3b8;">{{ comment.created_at|date:"M j, Y" }}</span>
+            </div>
+            <p style="font-size:14.5px;color:#374151;margin:0;line-height:1.7;white-space:pre-wrap;">{{ comment.comment|linebreaksbr }}</p>
+          </div>
+        </div>
+
+        <!-- Approved replies (staff replies, one level deep) -->
+        {% for reply in comment.replies.all %}
+        {% if reply.is_approved %}
+        <div style="margin-top:12px;margin-left:54px;display:flex;gap:14px;">
+          <div style="width:32px;height:32px;border-radius:50%;background:#0B7A4B;flex-shrink:0;
+                      display:flex;align-items:center;justify-content:center;
+                      font-size:11px;font-weight:700;color:#fff;">
+            {% if reply.user %}{{ reply.name|slice:":1"|upper }}{% else %}D{% endif %}
+          </div>
+          <div style="flex:1;background:#EAF7F1;border-radius:14px;padding:14px 18px;
+                      border:1px solid rgba(11,122,75,.12);">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
+              <span style="font-weight:700;font-size:13px;color:#065F46;">
+                {{ reply.name }}
+                {% if reply.user %}<span style="font-size:11px;font-weight:600;color:#0B7A4B;
+                  background:rgba(11,122,75,.1);padding:1px 8px;border-radius:9999px;margin-left:4px;">Staff</span>{% endif %}
+              </span>
+              <span style="font-size:11px;color:#94a3b8;">{{ reply.created_at|date:"M j, Y" }}</span>
+            </div>
+            <p style="font-size:14px;color:#374151;margin:0;line-height:1.65;white-space:pre-wrap;">{{ reply.comment|linebreaksbr }}</p>
+          </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:40px 0;margin-bottom:48px;
+                border:2px dashed rgba(11,122,75,.15);border-radius:20px;">
+      <svg style="width:40px;height:40px;margin:0 auto 12px;opacity:.3;" fill="#0B7A4B" viewBox="0 0 24 24">
+        <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+      </svg>
+      <p style="font-size:14px;color:#94a3b8;margin:0;">No comments yet. Be the first to share your thoughts!</p>
+    </div>
+    {% endif %}
+
+    <!-- Comment form -->
+    <div style="background:#f8fafc;border-radius:20px;padding:32px;
+                border:1.5px solid rgba(11,122,75,.1);">
+      <h3 style="font-size:17px;font-weight:800;color:#1e293b;margin:0 0 24px;">
+        Leave a Comment
+      </h3>
+      <form method="post" action="{% url 'articles:comment' article.slug %}">
+        {% csrf_token %}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+          <div>
+            <label style="display:block;font-size:12px;font-weight:700;color:#475569;
+                          text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">
+              Name <span style="color:#ef4444;">*</span>
+            </label>
+            {{ comment_form.name }}
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;font-weight:700;color:#475569;
+                          text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">
+              Email <span style="font-size:11px;color:#94a3b8;font-weight:400;">(optional)</span>
+            </label>
+            {{ comment_form.email }}
+          </div>
+        </div>
+        <div style="margin-bottom:20px;">
+          <label style="display:block;font-size:12px;font-weight:700;color:#475569;
+                        text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">
+            Comment <span style="color:#ef4444;">*</span>
+          </label>
+          {{ comment_form.comment }}
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <p style="font-size:12px;color:#94a3b8;margin:0;">
+            Comments are reviewed before being published.
+          </p>
+          <button type="submit"
+                  style="display:inline-flex;align-items:center;gap:8px;
+                         background:#0B7A4B;color:#fff;border:none;cursor:pointer;
+                         padding:11px 26px;border-radius:9999px;font-size:14px;font-weight:700;
+                         transition:background .18s;"
+                  onmouseover="this.style.background='#075A38'" onmouseout="this.style.background='#0B7A4B'">
+            <svg style="width:15px;height:15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+            </svg>
+            Post Comment
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</section>
+
+<!-- AJAX like handler -->
+<script>
+(function () {
+  var form = document.getElementById('like-form');
+  if (!form) return;
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var btn = document.getElementById('like-btn');
+    var icon = document.getElementById('like-icon');
+    var label = document.getElementById('like-label');
+    var count = document.getElementById('like-count');
+    btn.disabled = true;
+    fetch(form.action, {
+      method: 'POST',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
+      },
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (data.liked) {
+        icon.setAttribute('fill', '#0B7A4B');
+        icon.setAttribute('stroke', '#0B7A4B');
+        label.textContent = 'Liked';
+        btn.style.background = '#EAF7F1';
+        btn.style.borderColor = '#0B7A4B';
+        btn.style.color = '#0B7A4B';
+        count.style.background = '#0B7A4B';
+        count.style.color = '#fff';
+      } else {
+        icon.setAttribute('fill', 'none');
+        icon.setAttribute('stroke', '#94a3b8');
+        label.textContent = 'Like';
+        btn.style.background = '#fff';
+        btn.style.borderColor = '#cbd5e1';
+        btn.style.color = '#64748b';
+        count.style.background = '#f1f5f9';
+        count.style.color = '#64748b';
+      }
+      count.textContent = data.count;
+      btn.disabled = false;
+    })
+    .catch(function () { btn.disabled = false; });
+  });
+}());
+</script>
 
 <!-- ══════════════════════════════════════════
      RELATED ARTICLES
@@ -270,7 +513,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
         </svg>
       </a>
-      <a href="{% url 'pub_ask_doctor' %}"
+      <a href="{% url 'ask_doctor:landing' %}"
          class="inline-flex items-center gap-2 font-semibold"
          style="color:rgba(255,255,255,.85);border:2px solid rgba(255,255,255,.4);
                 padding:12px 30px;border-radius:9999px;font-size:14px;text-decoration:none;transition:all .22s;"

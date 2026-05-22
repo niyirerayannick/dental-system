@@ -71,11 +71,14 @@ def public_services(request):
 
 def public_book(request):
     """Public booking entry point — redirects to login then patient book page."""
-    from django.conf import settings
     dentist_param = request.GET.get("dentist", "")
-    next_url = "/dashboard/patient/book/"
+    service_param = request.GET.get("service", "")
+    params = []
     if dentist_param:
-        next_url = f"/dashboard/patient/book/?dentist={dentist_param}"
+        params.append(f"dentist={dentist_param}")
+    if service_param:
+        params.append(f"service={service_param}")
+    next_url = "/dashboard/patient/book/" + (f"?{'&'.join(params)}" if params else "")
 
     if request.user.is_authenticated:
         return redirect(next_url)
@@ -85,41 +88,27 @@ def public_book(request):
     return redirect(f"{login_url}?next={next_url}")
 
 
-def public_ask_doctor(request):
-    """Public ask-a-doctor enquiry page."""
-    if request.user.is_authenticated:
-        return redirect("dashboard:redirect")
+def public_service_detail(request, slug):
+    """Public detail page for a single dental service."""
+    from services.models import DentalService
+    svc = DentalService.objects.filter(slug=slug, is_active=True).select_related("category").first()
+    if not svc:
+        from django.http import Http404
+        raise Http404
 
-    if request.method == "POST":
-        messages.success(
-            request,
-            "Your question has been submitted! One of our dentists will respond within 24 hours."
-        )
-        return redirect("pub_ask_doctor")
+    related = list(
+        DentalService.objects.filter(is_active=True, category=svc.category)
+        .exclude(pk=svc.pk)[:3]
+    )
+    footer_services = list(DentalService.objects.filter(is_active=True).select_related("category")[3:8])
 
-    dentists = []
-    try:
-        from dentists.models import DentistProfile
-        dentists = list(
-            DentistProfile.objects
-            .filter(user__is_active=True, is_available=True)
-            .select_related("user")
-            .order_by("user__last_name", "user__first_name")
-        )
-    except Exception:
-        pass
-
-    footer_services = []
-    try:
-        from services.models import DentalService
-        footer_services = list(DentalService.objects.filter(is_active=True).select_related("category")[3:8])
-    except Exception:
-        pass
-
-    return render(request, "public/ask_doctor.html", {
-        "dentists": dentists,
+    return render(request, "public/service_detail.html", {
+        "service": svc,
+        "related": related,
         "footer_services": footer_services,
     })
+
+
 
 
 

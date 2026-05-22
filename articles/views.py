@@ -1,8 +1,8 @@
-import json
 import os
 
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
@@ -10,11 +10,24 @@ from django.views.decorators.http import require_POST
 from accounts.models import User
 from accounts.permissions import role_required
 
-from .forms import ArticleForm
-from .models import Article, ArticleCategory
+from .forms import ArticleForm, CommentForm, ReplyForm
+from .models import Article, ArticleCategory, ArticleComment, ArticleLike, ArticleView
 
 
-# ── Public views ──────────────────────────────────────────────────────────────
+# ── Helpers ────────────────────────────────────────────────────────────────────
+
+def _get_client_ip(request):
+    xff = request.META.get("HTTP_X_FORWARDED_FOR")
+    return xff.split(",")[0].strip() if xff else request.META.get("REMOTE_ADDR")
+
+
+def _ensure_session_key(request):
+    if not request.session.session_key:
+        request.session.save()
+    return request.session.session_key
+
+
+# ── Public views ────────────────────────────────────────────────────────────────
 
 def education_list(request):
     category_slug = request.GET.get("category", "")
@@ -50,6 +63,47 @@ def education_list(request):
 
 def education_detail(request, slug):
     article = get_object_or_404(Article, slug=slug, is_published=True)
+
+    # ── Track view (once per session / once per user) ─────────────────────────
+    session_key = _ensure_session_key(request)
+    ip = _get_client_ip(request)
+    if request.user.is_authenticated:
+        if not ArticleView.objects.filter(article=article, user=request.user).exists():
+            ArticleView.objects.create(
+                article=article, user=request.user,
+                session_key=session_key, ip_address=ip,
+            )
+    else:
+        if not ArticleView.objects.filter(article=article, session_key=session_key).exists():
+            ArticleView.objects.create(
+                article=article, session_key=session_key, ip_address=ip,
+            )
+
+    # ── Engagement counts ─────────────────────────────────────────────────────
+    views_count = article.views.count()
+    likes_count = article.likes.count()
+    comments_count = article.comments.filter(is_approved=True, parent__isnull=True).count()
+
+    # Has current visitor already liked?
+    user_liked = False
+    if request.user.is_authenticated:
+        user_liked = ArticleLike.objects.filter(article=article, user=request.user).exists()
+    else:
+        user_liked = ArticleLike.objects.filter(article=article, session_key=session_key).exists()
+
+    # ── Approved top-level comments with their approved replies ───────────────
+    top_comments = (
+        article.comments
+        .filter(is_approved=True, parent__isnull=True)
+        .prefetch_related(
+            "replies__user",
+        )
+        .select_related("user")
+        .order_by("created_at")
+    )
+
+    comment_form = CommentForm()
+
     related = (
         Article.objects.filter(is_published=True)
         .exclude(pk=article.pk)
@@ -70,17 +124,102 @@ def education_detail(request, slug):
         "article": article,
         "related": related,
         "footer_services": footer_services,
+        "views_count": views_count,
+        "likes_count": likes_count,
+        "comments_count": comments_count,
+        "user_liked": user_liked,
+        "top_comments": top_comments,
+        "comment_form": comment_form,
     })
+
+
+@require_POST
+def article_like(request, pk):
+    article = get_object_or_404(Article, pk=pk, is_published=True)
+    session_key = _ensure_session_key(request)
+    ip = _get_client_ip(request)
+    is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
+    if request.user.is_authenticated:
+        like_qs = ArticleLike.objects.filter(article=article, user=request.user)
+        if like_qs.exists():
+            like_qs.delete()
+            liked = False
+        else:
+            ArticleLike.objects.create(
+                article=article, user=request.user,
+                session_key=session_key, ip_address=ip,
+            )
+            liked = True
+    else:
+        like_qs = ArticleLike.objects.filter(article=article, session_key=session_key)
+        if like_qs.exists():
+            like_qs.delete()
+            liked = False
+        else:
+            ArticleLike.objects.create(
+                article=article, session_key=session_key, ip_address=ip,
+            )
+            liked = True
+
+    count = article.likes.count()
+
+    if is_ajax:
+        return JsonResponse({"liked": liked, "count": count})
+
+    return redirect("articles:detail", slug=article.slug)
+
+
+@require_POST
+def article_comment(request, slug):
+    article = get_object_or_404(Article, slug=slug, is_published=True)
+    form = CommentForm(request.POST)
+
+    if form.is_valid():
+        comment = form.save(commit=False)
+        comment.article = article
+        comment.parent = None
+        if request.user.is_authenticated:
+            comment.user = request.user
+            comment.name = request.user.full_name or request.user.phone
+            comment.email = request.user.email or ""
+        comment.is_approved = False
+        comment.save()
+        messages.success(request, "Thank you. Your comment is waiting for approval.")
+    else:
+        for field_errors in form.errors.values():
+            for error in field_errors:
+                messages.error(request, error)
+
+    return redirect("articles:detail", slug=slug)
 
 
 # ── Dashboard views ────────────────────────────────────────────────────────────
 
 @role_required(User.Role.ADMIN, User.Role.DENTIST)
 def dashboard_article_list(request):
-    qs = Article.objects.select_related("category", "author").order_by("-created_at")
+    qs = (
+        Article.objects
+        .select_related("category", "author")
+        .annotate(
+            views_count=Count("views", distinct=True),
+            likes_count=Count("likes", distinct=True),
+            approved_comments=Count(
+                "comments",
+                filter=Q(comments__is_approved=True, comments__parent__isnull=True),
+                distinct=True,
+            ),
+            pending_comments=Count(
+                "comments",
+                filter=Q(comments__is_approved=False, comments__parent__isnull=True),
+                distinct=True,
+            ),
+        )
+        .order_by("-created_at")
+    )
 
-    # Dentists see only their own articles
-    if request.user.role == User.Role.DENTIST:
+    is_dentist = request.user.role == User.Role.DENTIST
+    if is_dentist:
         qs = qs.filter(author=request.user)
 
     q = request.GET.get("q", "").strip()
@@ -98,10 +237,7 @@ def dashboard_article_list(request):
 
     paginator = Paginator(qs, 15)
     page = paginator.get_page(request.GET.get("page"))
-
     categories = ArticleCategory.objects.all()
-
-    is_dentist = request.user.role == User.Role.DENTIST
 
     return render(request, "dashboard/articles/list.html", {
         "articles": page,
@@ -135,7 +271,6 @@ def dashboard_article_create(request):
 def dashboard_article_edit(request, pk):
     article = get_object_or_404(Article, pk=pk)
 
-    # Dentists can only edit their own articles
     if request.user.role == User.Role.DENTIST and article.author != request.user:
         messages.error(request, "You do not have permission to edit this article.")
         return redirect("articles:dashboard_list")
@@ -156,7 +291,6 @@ def dashboard_article_edit(request, pk):
 def dashboard_article_delete(request, pk):
     article = get_object_or_404(Article, pk=pk)
 
-    # Dentists can only delete their own articles
     if request.user.role == User.Role.DENTIST and article.author != request.user:
         messages.error(request, "You do not have permission to delete this article.")
         return redirect("articles:dashboard_list")
@@ -190,7 +324,6 @@ def dashboard_article_toggle_publish(request, pk):
 def dashboard_article_preview(request, pk):
     article = get_object_or_404(Article, pk=pk)
 
-    # Dentists can only preview their own articles
     if request.user.role == User.Role.DENTIST and article.author != request.user:
         messages.error(request, "You do not have permission to preview this article.")
         return redirect("articles:dashboard_list")
@@ -200,7 +333,6 @@ def dashboard_article_preview(request, pk):
 
 @role_required(User.Role.ADMIN, User.Role.DENTIST)
 def dashboard_article_image_upload(request):
-    """TinyMCE image upload endpoint."""
     if request.method != "POST":
         return JsonResponse({"error": "Method not allowed"}, status=405)
 
@@ -208,18 +340,124 @@ def dashboard_article_image_upload(request):
     if not upload:
         return JsonResponse({"error": "No file provided"}, status=400)
 
-    # Validate it's an image
     allowed_types = {"image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"}
     if upload.content_type not in allowed_types:
         return JsonResponse({"error": "Invalid file type"}, status=400)
 
-    # Save to media/articles/uploads/
-    from django.core.files.storage import default_storage
     from django.core.files.base import ContentFile
+    from django.core.files.storage import default_storage
 
-    filename = upload.name
-    # Sanitize filename
-    filename = os.path.basename(filename)
+    filename = os.path.basename(upload.name)
     path = default_storage.save(f"articles/uploads/{filename}", ContentFile(upload.read()))
     url = request.build_absolute_uri(f"/media/{path}")
     return JsonResponse({"location": url})
+
+
+# ── Dashboard comment management ───────────────────────────────────────────────
+
+@role_required(User.Role.ADMIN, User.Role.DENTIST)
+def dashboard_comment_list(request):
+    qs = (
+        ArticleComment.objects
+        .filter(parent__isnull=True)
+        .select_related("article", "article__author", "user")
+        .prefetch_related("replies__user")
+        .order_by("-created_at")
+    )
+
+    is_dentist = request.user.role == User.Role.DENTIST
+    if is_dentist:
+        qs = qs.filter(article__author=request.user)
+
+    status = request.GET.get("status", "pending")
+    article_filter = request.GET.get("article", "")
+
+    if status == "pending":
+        qs = qs.filter(is_approved=False)
+    elif status == "approved":
+        qs = qs.filter(is_approved=True)
+    # "all" shows everything
+
+    if article_filter:
+        qs = qs.filter(article__pk=article_filter)
+
+    # Articles dropdown for filter
+    article_qs = Article.objects.all()
+    if is_dentist:
+        article_qs = article_qs.filter(author=request.user)
+
+    pending_count = qs.model.objects.filter(parent__isnull=True, is_approved=False)
+    if is_dentist:
+        pending_count = pending_count.filter(article__author=request.user)
+    pending_count = pending_count.count()
+
+    paginator = Paginator(qs, 20)
+    page = paginator.get_page(request.GET.get("page"))
+
+    return render(request, "dashboard/articles/comments.html", {
+        "comments": page,
+        "page_obj": page,
+        "status": status,
+        "article_filter": article_filter,
+        "article_list": article_qs,
+        "pending_count": pending_count,
+        "is_dentist": is_dentist,
+        "reply_form": ReplyForm(),
+    })
+
+
+@role_required(User.Role.ADMIN, User.Role.DENTIST)
+@require_POST
+def dashboard_comment_approve(request, pk):
+    comment = get_object_or_404(ArticleComment, pk=pk)
+
+    if request.user.role == User.Role.DENTIST and comment.article.author != request.user:
+        messages.error(request, "Permission denied.")
+        return redirect("articles:dashboard_comments")
+
+    comment.is_approved = not comment.is_approved
+    comment.save()
+    state = "approved" if comment.is_approved else "hidden"
+    messages.success(request, f'Comment {state}.')
+    return redirect(request.META.get("HTTP_REFERER", "articles:dashboard_comments"))
+
+
+@role_required(User.Role.ADMIN, User.Role.DENTIST)
+@require_POST
+def dashboard_comment_reply(request, pk):
+    parent = get_object_or_404(ArticleComment, pk=pk, parent__isnull=True)
+
+    if request.user.role == User.Role.DENTIST and parent.article.author != request.user:
+        messages.error(request, "Permission denied.")
+        return redirect("articles:dashboard_comments")
+
+    form = ReplyForm(request.POST)
+    if form.is_valid():
+        ArticleComment.objects.create(
+            article=parent.article,
+            parent=parent,
+            user=request.user,
+            name=request.user.full_name or request.user.phone,
+            email=request.user.email or "",
+            comment=form.cleaned_data["reply"],
+            is_approved=True,
+        )
+        messages.success(request, "Reply posted.")
+    else:
+        messages.error(request, "Reply cannot be empty.")
+
+    return redirect(request.META.get("HTTP_REFERER", "articles:dashboard_comments"))
+
+
+@role_required(User.Role.ADMIN, User.Role.DENTIST)
+@require_POST
+def dashboard_comment_delete(request, pk):
+    comment = get_object_or_404(ArticleComment, pk=pk)
+
+    if request.user.role == User.Role.DENTIST and comment.article.author != request.user:
+        messages.error(request, "Permission denied.")
+        return redirect("articles:dashboard_comments")
+
+    comment.delete()
+    messages.success(request, "Comment deleted.")
+    return redirect(request.META.get("HTTP_REFERER", "articles:dashboard_comments"))

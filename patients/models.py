@@ -23,7 +23,7 @@ class PatientProfile(models.Model):
         ordering = ["user__last_name", "user__first_name"]
 
     def __str__(self):
-        return self.user.full_name or self.user.email
+        return self.user.full_name or self.user.phone
 
     def clean(self):
         if self.user_id and self.user.role != self.user.Role.PATIENT:

@@ -3,7 +3,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-from .views import health, home, public_ask_doctor, public_book, public_contact, public_services
+from .views import health, home, public_book, public_contact, public_service_detail, public_services
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -11,8 +11,9 @@ urlpatterns = [
     path("", home, name="home"),
     # Public pages
     path("services/", public_services, name="pub_services"),
+    path("services/<slug:slug>/", public_service_detail, name="pub_service_detail"),
     path("book/", public_book, name="pub_book"),
-    path("ask-doctor/", public_ask_doctor, name="pub_ask_doctor"),
+    path("ask-doctor/", include("ask_doctor.urls", namespace="ask_doctor")),
     path("education/", include("articles.urls", namespace="articles")),
     path("contact/", public_contact, name="pub_contact"),
     # Dashboard apps

@@ -554,14 +554,20 @@ def patient_book_page(request):
 
     profile = get_patient_profile(request.user)
 
-    # Pre-select dentist when arriving from the public doctors section
     initial = {}
     dentist_id = request.GET.get("dentist")
+    service_id = request.GET.get("service")
     if dentist_id:
         try:
             from dentists.models import DentistProfile
             initial["dentist"] = DentistProfile.objects.get(pk=dentist_id, is_available=True)
         except (DentistProfile.DoesNotExist, ValueError, TypeError):
+            pass
+    if service_id:
+        try:
+            from services.models import DentalService
+            initial["service"] = DentalService.objects.get(pk=service_id, is_active=True)
+        except (DentalService.DoesNotExist, ValueError, TypeError):
             pass
 
     booking_form = AppointmentBookingForm(initial=initial)

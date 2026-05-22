@@ -46,7 +46,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
         </svg>
       </a>
-      <a href="{% url 'pub_ask_doctor' %}"
+      <a href="{% url 'ask_doctor:landing' %}"
          class="inline-flex items-center gap-2 font-semibold"
          style="color:#0B7A4B;font-size:14px;border:2px solid rgba(11,122,75,.3);
                 padding:11px 26px;border-radius:9999px;transition:all .22s;"
@@ -119,18 +119,25 @@
                onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(11,122,75,.14)'"
                onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 10px rgba(11,122,75,.06)'">
 
-            <!-- Card top strip -->
+            <!-- Service image / placeholder -->
+            {% if svc.image %}
+            <img src="{{ svc.image.url }}" alt="{{ svc.name }}"
+                 style="width:100%;height:180px;object-fit:cover;display:block;">
+            {% else %}
             <div style="height:6px;background:linear-gradient(90deg,#0B7A4B,#4FA882);"></div>
+            {% endif %}
 
             <div style="padding:24px;">
               <!-- Icon + name -->
               <div class="flex items-start gap-4" style="margin-bottom:14px;">
+                {% if not svc.image %}
                 <div class="rounded-xl flex items-center justify-center flex-none"
                      style="width:48px;height:48px;background-color:#EAF7F1;">
                   <svg style="width:22px;height:22px;" fill="#0B7A4B" viewBox="0 0 64 64" aria-hidden="true">
                     <path d="M32 4c-5.5 0-9.5 3.5-11 7.5C19.5 9 17.5 8 15 8 10.5 8 7 11.5 7 16c0 7 5 11.5 9 16 2 2.5 3.5 5 4.5 8.5.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5c.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5C35 37 36.5 34.5 39 32c4-4 9-8.5 9-16C48 11.5 44 8 39.5 8c-2.5 0-4.5 1-6 3.5C32 8 31 4 32 4Z"/>
                   </svg>
                 </div>
+                {% endif %}
                 <div style="flex:1;">
                   <h3 class="font-bold text-slate-900" style="font-size:15.5px;margin:0 0 4px;">{{ svc.name }}</h3>
                   <span style="font-size:11px;font-weight:600;color:#0B7A4B;background:#EAF7F1;
@@ -139,7 +146,11 @@
               </div>
 
               <!-- Description -->
-              {% if svc.description %}
+              {% if svc.short_description %}
+              <p class="text-slate-500" style="font-size:13.5px;line-height:1.65;margin-bottom:18px;">
+                {{ svc.short_description }}
+              </p>
+              {% elif svc.description %}
               <p class="text-slate-500" style="font-size:13.5px;line-height:1.65;margin-bottom:18px;">
                 {{ svc.description|truncatechars:120 }}
               </p>
@@ -164,18 +175,28 @@
                 </span>
               </div>
 
-              <!-- Book button -->
-              <a href="{% url 'pub_book' %}"
-                 class="flex items-center justify-center gap-2 font-semibold text-white"
-                 style="width:100%;padding:10px 20px;border-radius:10px;font-size:13.5px;
-                        background:linear-gradient(135deg,#0B7A4B,#075A38);
-                        text-decoration:none;transition:opacity .2s;"
-                 onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
-                <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
-                Book This Service
-              </a>
+              <!-- Action buttons -->
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <a href="{% url 'pub_book' %}?service={{ svc.pk }}"
+                   class="flex items-center justify-center gap-2 font-semibold text-white"
+                   style="padding:10px 16px;border-radius:10px;font-size:13px;
+                          background:linear-gradient(135deg,#0B7A4B,#075A38);
+                          text-decoration:none;transition:opacity .2s;"
+                   onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+                  <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                  Book
+                </a>
+                <a href="{% url 'pub_service_detail' svc.slug %}"
+                   style="padding:9px 16px;border-radius:10px;font-size:13px;font-weight:600;
+                          color:#0B7A4B;border:1.5px solid rgba(11,122,75,.3);
+                          text-align:center;text-decoration:none;transition:all .2s;"
+                   onmouseover="this.style.background='#EAF7F1';this.style.borderColor='#0B7A4B'"
+                   onmouseout="this.style.background='transparent';this.style.borderColor='rgba(11,122,75,.3)'">
+                  Details
+                </a>
+              </div>
             </div>
           </div>
           {% endfor %}

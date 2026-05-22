@@ -25,7 +25,7 @@ class DentistForm(forms.Form):
     first_name = forms.CharField(max_length=150)
     last_name = forms.CharField(max_length=150)
     email = forms.EmailField()
-    phone = forms.CharField(max_length=30, required=False)
+    phone = forms.CharField(max_length=20, label="Phone number")
     specialization = forms.CharField(max_length=120)
     license_number = forms.CharField(max_length=80)
     appointment_duration = forms.IntegerField(min_value=5, initial=30, help_text="Minutes per appointment.")
@@ -73,6 +73,15 @@ class DentistForm(forms.Form):
             raise forms.ValidationError("Select at least one working day.")
         return cleaned
 
+    def clean_phone(self):
+        from accounts.models import normalize_phone
+        phone = normalize_phone(self.cleaned_data.get("phone", "").strip())
+        if not phone:
+            raise forms.ValidationError("Phone number is required.")
+        if get_user_model().objects.filter(phone=phone).exists():
+            raise forms.ValidationError("A user with this phone number already exists.")
+        return phone
+
     def clean_email(self):
         email = get_user_model().objects.normalize_email(self.cleaned_data["email"]).lower()
         if get_user_model().objects.filter(email=email).exists():
@@ -101,11 +110,11 @@ class DentistForm(forms.Form):
     @transaction.atomic
     def save(self):
         user = User.objects.create_user(
-            email=self.cleaned_data["email"],
+            phone=self.cleaned_data["phone"],
             password=get_random_string(32),
+            email=self.cleaned_data["email"],
             first_name=self.cleaned_data["first_name"],
             last_name=self.cleaned_data["last_name"],
-            phone=self.cleaned_data["phone"],
             role=User.Role.DENTIST,
             is_active=self.cleaned_data.get("is_active", False),
         )
@@ -148,6 +157,18 @@ class DentistEditForm(DentistForm):
                 initial[f"{d}_break_start"] = sched.break_start
                 initial[f"{d}_break_end"] = sched.break_end
         super().__init__(*args, initial=initial, **kwargs)
+
+    def clean_phone(self):
+        from accounts.models import normalize_phone
+        phone = normalize_phone(self.cleaned_data.get("phone", "").strip())
+        if not phone:
+            raise forms.ValidationError("Phone number is required.")
+        qs = get_user_model().objects.filter(phone=phone)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.user_id)
+        if qs.exists():
+            raise forms.ValidationError("A user with this phone number already exists.")
+        return phone
 
     def clean_email(self):
         email = get_user_model().objects.normalize_email(self.cleaned_data["email"]).lower()

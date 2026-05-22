@@ -81,6 +81,9 @@
         <th class="px-5 py-3 text-left">Category</th>
         {% if not is_dentist %}<th class="px-5 py-3 text-left">Author</th>{% endif %}
         <th class="px-5 py-3 text-left">Status</th>
+        <th class="px-5 py-3 text-right">Views</th>
+        <th class="px-5 py-3 text-right">Likes</th>
+        <th class="px-5 py-3 text-right">Comments</th>
         <th class="px-5 py-3 text-left">Date</th>
         <th class="px-5 py-3 text-right">Actions</th>
       </tr>
@@ -126,6 +129,15 @@
           <span class="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700">Draft</span>
           {% endif %}
         </td>
+        <td class="px-5 py-4 text-right text-sm text-gray-600">{{ article.views_count }}</td>
+        <td class="px-5 py-4 text-right text-sm text-gray-600">{{ article.likes_count }}</td>
+        <td class="px-5 py-4 text-right">
+          <span class="text-sm text-gray-600">{{ article.approved_comments }}</span>
+          {% if article.pending_comments %}
+          <span class="ml-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-bold text-amber-700"
+                title="{{ article.pending_comments }} pending">+{{ article.pending_comments }}</span>
+          {% endif %}
+        </td>
         <td class="px-5 py-4 text-xs text-gray-500">
           {% if article.published_at %}{{ article.published_at|date:"M j, Y" }}
           {% else %}{{ article.created_at|date:"M j, Y" }}{% endif %}
@@ -152,6 +164,13 @@
                 {% if article.is_published %}Unpublish{% else %}Publish{% endif %}
               </button>
             </form>
+            {% if article.pending_comments %}
+            <a href="{% url 'articles:dashboard_comments' %}?article={{ article.pk }}&status=pending"
+               class="rounded-lg bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 hover:bg-amber-100"
+               title="{{ article.pending_comments }} pending comment{{ article.pending_comments|pluralize }}">
+              {{ article.pending_comments }} pending
+            </a>
+            {% endif %}
             <a href="{% url 'articles:dashboard_delete' article.pk %}"
                class="rounded-lg bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-100">Delete</a>
           </div>
@@ -179,7 +198,12 @@
           {% if not is_dentist %}
           <p class="text-xs text-gray-500 mt-0.5">{{ article.author.full_name|default:"—" }}</p>
           {% endif %}
-          <p class="text-xs text-gray-400 mt-0.5">{{ article.read_time }} min read · {{ article.created_at|date:"M j, Y" }}</p>
+          <p class="text-xs text-gray-400 mt-0.5">
+            {{ article.read_time }} min read · {{ article.created_at|date:"M j, Y" }}
+            &nbsp;·&nbsp; {{ article.views_count }} views · {{ article.likes_count }} likes
+            · {{ article.approved_comments }} comments
+            {% if article.pending_comments %}<span class="text-amber-600 font-semibold">({{ article.pending_comments }} pending)</span>{% endif %}
+          </p>
           <div class="mt-1.5 flex gap-2 flex-wrap">
             {% if article.is_published %}
             <span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">Published</span>
@@ -212,6 +236,12 @@
             {% if article.is_published %}Unpublish{% else %}Publish{% endif %}
           </button>
         </form>
+        {% if article.pending_comments %}
+        <a href="{% url 'articles:dashboard_comments' %}?article={{ article.pk }}&status=pending"
+           class="rounded-xl bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700">
+          {{ article.pending_comments }} pending
+        </a>
+        {% endif %}
         <a href="{% url 'articles:dashboard_delete' article.pk %}"
            class="rounded-xl bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600">Delete</a>
       </div>

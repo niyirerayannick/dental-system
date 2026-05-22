@@ -1,0 +1,158 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Ask Doctor Inbox{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+  <div>
+    <p class="text-xs font-semibold uppercase tracking-wide text-green-600">Ask Doctor</p>
+    <h1 class="mt-1 text-2xl font-bold text-gray-900">Patient Inbox</h1>
+    <p class="mt-1 text-sm text-gray-500">
+      {% if is_dentist %}Conversations assigned to you or unassigned open questions.
+      {% else %}All patient conversations.{% endif %}
+      {% if total_unread %}
+      <span class="font-semibold text-amber-600 ml-1">{{ total_unread }} unread</span>
+      {% endif %}
+    </p>
+  </div>
+</div>
+
+{# Messages #}
+{% if messages %}
+<div class="mb-4 space-y-2">
+  {% for msg in messages %}
+  <div class="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium
+    {% if msg.tags == 'error' %}bg-red-50 text-red-700 ring-1 ring-red-200
+    {% else %}bg-green-50 text-green-800 ring-1 ring-green-200{% endif %}">
+    <span class="material-symbols-rounded text-base">
+      {% if msg.tags == 'error' %}error{% else %}check_circle{% endif %}
+    </span>
+    {{ msg }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{# Status tab bar #}
+<div class="mb-5 flex flex-wrap gap-1 rounded-2xl bg-gray-100 p-1" style="max-width:560px;">
+  <a href="?status=all"
+     class="flex-1 text-center rounded-xl px-3 py-2 text-sm font-semibold transition
+            {% if status_filter == 'all' %}bg-white shadow-sm text-gray-900{% else %}text-gray-500 hover:text-gray-700{% endif %}">
+    All
+  </a>
+  <a href="?status=open"
+     class="flex-1 text-center rounded-xl px-3 py-2 text-sm font-semibold transition
+            {% if status_filter == 'open' %}bg-white shadow-sm text-gray-900{% else %}text-gray-500 hover:text-gray-700{% endif %}">
+    Open
+    {% if status_counts.open %}
+    <span class="ml-1 rounded-full bg-green-100 px-1.5 text-xs font-bold text-green-700">{{ status_counts.open }}</span>
+    {% endif %}
+  </a>
+  <a href="?status=pending"
+     class="flex-1 text-center rounded-xl px-3 py-2 text-sm font-semibold transition
+            {% if status_filter == 'pending' %}bg-white shadow-sm text-gray-900{% else %}text-gray-500 hover:text-gray-700{% endif %}">
+    Pending
+    {% if status_counts.pending %}
+    <span class="ml-1 rounded-full bg-amber-100 px-1.5 text-xs font-bold text-amber-700">{{ status_counts.pending }}</span>
+    {% endif %}
+  </a>
+  <a href="?status=answered"
+     class="flex-1 text-center rounded-xl px-3 py-2 text-sm font-semibold transition
+            {% if status_filter == 'answered' %}bg-white shadow-sm text-gray-900{% else %}text-gray-500 hover:text-gray-700{% endif %}">
+    Answered
+    {% if status_counts.answered %}
+    <span class="ml-1 rounded-full bg-blue-100 px-1.5 text-xs font-bold text-blue-700">{{ status_counts.answered }}</span>
+    {% endif %}
+  </a>
+  <a href="?status=closed"
+     class="flex-1 text-center rounded-xl px-3 py-2 text-sm font-semibold transition
+            {% if status_filter == 'closed' %}bg-white shadow-sm text-gray-900{% else %}text-gray-500 hover:text-gray-700{% endif %}">
+    Closed
+    {% if status_counts.closed %}
+    <span class="ml-1 rounded-full bg-gray-200 px-1.5 text-xs font-bold text-gray-600">{{ status_counts.closed }}</span>
+    {% endif %}
+  </a>
+</div>
+
+{# Conversation list #}
+{% if conversations %}
+<div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100">
+  <div class="divide-y divide-gray-50">
+    {% for conv in conversations %}
+    <a href="{% url 'ask_doctor:inbox_detail' conv.pk %}"
+       class="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition block"
+       style="text-decoration:none;">
+
+      {# Patient avatar #}
+      <div style="width:44px;height:44px;border-radius:50%;flex-shrink:0;
+                  display:flex;align-items:center;justify-content:center;
+                  background:#EAF7F1;font-size:14px;font-weight:700;color:#0B7A4B;
+                  border:2px solid rgba(11,122,75,.15);">
+        {{ conv.patient.first_name|slice:":1"|upper }}{{ conv.patient.last_name|slice:":1"|upper }}
+      </div>
+
+      <div style="flex:1;min-width:0;">
+        <div class="flex items-center gap-2 flex-wrap mb-0.5">
+          <span class="font-bold text-gray-900 text-sm">{{ conv.patient.full_name }}</span>
+          {% if conv.unread_for_staff %}
+          <span class="rounded-full bg-green-600 px-1.5 text-xs font-bold text-white">
+            {{ conv.unread_for_staff }} new
+          </span>
+          {% endif %}
+        </div>
+        <p class="text-sm text-gray-600 truncate font-medium">
+          {{ conv.display_subject|truncatechars:65 }}
+        </p>
+        <p class="text-xs text-gray-400 mt-0.5">
+          {{ conv.updated_at|timesince }} ago
+          {% if conv.assigned_doctor %}· Dr. {{ conv.assigned_doctor.full_name }}{% else %}· <span class="text-amber-600 font-semibold">Unassigned</span>{% endif %}
+        </p>
+      </div>
+
+      <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+        <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold
+                     {% if conv.status == 'open' %}bg-green-100 text-green-700
+                     {% elif conv.status == 'pending' %}bg-amber-100 text-amber-700
+                     {% elif conv.status == 'answered' %}bg-blue-100 text-blue-700
+                     {% else %}bg-gray-100 text-gray-500{% endif %}">
+          {{ conv.get_status_display }}
+        </span>
+        <span class="text-xs text-gray-400">{{ conv.messages.count }} msg{{ conv.messages.count|pluralize }}</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+
+{# Pagination #}
+{% if page_obj.has_other_pages %}
+<div class="mt-4 flex items-center justify-between text-sm">
+  <p class="text-gray-500">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</p>
+  <div class="flex gap-2">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}&status={{ status_filter }}"
+       class="rounded-xl border border-gray-200 bg-white px-3 py-1.5 font-semibold text-gray-600 hover:bg-gray-50">Prev</a>
+    {% endif %}
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}&status={{ status_filter }}"
+       class="rounded-xl border border-gray-200 bg-white px-3 py-1.5 font-semibold text-gray-600 hover:bg-gray-50">Next</a>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{% else %}
+<div class="flex flex-col items-center justify-center rounded-2xl bg-white py-20 text-center shadow-sm ring-1 ring-gray-100">
+  <span class="material-symbols-rounded mb-4 text-6xl text-gray-200">inbox</span>
+  <p class="font-semibold text-gray-500">
+    {% if status_filter == 'pending' %}No pending conversations.
+    {% elif status_filter == 'open' %}No open conversations.
+    {% elif status_filter == 'answered' %}No answered conversations.
+    {% elif status_filter == 'closed' %}No closed conversations.
+    {% else %}No conversations yet.{% endif %}
+  </p>
+  <p class="mt-1 text-sm text-gray-400">Patient questions will appear here when submitted.</p>
+</div>
+{% endif %}
+
+{% endblock %}

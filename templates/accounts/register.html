@@ -46,28 +46,31 @@
         </div>
     </div>
 
-    <!-- Email -->
-    <div>
-        <label for="{{ form.email.id_for_label }}" class="mb-1.5 block text-sm font-medium text-slate-700">Email address</label>
-        <div class="group flex h-12 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 shadow-sm transition-all duration-150 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-100">
-            <span class="material-symbols-rounded flex-none select-none text-xl leading-none text-slate-400 transition-colors duration-150 group-focus-within:text-emerald-500">mail</span>
-            {{ form.email }}
-        </div>
-        {% for error in form.email.errors %}
-            <p class="mt-1 text-xs text-rose-600">{{ error }}</p>
-        {% endfor %}
-    </div>
-
-    <!-- Phone -->
+    <!-- Phone (required) -->
     <div>
         <label for="{{ form.phone.id_for_label }}" class="mb-1.5 block text-sm font-medium text-slate-700">
-            Phone <span class="font-normal text-slate-400">(optional)</span>
+            Phone number <span class="text-rose-500">*</span>
         </label>
         <div class="group flex h-12 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 shadow-sm transition-all duration-150 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-100">
             <span class="material-symbols-rounded flex-none select-none text-xl leading-none text-slate-400 transition-colors duration-150 group-focus-within:text-emerald-500">call</span>
             {{ form.phone }}
         </div>
+        <p class="mt-1 text-xs text-slate-400">Rwanda format: 0780474044 or +250780474044</p>
         {% for error in form.phone.errors %}
+            <p class="mt-1 text-xs text-rose-600">{{ error }}</p>
+        {% endfor %}
+    </div>
+
+    <!-- Email (optional) -->
+    <div>
+        <label for="{{ form.email.id_for_label }}" class="mb-1.5 block text-sm font-medium text-slate-700">
+            Email address <span class="font-normal text-slate-400">(optional)</span>
+        </label>
+        <div class="group flex h-12 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 shadow-sm transition-all duration-150 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-100">
+            <span class="material-symbols-rounded flex-none select-none text-xl leading-none text-slate-400 transition-colors duration-150 group-focus-within:text-emerald-500">mail</span>
+            {{ form.email }}
+        </div>
+        {% for error in form.email.errors %}
             <p class="mt-1 text-xs text-rose-600">{{ error }}</p>
         {% endfor %}
     </div>

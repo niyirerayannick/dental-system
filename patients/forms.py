@@ -36,8 +36,8 @@ class PatientProfileForm(forms.ModelForm):
 class PatientRegistrationForm(forms.Form):
     first_name = forms.CharField(max_length=150)
     last_name = forms.CharField(max_length=150)
-    email = forms.EmailField()
-    phone = forms.CharField(max_length=30, required=False)
+    phone = forms.CharField(max_length=20, label="Phone number")
+    email = forms.EmailField(required=False, label="Email address (optional)")
     date_of_birth = forms.DateField(required=False, widget=forms.DateInput(attrs={"type": "date"}))
     gender = forms.ChoiceField(required=False, choices=[("", "---------")] + list(PatientProfile.Gender.choices))
     address = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 3}))
@@ -45,18 +45,23 @@ class PatientRegistrationForm(forms.Form):
     medical_history = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 4}))
     allergies = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 3}))
 
+    def clean_phone(self):
+        from accounts.models import normalize_phone
+        phone = normalize_phone(self.cleaned_data.get("phone", "").strip())
+        if not phone:
+            raise forms.ValidationError("Phone number is required.")
+        if get_user_model().objects.filter(phone=phone).exists():
+            raise forms.ValidationError("A patient with this phone number already exists.")
+        return phone
+
     def clean_email(self):
-        email = get_user_model().objects.normalize_email(self.cleaned_data["email"]).lower()
+        email = self.cleaned_data.get("email", "").strip()
+        if not email:
+            return None
+        email = get_user_model().objects.normalize_email(email).lower()
         if get_user_model().objects.filter(email=email).exists():
             raise forms.ValidationError("A user with this email already exists.")
         return email
-
-    def clean_phone(self):
-        phone = self.cleaned_data.get("phone", "").strip()
-        allowed = set("+()-. 0123456789")
-        if phone and any(character not in allowed for character in phone):
-            raise forms.ValidationError("Enter a valid phone number.")
-        return phone
 
     def clean_date_of_birth(self):
         date_of_birth = self.cleaned_data.get("date_of_birth")
@@ -67,11 +72,11 @@ class PatientRegistrationForm(forms.Form):
     @transaction.atomic
     def save(self):
         user = User.objects.create_user(
-            email=self.cleaned_data["email"],
+            phone=self.cleaned_data["phone"],
             password=get_random_string(32),
+            email=self.cleaned_data.get("email") or None,
             first_name=self.cleaned_data["first_name"],
             last_name=self.cleaned_data["last_name"],
-            phone=self.cleaned_data["phone"],
             role=User.Role.PATIENT,
         )
         PatientProfile.objects.create(
@@ -88,8 +93,8 @@ class PatientRegistrationForm(forms.Form):
 
 class PatientForm(forms.Form):
     full_name = forms.CharField(max_length=300)
-    email = forms.EmailField()
-    phone = forms.CharField(max_length=30, required=False)
+    phone = forms.CharField(max_length=20, label="Phone number")
+    email = forms.EmailField(required=False, label="Email address (optional)")
     gender = forms.ChoiceField(required=False, choices=[("", "---------")] + list(PatientProfile.Gender.choices))
     date_of_birth = forms.DateField(required=False, widget=forms.DateInput(attrs={"type": "date"}))
     address = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 3}))
@@ -124,21 +129,29 @@ class PatientForm(forms.Form):
             raise forms.ValidationError("Enter first and last name.")
         return full_name
 
+    def clean_phone(self):
+        from accounts.models import normalize_phone
+        phone = normalize_phone(self.cleaned_data.get("phone", "").strip())
+        if not phone:
+            raise forms.ValidationError("Phone number is required.")
+        qs = get_user_model().objects.filter(phone=phone)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.user_id)
+        if qs.exists():
+            raise forms.ValidationError("A patient with this phone number already exists.")
+        return phone
+
     def clean_email(self):
-        email = get_user_model().objects.normalize_email(self.cleaned_data["email"]).lower()
+        email = self.cleaned_data.get("email", "").strip()
+        if not email:
+            return None
+        email = get_user_model().objects.normalize_email(email).lower()
         existing = get_user_model().objects.filter(email=email)
         if self.instance:
             existing = existing.exclude(pk=self.instance.user_id)
         if existing.exists():
             raise forms.ValidationError("A user with this email already exists.")
         return email
-
-    def clean_phone(self):
-        phone = self.cleaned_data.get("phone", "").strip()
-        allowed = set("+()-. 0123456789")
-        if phone and any(character not in allowed for character in phone):
-            raise forms.ValidationError("Enter a valid phone number.")
-        return phone
 
     def clean_date_of_birth(self):
         date_of_birth = self.cleaned_data.get("date_of_birth")
@@ -159,7 +172,7 @@ class PatientForm(forms.Form):
 
         user.first_name = first_name
         user.last_name = last_name
-        user.email = self.cleaned_data["email"]
+        user.email = self.cleaned_data.get("email") or None
         user.phone = self.cleaned_data["phone"]
         user.role = User.Role.PATIENT
         user.is_active = self.cleaned_data.get("is_active", False)

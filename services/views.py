@@ -77,7 +77,7 @@ def service_list(request):
     form = DentalServiceForm()
     modal_open = False
     if request.method == "POST":
-        form = DentalServiceForm(request.POST)
+        form = DentalServiceForm(request.POST, request.FILES)
         modal_open = True
         if form.is_valid():
             form.save()
@@ -100,11 +100,13 @@ def service_list(request):
 @role_required(User.Role.ADMIN)
 def service_update(request, pk):
     svc = get_object_or_404(DentalService, pk=pk)
-    form = DentalServiceForm(request.POST, instance=svc)
+    form = DentalServiceForm(request.POST, request.FILES, instance=svc)
     if form.is_valid():
-        svc = form.save()
-        return JsonResponse({"ok": True, "message": "Service updated."})
-    return JsonResponse({"ok": False, "errors": form.errors}, status=400)
+        form.save()
+        messages.success(request, "Service updated successfully.")
+    else:
+        messages.error(request, "Could not save service. Please check the form.")
+    return redirect("services:list")
 
 
 @require_POST
@@ -134,11 +136,14 @@ def service_json(request, pk):
             "id": svc.pk,
             "name": svc.name,
             "category": svc.category_id,
+            "short_description": svc.short_description,
             "description": svc.description,
+            "full_description": svc.full_description,
             "duration_minutes": svc.duration_minutes,
             "base_price": str(svc.base_price),
             "icon": svc.icon,
             "is_active": svc.is_active,
+            "image_url": svc.image.url if svc.image else "",
         },
     })
 

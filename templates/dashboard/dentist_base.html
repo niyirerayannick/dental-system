@@ -83,6 +83,14 @@
            class="flex items-center gap-3 rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-green-50 hover:text-green-700">
           <span class="material-symbols-rounded w-8 text-center text-green-600">article</span> Dental Articles
         </a>
+        <a href="{% url 'articles:dashboard_comments' %}"
+           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-green-50 hover:text-green-700">
+          <span class="material-symbols-rounded w-8 text-center text-green-600">forum</span> Comments
+        </a>
+        <a href="{% url 'ask_doctor:inbox' %}"
+           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-green-50 hover:text-green-700">
+          <span class="material-symbols-rounded w-8 text-center text-green-600">mark_unread_chat_alt</span> Ask Doctor Inbox
+        </a>
         <a href="#profile"
            class="flex items-center gap-3 rounded-2xl px-4 py-3 transition text-gray-600 hover:bg-green-50 hover:text-green-700">
           <span class="material-symbols-rounded w-8 text-center text-green-600">person</span> My Profile

@@ -43,9 +43,12 @@ INSTALLED_APPS = [
     "notifications",
     "services",
     "articles",
+    "ask_doctor",
     "followups",
     "tinymce",
 ]
+
+LOGIN_URL = "/accounts/login/"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -122,6 +125,11 @@ LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "dashboard:redirect"
 LOGOUT_REDIRECT_URL = "home"
 AUTH_USER_MODEL = "accounts.User"
+
+AUTHENTICATION_BACKENDS = [
+    "accounts.backends.EmailOrPhoneBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

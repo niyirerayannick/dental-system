@@ -1,0 +1,177 @@
+{% extends "dashboard/patient_base.html" %}
+{% block title %}{{ conversation.display_subject|truncatechars:50 }} — Ask Doctor{% endblock %}
+
+{% block extra_head %}
+<style>
+  .chat-area { display:flex; flex-direction:column; gap:16px; padding:24px; overflow-y:auto; }
+  .bubble-wrap { display:flex; align-items:flex-end; gap:10px; }
+  .bubble-wrap.mine { flex-direction:row-reverse; }
+  .bubble {
+    max-width:72%; padding:13px 17px; border-radius:18px; font-size:14.5px;
+    line-height:1.65; word-break:break-word;
+  }
+  .bubble.mine { background:#0B7A4B; color:#fff; border-bottom-right-radius:4px; }
+  .bubble.theirs { background:#fff; color:#1e293b; border:1.5px solid #e2e8f0; border-bottom-left-radius:4px; }
+  .avatar-sm {
+    width:32px; height:32px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700; color:#fff;
+  }
+  .ts { font-size:11px; color:#94a3b8; margin-top:4px; text-align:right; }
+  .ts.theirs { text-align:left; }
+</style>
+{% endblock %}
+
+{% block patient_content %}
+
+{# Header #}
+<div class="mb-5 flex items-start gap-4">
+  <a href="{% url 'ask_doctor:conversation_list' %}"
+     class="mt-1 inline-flex items-center justify-center rounded-xl p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 flex-shrink-0">
+    <span class="material-symbols-rounded">arrow_back</span>
+  </a>
+  <div class="flex-1 min-w-0">
+    <p class="text-xs font-semibold uppercase tracking-wide text-green-600">Ask Doctor · Chat</p>
+    <h1 class="mt-0.5 text-xl font-bold text-gray-900 truncate">
+      {{ conversation.display_subject|truncatechars:70 }}
+    </h1>
+    <div class="mt-1 flex items-center gap-3 flex-wrap">
+      <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold
+                   {% if conversation.status == 'open' %}bg-green-100 text-green-700
+                   {% elif conversation.status == 'pending' %}bg-amber-100 text-amber-700
+                   {% elif conversation.status == 'answered' %}bg-blue-100 text-blue-700
+                   {% else %}bg-gray-100 text-gray-500{% endif %}">
+        {{ conversation.get_status_display }}
+      </span>
+      {% if conversation.assigned_doctor %}
+      <span class="text-xs text-gray-400">
+        Assigned to <span class="font-semibold text-green-700">Dr. {{ conversation.assigned_doctor.full_name }}</span>
+      </span>
+      {% endif %}
+      <span class="text-xs text-gray-400">Started {{ conversation.created_at|date:"M j, Y" }}</span>
+    </div>
+  </div>
+  {% if conversation.status != 'closed' %}
+  <form method="post" action="{% url 'ask_doctor:close_conversation' conversation.pk %}"
+        onsubmit="return confirm('Close this conversation?')" class="flex-shrink-0">
+    {% csrf_token %}
+    <button type="submit"
+            class="rounded-2xl border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-500 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition">
+      Close Conversation
+    </button>
+  </form>
+  {% endif %}
+</div>
+
+{# Chat window #}
+<div class="rounded-2xl bg-white shadow-sm ring-1 ring-gray-100 flex flex-col"
+     style="min-height:480px;">
+
+  {# Messages area #}
+  <div id="chatArea" class="chat-area flex-1" style="max-height:560px;">
+    {% if not chat_messages %}
+    <div style="text-align:center;padding:48px 24px;">
+      <span class="material-symbols-rounded" style="font-size:48px;color:#cbd5e1;display:block;margin-bottom:12px;">chat</span>
+      <p style="font-size:15px;font-weight:600;color:#94a3b8;">Start your conversation with our dental team.</p>
+      <p style="font-size:13px;color:#cbd5e1;margin-top:6px;">Type your message below and we'll get back to you.</p>
+    </div>
+    {% else %}
+    {% for msg in chat_messages %}
+    {% if msg.sender == request.user %}
+    {# Patient message — right aligned #}
+    <div class="bubble-wrap mine">
+      <div>
+        <div class="bubble mine">{{ msg.message|linebreaksbr }}</div>
+        {% if msg.attachment %}
+        <div style="margin-top:6px;text-align:right;">
+          <a href="{{ msg.attachment.url }}" target="_blank"
+             style="font-size:12px;color:rgba(255,255,255,.8);text-decoration:underline;">
+            📎 {{ msg.attachment.name|slice:"25:" }}
+          </a>
+        </div>
+        {% endif %}
+        <p class="ts">{{ msg.created_at|date:"M j, g:i a" }}</p>
+      </div>
+      <div class="avatar-sm" style="background:#0B7A4B;">
+        {{ request.user.first_name|slice:":1"|upper }}
+      </div>
+    </div>
+    {% else %}
+    {# Staff message — left aligned #}
+    <div class="bubble-wrap">
+      <div class="avatar-sm" style="background:#075A38;">
+        {{ msg.sender.first_name|slice:":1"|upper }}
+      </div>
+      <div>
+        <p style="font-size:11px;font-weight:700;color:#0B7A4B;margin-bottom:4px;">
+          Dr. {{ msg.sender.full_name }}
+          <span style="font-weight:400;color:#94a3b8;margin-left:4px;">· Dental Team</span>
+        </p>
+        <div class="bubble theirs">{{ msg.message|linebreaksbr }}</div>
+        {% if msg.attachment %}
+        <div style="margin-top:6px;">
+          <a href="{{ msg.attachment.url }}" target="_blank"
+             style="font-size:12px;color:#0B7A4B;text-decoration:underline;">
+            📎 View attachment
+          </a>
+        </div>
+        {% endif %}
+        <p class="ts theirs">{{ msg.created_at|date:"M j, g:i a" }}</p>
+      </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+  </div>
+
+  {# Input area #}
+  {% if conversation.status == 'closed' %}
+  <div style="border-top:1.5px solid #f1f5f9;padding:20px 24px;text-align:center;
+              background:#f8fafc;border-radius:0 0 16px 16px;">
+    <p style="font-size:13.5px;color:#94a3b8;margin:0;">
+      This conversation is closed.
+      <a href="{% url 'ask_doctor:new_conversation' %}" style="color:#0B7A4B;font-weight:600;text-decoration:none;">Start a new one</a>
+    </p>
+  </div>
+  {% else %}
+  <div style="border-top:1.5px solid #f1f5f9;padding:16px 20px;border-radius:0 0 16px 16px;background:#fafafa;">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div style="display:flex;gap:12px;align-items:flex-end;">
+        <div style="flex:1;">
+          {{ form.message }}
+        </div>
+        <button type="submit"
+                style="flex-shrink:0;width:44px;height:44px;border-radius:14px;
+                       background:#0B7A4B;border:none;cursor:pointer;
+                       display:flex;align-items:center;justify-content:center;
+                       transition:background .18s;"
+                onmouseover="this.style.background='#075A38'" onmouseout="this.style.background='#0B7A4B'">
+          <svg style="width:18px;height:18px;" fill="white" viewBox="0 0 24 24">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+          </svg>
+        </button>
+      </div>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:10px;">
+        <label style="font-size:12px;color:#94a3b8;cursor:pointer;
+                      display:flex;align-items:center;gap:5px;">
+          <svg style="width:14px;height:14px;" fill="#94a3b8" viewBox="0 0 24 24">
+            <path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 015 0v10.5c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5V6H9v9.5a3.5 3.5 0 007 0V5c0-2.76-2.24-5-5-5S6 2.24 6 5v12.5c0 3.31 2.69 6 6 6s6-2.69 6-6V6h-1.5z"/>
+          </svg>
+          Attachment
+          {{ form.attachment }}
+        </label>
+        <span style="font-size:11px;color:#cbd5e1;">Max 10MB · image, pdf, doc</span>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+
+</div>
+
+<script>
+  var chatArea = document.getElementById('chatArea');
+  if (chatArea) chatArea.scrollTop = chatArea.scrollHeight;
+</script>
+
+{% endblock %}

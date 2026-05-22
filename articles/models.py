@@ -106,3 +106,85 @@ class Article(models.Model):
         word_count = len(self.content.split())
         minutes = max(1, round(word_count / 200))
         return minutes
+
+
+class ArticleView(models.Model):
+    article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name="views")
+    session_key = models.CharField(max_length=40, null=True, blank=True, db_index=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="article_views",
+    )
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["article", "session_key"],
+                condition=models.Q(session_key__isnull=False),
+                name="unique_article_view_per_session",
+            ),
+            models.UniqueConstraint(
+                fields=["article", "user"],
+                condition=models.Q(user__isnull=False),
+                name="unique_article_view_per_user",
+            ),
+        ]
+
+
+class ArticleLike(models.Model):
+    article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name="likes")
+    session_key = models.CharField(max_length=40, null=True, blank=True, db_index=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="article_likes",
+    )
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["article", "session_key"],
+                condition=models.Q(session_key__isnull=False),
+                name="unique_article_like_per_session",
+            ),
+            models.UniqueConstraint(
+                fields=["article", "user"],
+                condition=models.Q(user__isnull=False),
+                name="unique_article_like_per_user",
+            ),
+        ]
+
+
+class ArticleComment(models.Model):
+    article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name="comments")
+    parent = models.ForeignKey(
+        "self",
+        null=True, blank=True,
+        on_delete=models.CASCADE,
+        related_name="replies",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="article_comments",
+    )
+    name = models.CharField(max_length=100)
+    email = models.EmailField(blank=True)
+    comment = models.TextField(max_length=2000)
+    is_approved = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"{self.name}: {self.comment[:60]}"

@@ -1,0 +1,146 @@
+{% extends "dashboard/patient_base.html" %}
+{% block title %}My Conversations — Ask Doctor{% endblock %}
+
+{% block patient_content %}
+
+<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+  <div>
+    <p class="text-xs font-semibold uppercase tracking-wide text-green-600">Ask Doctor</p>
+    <h1 class="mt-1 text-2xl font-bold text-gray-900">My Conversations</h1>
+    <p class="mt-1 text-sm text-gray-500">Private conversations with our dental team.</p>
+  </div>
+  <div class="flex gap-3 flex-wrap">
+    <a href="{% url 'ask_doctor:ask_form' %}"
+       class="inline-flex items-center gap-2 rounded-2xl border border-green-200 bg-white px-4 py-2.5 text-sm font-semibold text-green-700 hover:bg-green-50">
+      <span class="material-symbols-rounded text-base">edit_note</span> Ask via Form
+    </a>
+    <a href="{% url 'ask_doctor:new_conversation' %}"
+       class="inline-flex items-center gap-2 rounded-2xl bg-green-700 px-5 py-2.5 text-sm font-bold text-white hover:bg-green-800">
+      <span class="material-symbols-rounded text-base">add_comment</span> New Chat
+    </a>
+  </div>
+</div>
+
+{# Messages #}
+{% if messages %}
+<div class="mb-4 space-y-2">
+  {% for msg in messages %}
+  <div class="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium
+    {% if msg.tags == 'error' %}bg-red-50 text-red-700 ring-1 ring-red-200
+    {% else %}bg-green-50 text-green-800 ring-1 ring-green-200{% endif %}">
+    {{ msg }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{# Status filter tabs #}
+<div class="mb-5 flex flex-wrap gap-2">
+  <a href="?"
+     class="rounded-2xl px-4 py-2 text-sm font-semibold transition
+            {% if not status_filter %}bg-green-700 text-white{% else %}bg-white border border-gray-200 text-gray-600 hover:bg-gray-50{% endif %}">
+    All
+  </a>
+  {% for val, label in status_choices %}
+  <a href="?status={{ val }}"
+     class="rounded-2xl px-4 py-2 text-sm font-semibold transition
+            {% if status_filter == val %}bg-green-700 text-white{% else %}bg-white border border-gray-200 text-gray-600 hover:bg-gray-50{% endif %}">
+    {{ label }}
+  </a>
+  {% endfor %}
+</div>
+
+{# Conversation list #}
+{% if conversations %}
+<div class="space-y-3">
+  {% for conv in conversations %}
+  <a href="{% url 'ask_doctor:conversation_detail' conv.pk %}"
+     class="flex items-center gap-4 rounded-2xl bg-white px-5 py-4 shadow-sm ring-1 ring-gray-100 hover:ring-green-200 transition-all block text-decoration-none"
+     style="text-decoration:none;">
+    <div style="width:44px;height:44px;border-radius:14px;flex-shrink:0;
+                display:flex;align-items:center;justify-content:center;
+                {% if conv.status == 'open' %}background:#EAF7F1;
+                {% elif conv.status == 'pending' %}background:#FEF3C7;
+                {% elif conv.status == 'answered' %}background:#DCFCE7;
+                {% else %}background:#F1F5F9;{% endif %}">
+      <span class="material-symbols-rounded"
+            style="{% if conv.status == 'open' %}color:#0B7A4B;
+                   {% elif conv.status == 'pending' %}color:#D97706;
+                   {% elif conv.status == 'answered' %}color:#15803D;
+                   {% else %}color:#94A3B8;{% endif %}">
+        chat
+      </span>
+    </div>
+    <div style="flex:1;min-width:0;">
+      <p class="font-bold text-gray-900 text-sm truncate">
+        {{ conv.display_subject|truncatechars:70 }}
+      </p>
+      {% with last=conv.messages.last %}
+      {% if last %}
+      <p class="text-xs text-gray-400 mt-0.5 truncate">
+        {% if last.is_from_staff %}
+        <span class="text-green-700 font-semibold">{{ last.sender.full_name }}: </span>
+        {% endif %}
+        {{ last.message|truncatechars:60 }}
+      </p>
+      {% endif %}
+      {% endwith %}
+      <p class="text-xs text-gray-400 mt-1">{{ conv.updated_at|timesince }} ago</p>
+    </div>
+    <div class="flex flex-col items-end gap-2 flex-shrink-0">
+      {% if conv.unread_for_patient %}
+      <span class="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-green-600 px-1.5 text-xs font-bold text-white">
+        {{ conv.unread_for_patient }}
+      </span>
+      {% endif %}
+      <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold
+                   {% if conv.status == 'open' %}bg-green-100 text-green-700
+                   {% elif conv.status == 'pending' %}bg-amber-100 text-amber-700
+                   {% elif conv.status == 'answered' %}bg-blue-100 text-blue-700
+                   {% else %}bg-gray-100 text-gray-500{% endif %}">
+        {{ conv.get_status_display }}
+      </span>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+
+{# Pagination #}
+{% if page_obj.has_other_pages %}
+<div class="mt-5 flex items-center justify-between text-sm">
+  <p class="text-gray-500">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</p>
+  <div class="flex gap-2">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+       class="rounded-xl border border-gray-200 bg-white px-3 py-1.5 font-semibold text-gray-600 hover:bg-gray-50">Prev</a>
+    {% endif %}
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+       class="rounded-xl border border-gray-200 bg-white px-3 py-1.5 font-semibold text-gray-600 hover:bg-gray-50">Next</a>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{% else %}
+<div class="flex flex-col items-center justify-center rounded-2xl bg-white py-20 text-center shadow-sm ring-1 ring-gray-100">
+  <span class="material-symbols-rounded mb-4 text-6xl text-gray-200">chat</span>
+  <p class="font-semibold text-gray-500">
+    {% if status_filter %}No {{ status_filter }} conversations.
+    {% else %}No conversations yet.{% endif %}
+  </p>
+  <p class="mt-1 text-sm text-gray-400">Start a chat or ask a question to get expert dental advice.</p>
+  <div class="mt-5 flex gap-3 flex-wrap justify-center">
+    <a href="{% url 'ask_doctor:new_conversation' %}"
+       class="inline-flex items-center gap-2 rounded-2xl bg-green-700 px-5 py-2.5 text-sm font-bold text-white hover:bg-green-800">
+      <span class="material-symbols-rounded text-base">add_comment</span> Start a Chat
+    </a>
+    <a href="{% url 'ask_doctor:ask_form' %}"
+       class="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50">
+      Ask via Form
+    </a>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

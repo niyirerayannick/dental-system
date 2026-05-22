@@ -20,11 +20,16 @@ class DentalService(models.Model):
     category = models.ForeignKey(ServiceCategory, on_delete=models.PROTECT, related_name="services")
     name = models.CharField(max_length=150)
     slug = models.SlugField(max_length=180, unique=True, blank=True)
+    image = models.ImageField(upload_to="services/images/", blank=True, null=True)
+    short_description = models.CharField(max_length=300, blank=True)
     description = models.TextField(blank=True)
+    full_description = models.TextField(blank=True)
     duration_minutes = models.PositiveIntegerField(default=30, help_text="Duration in minutes")
     base_price = models.DecimalField(max_digits=10, decimal_places=2)
     icon = models.CharField(max_length=50, default="medical_services")
     is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["category__name", "name"]

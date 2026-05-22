@@ -157,23 +157,25 @@
   const summaryPrice   = document.getElementById('summaryPrice');
   const reasonField    = document.querySelector('[name="reason"]');
 
+  function loadServiceSummary(pk) {
+    if (!pk) { summaryCard.classList.add('hidden'); return; }
+    fetch(`/services/api/${pk}/`)
+      .then(r => r.json())
+      .then(svc => {
+        summaryIcon.textContent      = svc.icon || 'medical_services';
+        summaryName.textContent      = svc.name;
+        summaryCategory.textContent  = svc.category;
+        summaryDesc.textContent      = svc.description || '';
+        summaryDuration.textContent  = svc.duration_minutes + ' min';
+        summaryPrice.textContent     = '$' + parseFloat(svc.base_price).toFixed(2);
+        if (reasonField && !reasonField.value) { reasonField.value = svc.name; }
+        summaryCard.classList.remove('hidden');
+      });
+  }
+
   if (serviceSelect) {
-    serviceSelect.addEventListener('change', function() {
-      const pk = this.value;
-      if (!pk) { summaryCard.classList.add('hidden'); return; }
-      fetch(`/services/api/${pk}/`)
-        .then(r => r.json())
-        .then(svc => {
-          summaryIcon.textContent      = svc.icon || 'medical_services';
-          summaryName.textContent      = svc.name;
-          summaryCategory.textContent  = svc.category;
-          summaryDesc.textContent      = svc.description || '';
-          summaryDuration.textContent  = svc.duration_minutes + ' min';
-          summaryPrice.textContent     = '$' + parseFloat(svc.base_price).toFixed(2);
-          if (reasonField && !reasonField.value) { reasonField.value = svc.name; }
-          summaryCard.classList.remove('hidden');
-        });
-    });
+    serviceSelect.addEventListener('change', function() { loadServiceSummary(this.value); });
+    if (serviceSelect.value) { loadServiceSummary(serviceSelect.value); }
   }
 </script>
 {% load static %}

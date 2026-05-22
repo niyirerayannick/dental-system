@@ -1,21 +1,38 @@
+import re
+
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.utils import timezone
 
 
-class UserManager(BaseUserManager):
-    def create_user(self, email, password=None, **extra_fields):
-        if not email:
-            raise ValueError("Users must have an email address.")
+def normalize_phone(raw):
+    """Normalize Rwanda phone numbers to +2507XXXXXXXX format."""
+    if not raw:
+        return raw
+    cleaned = re.sub(r'[\s\-\(\)]', '', str(raw))
+    digits = cleaned.lstrip('+')
+    if len(digits) == 10 and digits.startswith('07'):
+        return '+250' + digits[1:]
+    if len(digits) == 12 and digits.startswith('250'):
+        return '+' + digits
+    return cleaned if cleaned.startswith('+') else raw
 
-        email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
+
+class UserManager(BaseUserManager):
+    def create_user(self, phone, password=None, **extra_fields):
+        if not phone:
+            raise ValueError("Users must have a phone number.")
+        phone = normalize_phone(phone)
+        email = extra_fields.pop("email", None)
+        if email:
+            email = self.normalize_email(email).lower()
+        user = self.model(phone=phone, email=email or None, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password=None, **extra_fields):
-        extra_fields.setdefault("role", User.Role.ADMIN)
+    def create_superuser(self, phone, password=None, **extra_fields):
+        extra_fields.setdefault("role", "ADMIN")
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
@@ -25,7 +42,7 @@ class UserManager(BaseUserManager):
         if extra_fields.get("is_superuser") is not True:
             raise ValueError("Superusers must have is_superuser=True.")
 
-        return self.create_user(email, password, **extra_fields)
+        return self.create_user(phone, password, **extra_fields)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -37,8 +54,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
-    email = models.EmailField(unique=True)
-    phone = models.CharField(max_length=30, blank=True)
+    email = models.EmailField(unique=True, blank=True, null=True)
+    phone = models.CharField(max_length=20, unique=True)
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.PATIENT)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -46,14 +63,21 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
-    USERNAME_FIELD = "email"
+    USERNAME_FIELD = "phone"
     REQUIRED_FIELDS = ["first_name", "last_name"]
 
     class Meta:
         ordering = ["last_name", "first_name"]
 
     def __str__(self):
-        return self.email
+        return self.full_name or self.phone
+
+    def save(self, *args, **kwargs):
+        if self.phone:
+            self.phone = normalize_phone(self.phone)
+        if self.email == "":
+            self.email = None
+        super().save(*args, **kwargs)
 
     @property
     def full_name(self):

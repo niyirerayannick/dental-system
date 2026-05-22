@@ -118,7 +118,7 @@
           </li>
 
           <li>
-            <a href="{% url 'pub_ask_doctor' %}"
+            <a href="{% url 'ask_doctor:landing' %}"
                class="px-3 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap inline-block
                       {% if ap == 'ask_doctor' %}text-green-700 bg-green-50{% else %}text-slate-700 hover:text-green-700 hover:bg-green-50{% endif %}">
               Ask Doctor
@@ -201,7 +201,7 @@
                  class="block px-3 py-2.5 text-sm font-medium rounded-lg transition-colors
                         {% if ap == 'education' %}bg-green-50 text-green-700{% else %}text-slate-700 hover:bg-green-50 hover:text-green-700{% endif %}">
             Health Tips</a></li>
-          <li><a href="{% url 'pub_ask_doctor' %}"
+          <li><a href="{% url 'ask_doctor:landing' %}"
                  class="block px-3 py-2.5 text-sm font-medium rounded-lg transition-colors
                         {% if ap == 'ask_doctor' %}bg-green-50 text-green-700{% else %}text-slate-700 hover:bg-green-50 hover:text-green-700{% endif %}">
             Ask Doctor</a></li>

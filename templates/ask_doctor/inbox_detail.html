@@ -1,0 +1,274 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Conversation #{{ conversation.pk }} — Ask Doctor{% endblock %}
+
+{% block extra_head %}
+<style>
+  .chat-area { display:flex; flex-direction:column; gap:16px; padding:24px; overflow-y:auto; }
+  .bubble-wrap { display:flex; align-items:flex-end; gap:10px; }
+  .bubble-wrap.mine { flex-direction:row-reverse; }
+  .bubble {
+    max-width:72%; padding:13px 17px; border-radius:18px; font-size:14.5px;
+    line-height:1.65; word-break:break-word;
+  }
+  .bubble.mine { background:#0B7A4B; color:#fff; border-bottom-right-radius:4px; }
+  .bubble.theirs { background:#f8fafc; color:#1e293b; border:1.5px solid #e2e8f0; border-bottom-left-radius:4px; }
+  .avatar-sm {
+    width:32px; height:32px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700; color:#fff;
+  }
+  .ts { font-size:11px; color:#94a3b8; margin-top:4px; }
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+
+{# Header + breadcrumb #}
+<div class="mb-5 flex items-start gap-4">
+  <a href="{% url 'ask_doctor:inbox' %}"
+     class="mt-1 inline-flex items-center justify-center rounded-xl p-2 text-gray-400 hover:bg-gray-100 flex-shrink-0">
+    <span class="material-symbols-rounded">arrow_back</span>
+  </a>
+  <div class="flex-1 min-w-0">
+    <p class="text-xs font-semibold uppercase tracking-wide text-green-600">
+      Ask Doctor · <a href="{% url 'ask_doctor:inbox' %}" class="hover:underline">Inbox</a>
+    </p>
+    <h1 class="mt-0.5 text-xl font-bold text-gray-900 truncate">
+      {{ conversation.display_subject|truncatechars:70 }}
+    </h1>
+    <div class="mt-1 flex items-center gap-3 flex-wrap">
+      <span class="font-semibold text-sm text-gray-700">
+        From: {{ conversation.patient.full_name }}
+        <span class="font-normal text-gray-400">({{ conversation.patient.email }})</span>
+      </span>
+      <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold
+                   {% if conversation.status == 'open' %}bg-green-100 text-green-700
+                   {% elif conversation.status == 'pending' %}bg-amber-100 text-amber-700
+                   {% elif conversation.status == 'answered' %}bg-blue-100 text-blue-700
+                   {% else %}bg-gray-100 text-gray-500{% endif %}">
+        {{ conversation.get_status_display }}
+      </span>
+      <span class="text-xs text-gray-400">Started {{ conversation.created_at|date:"M j, Y" }}</span>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 gap-5 lg:grid-cols-3">
+
+  {# ── Main chat column ── #}
+  <div class="lg:col-span-2">
+    <div class="rounded-2xl bg-white shadow-sm ring-1 ring-gray-100 flex flex-col" style="min-height:500px;">
+
+      {# Messages #}
+      <div id="chatArea" class="chat-area flex-1" style="max-height:540px;">
+        {% if not chat_messages %}
+        <div style="text-align:center;padding:48px 24px;">
+          <span class="material-symbols-rounded" style="font-size:48px;color:#cbd5e1;display:block;margin-bottom:12px;">chat</span>
+          <p style="font-size:15px;font-weight:600;color:#94a3b8;">No messages yet in this conversation.</p>
+        </div>
+        {% else %}
+        {% for msg in chat_messages %}
+        {% if msg.is_from_staff %}
+        {# Staff message — right aligned (this staff member sent it) #}
+        <div class="bubble-wrap mine">
+          <div>
+            <div class="bubble mine">{{ msg.message|linebreaksbr }}</div>
+            {% if msg.attachment %}
+            <div style="margin-top:6px;text-align:right;">
+              <a href="{{ msg.attachment.url }}" target="_blank"
+                 style="font-size:12px;color:rgba(255,255,255,.8);text-decoration:underline;">
+                📎 Attachment
+              </a>
+            </div>
+            {% endif %}
+            <p class="ts" style="text-align:right;">
+              {{ msg.sender.full_name }} · {{ msg.created_at|date:"M j, g:i a" }}
+            </p>
+          </div>
+          <div class="avatar-sm" style="background:#075A38;">
+            {{ msg.sender.first_name|slice:":1"|upper }}
+          </div>
+        </div>
+        {% else %}
+        {# Patient message — left aligned #}
+        <div class="bubble-wrap">
+          <div class="avatar-sm" style="background:#0B7A4B;">
+            {{ msg.sender.first_name|slice:":1"|upper }}
+          </div>
+          <div>
+            <p style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:4px;">
+              {{ msg.sender.full_name }} · Patient
+            </p>
+            <div class="bubble theirs">{{ msg.message|linebreaksbr }}</div>
+            {% if msg.attachment %}
+            <div style="margin-top:6px;">
+              <a href="{{ msg.attachment.url }}" target="_blank"
+                 style="font-size:12px;color:#0B7A4B;text-decoration:underline;">
+                📎 View attachment
+              </a>
+            </div>
+            {% endif %}
+            <p class="ts">{{ msg.created_at|date:"M j, g:i a" }}</p>
+          </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+      </div>
+
+      {# Reply form #}
+      {% if conversation.status != 'closed' %}
+      <div style="border-top:1.5px solid #f1f5f9;padding:16px 20px;background:#fafafa;border-radius:0 0 16px 16px;">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="reply">
+          <div style="display:flex;gap:12px;align-items:flex-end;">
+            <div style="flex:1;">{{ form.message }}</div>
+            <button type="submit"
+                    style="flex-shrink:0;width:44px;height:44px;border-radius:14px;
+                           background:#0B7A4B;border:none;cursor:pointer;
+                           display:flex;align-items:center;justify-content:center;
+                           transition:background .18s;"
+                    onmouseover="this.style.background='#075A38'" onmouseout="this.style.background='#0B7A4B'">
+              <svg style="width:18px;height:18px;" fill="white" viewBox="0 0 24 24">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+              </svg>
+            </button>
+          </div>
+          <div style="margin-top:8px;">
+            <label style="font-size:12px;color:#94a3b8;cursor:pointer;display:flex;align-items:center;gap:5px;">
+              📎 Attach file: {{ form.attachment }}
+            </label>
+          </div>
+        </form>
+      </div>
+      {% else %}
+      <div style="border-top:1.5px solid #f1f5f9;padding:16px 20px;text-align:center;background:#f8fafc;border-radius:0 0 16px 16px;">
+        <p class="text-sm text-gray-400">This conversation is closed.</p>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  {# ── Sidebar: info + actions ── #}
+  <div class="space-y-4">
+
+    {# Patient info card #}
+    <div class="rounded-2xl bg-white shadow-sm ring-1 ring-gray-100 p-5">
+      <p class="text-xs font-bold uppercase tracking-wide text-gray-400 mb-3">Patient</p>
+      <div class="flex items-center gap-3">
+        <div style="width:42px;height:42px;border-radius:50%;background:#EAF7F1;flex-shrink:0;
+                    display:flex;align-items:center;justify-content:center;
+                    font-size:14px;font-weight:700;color:#0B7A4B;">
+          {{ conversation.patient.first_name|slice:":1"|upper }}{{ conversation.patient.last_name|slice:":1"|upper }}
+        </div>
+        <div>
+          <p class="font-bold text-sm text-gray-900">{{ conversation.patient.full_name }}</p>
+          <p class="text-xs text-gray-400">{{ conversation.patient.email }}</p>
+          {% if conversation.patient.phone %}
+          <p class="text-xs text-gray-400">{{ conversation.patient.phone }}</p>
+          {% endif %}
+        </div>
+      </div>
+      <div class="mt-3 pt-3 border-t border-gray-50 grid grid-cols-2 gap-2 text-center">
+        <div>
+          <p class="text-lg font-extrabold text-green-700">{{ conversation.messages.count }}</p>
+          <p class="text-xs text-gray-400">Messages</p>
+        </div>
+        <div>
+          <p class="text-lg font-extrabold text-gray-700">{{ conversation.created_at|date:"M j" }}</p>
+          <p class="text-xs text-gray-400">Started</p>
+        </div>
+      </div>
+    </div>
+
+    {# Assign doctor #}
+    {% if not is_dentist %}
+    <div class="rounded-2xl bg-white shadow-sm ring-1 ring-gray-100 p-5">
+      <p class="text-xs font-bold uppercase tracking-wide text-gray-400 mb-3">Assigned Doctor</p>
+      {% if messages %}
+      {% for msg in messages %}
+      <div class="mb-2 text-xs rounded-xl px-3 py-2
+                  {% if msg.tags == 'error' %}bg-red-50 text-red-700{% else %}bg-green-50 text-green-800{% endif %}">
+        {{ msg }}
+      </div>
+      {% endfor %}
+      {% endif %}
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="assign">
+        <select name="assigned_doctor"
+                class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
+          <option value="">— Unassigned —</option>
+          {% for staff in staff_users %}
+          <option value="{{ staff.pk }}"
+                  {% if conversation.assigned_doctor and conversation.assigned_doctor.pk == staff.pk %}selected{% endif %}>
+            {{ staff.full_name }} ({{ staff.get_role_display }})
+          </option>
+          {% endfor %}
+        </select>
+        <button type="submit"
+                class="mt-2 w-full rounded-xl bg-gray-100 py-2 text-xs font-bold text-gray-700 hover:bg-gray-200 transition">
+          Update Assignment
+        </button>
+      </form>
+    </div>
+    {% else %}
+    <div class="rounded-2xl bg-white shadow-sm ring-1 ring-gray-100 p-5">
+      <p class="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Assigned Doctor</p>
+      <p class="text-sm font-semibold text-gray-700">
+        {% if conversation.assigned_doctor %}Dr. {{ conversation.assigned_doctor.full_name }}
+        {% else %}<span class="text-amber-600">Unassigned</span>{% endif %}
+      </p>
+    </div>
+    {% endif %}
+
+    {# Conversation actions #}
+    <div class="rounded-2xl bg-white shadow-sm ring-1 ring-gray-100 p-5">
+      <p class="text-xs font-bold uppercase tracking-wide text-gray-400 mb-3">Actions</p>
+      <div class="space-y-2">
+        {% if conversation.status != 'closed' %}
+        <form method="post" onsubmit="return confirm('Close this conversation?')">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="close">
+          <button type="submit"
+                  class="w-full rounded-xl border border-red-200 bg-red-50 py-2 text-xs font-bold text-red-600 hover:bg-red-100 transition">
+            Close Conversation
+          </button>
+        </form>
+        {% else %}
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="reopen">
+          <button type="submit"
+                  class="w-full rounded-xl border border-green-200 bg-green-50 py-2 text-xs font-bold text-green-700 hover:bg-green-100 transition">
+            Reopen Conversation
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{# Django messages (shown at top by default, but also displayed inline) #}
+{% if messages %}
+<div class="mt-4 space-y-2">
+  {% for msg in messages %}
+  <div class="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium
+    {% if msg.tags == 'error' %}bg-red-50 text-red-700 ring-1 ring-red-200
+    {% else %}bg-green-50 text-green-800 ring-1 ring-green-200{% endif %}">
+    {{ msg }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<script>
+  var chatArea = document.getElementById('chatArea');
+  if (chatArea) chatArea.scrollTop = chatArea.scrollHeight;
+</script>
+
+{% endblock %}

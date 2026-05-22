@@ -32,7 +32,7 @@ class DentistProfile(models.Model):
         ordering = ["user__last_name", "user__first_name"]
 
     def __str__(self):
-        name = self.user.full_name or self.user.email
+        name = self.user.full_name or self.user.phone
         if self.specialization:
             return f"Dr. {name} - {self.specialization}"
         return f"Dr. {name}"

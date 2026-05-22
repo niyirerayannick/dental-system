@@ -1,0 +1,198 @@
+{% extends "public/base.html" %}
+{% load static %}
+
+{% block title %}Ask Our Dental Team — DentalCare Pro{% endblock %}
+
+{% block content %}
+{% include "public/partials/public_navbar.html" with active_page="ask_doctor" %}
+
+<!-- ══════════════════════════════════════════
+     HERO
+══════════════════════════════════════════ -->
+<section style="padding-top:120px;padding-bottom:64px;background:linear-gradient(160deg,#EAF7F1 0%,#f8fdf9 60%,#fff 100%);">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <div style="display:inline-flex;align-items:center;justify-content:center;
+                width:72px;height:72px;border-radius:24px;
+                background:linear-gradient(135deg,#0B7A4B,#075A38);
+                box-shadow:0 8px 24px rgba(11,122,75,.25);margin-bottom:24px;">
+      <svg style="width:36px;height:36px;" fill="white" viewBox="0 0 24 24">
+        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+      </svg>
+    </div>
+    <h1 class="font-extrabold text-slate-900" style="font-size:clamp(2rem,4vw,3rem);line-height:1.2;margin-bottom:16px;">
+      Ask Our Dental Team
+    </h1>
+    <p style="font-size:17px;color:#475569;max-width:520px;margin:0 auto 40px;line-height:1.7;">
+      Get personalised answers from our qualified dentists. Your conversations are private and secure.
+    </p>
+
+    {% if ask_unread %}
+    <div style="display:inline-flex;align-items:center;gap:8px;
+                background:#FFF7ED;border:1.5px solid #FED7AA;border-radius:12px;
+                padding:10px 20px;font-size:13px;font-weight:600;color:#C2410C;margin-bottom:32px;">
+      <svg style="width:16px;height:16px;" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+      </svg>
+      You have {{ ask_unread }} unread repl{{ ask_unread|pluralize:"y,ies" }} from our team
+    </div>
+    {% endif %}
+
+    <!-- Two option cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;max-width:620px;margin:0 auto;">
+
+      <!-- Start Chat -->
+      <a href="{% url 'ask_doctor:conversation_list' %}"
+         style="background:#fff;border:2px solid rgba(11,122,75,.15);border-radius:24px;
+                padding:32px 28px;text-decoration:none;text-align:left;
+                transition:all .22s;cursor:pointer;display:block;
+                box-shadow:0 4px 16px rgba(11,122,75,.08);"
+         onmouseover="this.style.borderColor='#0B7A4B';this.style.boxShadow='0 8px 32px rgba(11,122,75,.18)';this.style.transform='translateY(-3px)'"
+         onmouseout="this.style.borderColor='rgba(11,122,75,.15)';this.style.boxShadow='0 4px 16px rgba(11,122,75,.08)';this.style.transform='translateY(0)'">
+        <div style="width:52px;height:52px;border-radius:16px;background:#EAF7F1;
+                    display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+          <svg style="width:26px;height:26px;" fill="#0B7A4B" viewBox="0 0 24 24">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+          </svg>
+        </div>
+        <p style="font-size:17px;font-weight:800;color:#1e293b;margin:0 0 8px;">Start a Chat</p>
+        <p style="font-size:13.5px;color:#64748b;margin:0;line-height:1.6;">
+          Casual, conversational — type your message and get a reply from our dental team.
+        </p>
+        <div style="margin-top:20px;display:inline-flex;align-items:center;gap:6px;
+                    font-size:13px;font-weight:700;color:#0B7A4B;">
+          Open chat
+          <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+          </svg>
+        </div>
+      </a>
+
+      <!-- Ask Using Form -->
+      <a href="{% url 'ask_doctor:ask_form' %}"
+         style="background:#fff;border:2px solid rgba(11,122,75,.15);border-radius:24px;
+                padding:32px 28px;text-decoration:none;text-align:left;
+                transition:all .22s;cursor:pointer;display:block;
+                box-shadow:0 4px 16px rgba(11,122,75,.08);"
+         onmouseover="this.style.borderColor='#0B7A4B';this.style.boxShadow='0 8px 32px rgba(11,122,75,.18)';this.style.transform='translateY(-3px)'"
+         onmouseout="this.style.borderColor='rgba(11,122,75,.15)';this.style.boxShadow='0 4px 16px rgba(11,122,75,.08)';this.style.transform='translateY(0)'">
+        <div style="width:52px;height:52px;border-radius:16px;background:#EAF7F1;
+                    display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+          <svg style="width:26px;height:26px;" fill="#0B7A4B" viewBox="0 0 24 24">
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+          </svg>
+        </div>
+        <p style="font-size:17px;font-weight:800;color:#1e293b;margin:0 0 8px;">Ask Using a Form</p>
+        <p style="font-size:13.5px;color:#64748b;margin:0;line-height:1.6;">
+          Structured question with topic category and details — ideal for detailed medical queries.
+        </p>
+        <div style="margin-top:20px;display:inline-flex;align-items:center;gap:6px;
+                    font-size:13px;font-weight:700;color:#0B7A4B;">
+          Fill form
+          <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+          </svg>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     RECENT CONVERSATIONS
+══════════════════════════════════════════ -->
+{% if conversations %}
+<section style="background:#fff;padding:56px 0 72px;">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;">
+      <h2 class="font-extrabold text-slate-900" style="font-size:1.35rem;">
+        Recent Conversations
+      </h2>
+      <a href="{% url 'ask_doctor:conversation_list' %}"
+         style="font-size:13px;font-weight:600;color:#0B7A4B;text-decoration:none;
+                display:flex;align-items:center;gap:5px;">
+        View all
+        <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        </svg>
+      </a>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      {% for conv in conversations %}
+      <a href="{% url 'ask_doctor:conversation_detail' conv.pk %}"
+         style="display:flex;align-items:center;gap:16px;padding:18px 20px;
+                background:#f8fafc;border-radius:16px;border:1.5px solid rgba(11,122,75,.08);
+                text-decoration:none;transition:all .18s;"
+         onmouseover="this.style.background='#EAF7F1';this.style.borderColor='rgba(11,122,75,.2)'"
+         onmouseout="this.style.background='#f8fafc';this.style.borderColor='rgba(11,122,75,.08)'">
+        <div style="width:42px;height:42px;border-radius:14px;flex-shrink:0;
+                    display:flex;align-items:center;justify-content:center;
+                    {% if conv.status == 'open' %}background:#EAF7F1;
+                    {% elif conv.status == 'pending' %}background:#FEF3C7;
+                    {% elif conv.status == 'answered' %}background:#DCFCE7;
+                    {% else %}background:#F1F5F9;{% endif %}">
+          <svg style="width:20px;height:20px;"
+               fill="{% if conv.status == 'open' %}#0B7A4B{% elif conv.status == 'pending' %}#D97706{% elif conv.status == 'answered' %}#15803D{% else %}#94A3B8{% endif %}"
+               viewBox="0 0 24 24">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+          </svg>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <p style="font-size:14px;font-weight:700;color:#1e293b;margin:0 0 3px;
+                    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            {{ conv.display_subject|truncatechars:60 }}
+          </p>
+          <p style="font-size:12px;color:#94a3b8;margin:0;">
+            {{ conv.updated_at|date:"M j, Y, g:i a" }}
+          </p>
+        </div>
+        <div style="flex-shrink:0;display:flex;align-items:center;gap:8px;">
+          {% if conv.unread_for_patient %}
+          <span style="background:#0B7A4B;color:#fff;font-size:11px;font-weight:700;
+                       padding:2px 8px;border-radius:9999px;">
+            {{ conv.unread_for_patient }} new
+          </span>
+          {% endif %}
+          <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:9999px;
+                       {% if conv.status == 'open' %}background:#EAF7F1;color:#065F46;
+                       {% elif conv.status == 'pending' %}background:#FEF3C7;color:#92400E;
+                       {% elif conv.status == 'answered' %}background:#DCFCE7;color:#14532D;
+                       {% else %}background:#F1F5F9;color:#64748B;{% endif %}">
+            {{ conv.get_status_display }}
+          </span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% else %}
+<!-- No conversations yet — show privacy assurance -->
+<section style="background:#fff;padding:56px 0 72px;">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;">
+      {% for item in privacy_points %}
+      {% endfor %}
+      <div style="text-align:center;padding:28px 20px;border-radius:20px;background:#f8fdf9;
+                  border:1.5px solid rgba(11,122,75,.08);">
+        <div style="font-size:28px;margin-bottom:12px;">🔒</div>
+        <p style="font-weight:700;color:#1e293b;font-size:14px;margin:0 0 6px;">Private & Secure</p>
+        <p style="font-size:13px;color:#64748b;margin:0;">Your conversations are only visible to you and our dental team.</p>
+      </div>
+      <div style="text-align:center;padding:28px 20px;border-radius:20px;background:#f8fdf9;
+                  border:1.5px solid rgba(11,122,75,.08);">
+        <div style="font-size:28px;margin-bottom:12px;">⏱️</div>
+        <p style="font-weight:700;color:#1e293b;font-size:14px;margin:0 0 6px;">Fast Responses</p>
+        <p style="font-size:13px;color:#64748b;margin:0;">Our dentists typically respond within 24 hours on business days.</p>
+      </div>
+      <div style="text-align:center;padding:28px 20px;border-radius:20px;background:#f8fdf9;
+                  border:1.5px solid rgba(11,122,75,.08);">
+        <div style="font-size:28px;margin-bottom:12px;">👨‍⚕️</div>
+        <p style="font-weight:700;color:#1e293b;font-size:14px;margin:0 0 6px;">Expert Answers</p>
+        <p style="font-size:13px;color:#64748b;margin:0;">All replies come from qualified dental professionals.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}

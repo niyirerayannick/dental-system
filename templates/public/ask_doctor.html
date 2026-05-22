@@ -105,7 +105,7 @@
           {% endfor %}
         {% endif %}
 
-        <form method="post" action="{% url 'pub_ask_doctor' %}"
+        <form method="post" action="{% url 'ask_doctor:landing' %}"
               style="display:flex;flex-direction:column;gap:18px;">
           {% csrf_token %}
 

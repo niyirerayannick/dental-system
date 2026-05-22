@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from .models import Article, ArticleCategory
+from .models import Article, ArticleCategory, ArticleComment, ArticleLike, ArticleView
 
 
 @admin.register(ArticleCategory)
@@ -50,3 +50,32 @@ class ArticleAdmin(admin.ModelAdmin):
             )
         return "—"
     image_thumb.short_description = "Preview"
+
+
+@admin.register(ArticleView)
+class ArticleViewAdmin(admin.ModelAdmin):
+    list_display = ("article", "user", "session_key", "ip_address", "created_at")
+    list_filter = ("created_at",)
+    search_fields = ("article__title", "user__email", "ip_address")
+    readonly_fields = ("article", "user", "session_key", "ip_address", "created_at")
+
+
+@admin.register(ArticleLike)
+class ArticleLikeAdmin(admin.ModelAdmin):
+    list_display = ("article", "user", "session_key", "ip_address", "created_at")
+    list_filter = ("created_at",)
+    search_fields = ("article__title", "user__email")
+    readonly_fields = ("article", "user", "session_key", "ip_address", "created_at")
+
+
+@admin.register(ArticleComment)
+class ArticleCommentAdmin(admin.ModelAdmin):
+    list_display = ("article", "name", "email", "is_approved", "parent", "created_at")
+    list_filter = ("is_approved", "created_at")
+    search_fields = ("article__title", "name", "email", "comment")
+    readonly_fields = ("created_at", "updated_at")
+    actions = ["approve_comments"]
+
+    def approve_comments(self, request, queryset):
+        queryset.update(is_approved=True)
+    approve_comments.short_description = "Approve selected comments"

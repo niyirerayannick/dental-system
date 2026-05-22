@@ -1,0 +1,249 @@
+{% extends "public/base.html" %}
+{% load static %}
+
+{% block title %}{{ service.name }} — DentalCare Pro{% endblock %}
+
+{% block content %}
+{% include "public/partials/public_navbar.html" with active_page="services" %}
+
+<!-- ══════════════════════════════════════════
+     HERO
+══════════════════════════════════════════ -->
+<section class="relative overflow-hidden"
+         style="background:linear-gradient(145deg,#EAF7F1 0%,#f5faf7 40%,#EAF7F1 100%);
+                padding-top:160px;padding-bottom:64px;">
+  <svg class="absolute pointer-events-none select-none"
+       style="right:0;top:0;width:380px;height:380px;opacity:.16;"
+       viewBox="0 0 380 380" fill="none" aria-hidden="true">
+    <circle cx="300" cy="80" r="180" stroke="#0B7A4B" stroke-width="55" fill="none"/>
+  </svg>
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <!-- Breadcrumb -->
+    <nav style="font-size:13px;font-weight:600;margin-bottom:20px;">
+      <a href="{% url 'pub_services' %}" style="color:#0B7A4B;text-decoration:none;">Services</a>
+      <span style="color:#94a3b8;margin:0 8px;">/</span>
+      <span style="color:#64748b;">{{ service.name }}</span>
+    </nav>
+
+    <div class="flex flex-wrap gap-3 items-center" style="margin-bottom:16px;">
+      <span style="font-size:11.5px;font-weight:700;color:#0B7A4B;background:#EAF7F1;
+                   padding:4px 12px;border-radius:9999px;letter-spacing:.05em;text-transform:uppercase;">
+        {{ service.category.name }}
+      </span>
+      <span class="flex items-center gap-1.5" style="font-size:13px;font-weight:600;color:#475569;">
+        <svg style="width:14px;height:14px;" fill="none" stroke="#0B7A4B" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>
+        </svg>
+        {{ service.duration_minutes }} minutes
+      </span>
+    </div>
+
+    <h1 class="font-extrabold text-slate-900 leading-tight"
+        style="font-size:clamp(2rem,4.5vw,3rem);max-width:640px;margin-bottom:16px;">
+      {{ service.name }}
+    </h1>
+
+    {% if service.short_description %}
+    <p style="font-size:16px;color:#475569;max-width:560px;line-height:1.7;margin-bottom:28px;">
+      {{ service.short_description }}
+    </p>
+    {% endif %}
+
+    <a href="{% url 'pub_book' %}?service={{ service.pk }}"
+       class="inline-flex items-center gap-2 font-semibold text-white"
+       style="background:#0B7A4B;padding:14px 32px;border-radius:9999px;font-size:14px;
+              box-shadow:0 4px 16px rgba(11,122,75,.35);text-decoration:none;transition:all .22s;"
+       onmouseover="this.style.backgroundColor='#075A38'" onmouseout="this.style.backgroundColor='#0B7A4B'">
+      Book This Service
+      <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+      </svg>
+    </a>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     MAIN CONTENT
+══════════════════════════════════════════ -->
+<section class="py-16 bg-white">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex flex-col lg:flex-row gap-12">
+
+      <!-- Left: full description + image -->
+      <div style="flex:1;min-width:0;">
+        {% if service.image %}
+        <img src="{{ service.image.url }}" alt="{{ service.name }}"
+             style="width:100%;max-height:420px;object-fit:cover;border-radius:20px;margin-bottom:32px;
+                    box-shadow:0 8px 32px rgba(11,122,75,.12);">
+        {% endif %}
+
+        {% if service.full_description %}
+        <div style="font-size:15.5px;color:#334155;line-height:1.8;">
+          {{ service.full_description|linebreaks }}
+        </div>
+        {% elif service.description %}
+        <div style="font-size:15.5px;color:#334155;line-height:1.8;">
+          {{ service.description|linebreaks }}
+        </div>
+        {% else %}
+        <p style="font-size:15.5px;color:#64748b;font-style:italic;">
+          Our experienced dental team provides professional {{ service.name|lower }} tailored to your needs.
+          Contact us or book an appointment for more information.
+        </p>
+        {% endif %}
+      </div>
+
+      <!-- Right: sidebar -->
+      <div style="width:100%;max-width:320px;flex-shrink:0;">
+        <!-- Quick info card -->
+        <div style="border-radius:20px;border:1.5px solid rgba(11,122,75,.12);padding:24px;
+                    background:#fafffe;margin-bottom:24px;">
+          <p style="font-size:11px;font-weight:700;color:#0B7A4B;letter-spacing:.1em;
+                    text-transform:uppercase;margin-bottom:16px;">Service Details</p>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div class="flex items-center gap-3">
+              <div style="width:36px;height:36px;border-radius:10px;background:#EAF7F1;
+                          display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg style="width:16px;height:16px;" fill="none" stroke="#0B7A4B" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>
+                </svg>
+              </div>
+              <div>
+                <p style="font-size:11px;color:#94a3b8;font-weight:600;margin:0;">Duration</p>
+                <p style="font-size:14px;font-weight:700;color:#1e293b;margin:0;">{{ service.duration_minutes }} minutes</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div style="width:36px;height:36px;border-radius:10px;background:#EAF7F1;
+                          display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg style="width:16px;height:16px;" fill="none" stroke="#0B7A4B" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                </svg>
+              </div>
+              <div>
+                <p style="font-size:11px;color:#94a3b8;font-weight:600;margin:0;">Category</p>
+                <p style="font-size:14px;font-weight:700;color:#1e293b;margin:0;">{{ service.category.name }}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div style="width:36px;height:36px;border-radius:10px;background:#EAF7F1;
+                          display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg style="width:16px;height:16px;" fill="none" stroke="#0B7A4B" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div>
+                <p style="font-size:11px;color:#94a3b8;font-weight:600;margin:0;">Consultation</p>
+                <p style="font-size:14px;font-weight:700;color:#1e293b;margin:0;">Free initial consultation</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Book CTA -->
+        <a href="{% url 'pub_book' %}?service={{ service.pk }}"
+           class="flex items-center justify-center gap-2 font-bold text-white"
+           style="width:100%;padding:14px 20px;border-radius:14px;font-size:14px;
+                  background:linear-gradient(135deg,#0B7A4B,#075A38);
+                  text-decoration:none;transition:opacity .2s;box-shadow:0 4px 14px rgba(11,122,75,.3);"
+           onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+          <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          Book Appointment
+        </a>
+
+        <a href="{% url 'ask_doctor:landing' %}"
+           style="display:block;width:100%;margin-top:10px;padding:12px 20px;border-radius:14px;
+                  font-size:13.5px;font-weight:600;color:#0B7A4B;text-align:center;
+                  border:1.5px solid rgba(11,122,75,.25);text-decoration:none;transition:all .2s;"
+           onmouseover="this.style.background='#EAF7F1'" onmouseout="this.style.background='transparent'">
+          Ask a Doctor
+        </a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     RELATED SERVICES
+══════════════════════════════════════════ -->
+{% if related %}
+<section style="background:#f8fdf9;padding:56px 0;">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div style="margin-bottom:32px;">
+      <p style="font-size:11px;font-weight:700;color:#0B7A4B;letter-spacing:.1em;
+                text-transform:uppercase;margin-bottom:6px;">More from {{ service.category.name }}</p>
+      <h2 class="font-extrabold text-slate-900" style="font-size:1.6rem;margin:0;">Related Services</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;">
+      {% for rel in related %}
+      <a href="{% url 'pub_service_detail' rel.slug %}"
+         class="bg-white rounded-2xl overflow-hidden group"
+         style="border:1.5px solid rgba(11,122,75,.1);box-shadow:0 2px 10px rgba(11,122,75,.06);
+                text-decoration:none;display:block;transition:transform .22s,box-shadow .22s;"
+         onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 10px 28px rgba(11,122,75,.13)'"
+         onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 10px rgba(11,122,75,.06)'">
+        {% if rel.image %}
+        <img src="{{ rel.image.url }}" alt="{{ rel.name }}"
+             style="width:100%;height:140px;object-fit:cover;display:block;">
+        {% else %}
+        <div style="height:6px;background:linear-gradient(90deg,#0B7A4B,#4FA882);"></div>
+        {% endif %}
+        <div style="padding:18px 20px;">
+          <p class="font-bold text-slate-900" style="font-size:14.5px;margin:0 0 6px;">{{ rel.name }}</p>
+          {% if rel.short_description %}
+          <p class="text-slate-500" style="font-size:12.5px;line-height:1.6;margin:0 0 10px;">
+            {{ rel.short_description|truncatechars:80 }}
+          </p>
+          {% endif %}
+          <span class="flex items-center gap-1.5" style="font-size:12px;font-weight:600;color:#0B7A4B;">
+            <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>
+            </svg>
+            {{ rel.duration_minutes }} min
+          </span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ══════════════════════════════════════════
+     BOTTOM CTA
+══════════════════════════════════════════ -->
+<section style="background:linear-gradient(135deg,#0B7A4B,#075A38);padding:56px 0;">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <h2 class="font-extrabold text-white" style="font-size:clamp(1.5rem,3vw,2rem);margin-bottom:12px;">
+      Ready to Book {{ service.name }}?
+    </h2>
+    <p style="color:rgba(255,255,255,.75);font-size:15px;max-width:440px;margin:0 auto 28px;line-height:1.65;">
+      Our team is ready to help. Book your appointment online or call us to speak with our friendly staff.
+    </p>
+    <div class="flex items-center justify-center gap-4 flex-wrap">
+      <a href="{% url 'pub_book' %}?service={{ service.pk }}"
+         class="inline-flex items-center gap-2 font-semibold"
+         style="background:#EAF7F1;color:#0B7A4B;padding:13px 32px;border-radius:9999px;
+                font-size:14px;text-decoration:none;transition:all .22s;"
+         onmouseover="this.style.background='#fff'" onmouseout="this.style.background='#EAF7F1'">
+        Book Appointment
+        <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        </svg>
+      </a>
+      <a href="{% url 'pub_services' %}"
+         class="inline-flex items-center gap-2 font-semibold"
+         style="color:rgba(255,255,255,.85);border:2px solid rgba(255,255,255,.4);
+                padding:11px 28px;border-radius:9999px;font-size:14px;text-decoration:none;transition:all .22s;"
+         onmouseover="this.style.borderColor='#fff';this.style.color='#fff'"
+         onmouseout="this.style.borderColor='rgba(255,255,255,.4)';this.style.color='rgba(255,255,255,.85)'">
+        View All Services
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
