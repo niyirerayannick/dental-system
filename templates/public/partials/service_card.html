@@ -9,7 +9,7 @@
     {% if svc.image %}
     <img src="{{ svc.image.url }}" alt="{{ svc.name }}" class="h-full w-full object-cover transition duration-200 group-hover:scale-105">
     {% else %}
-    <img src="{% static 'img/service-placeholder.svg' %}" alt="" class="h-full w-full object-cover transition duration-200 group-hover:scale-105">
+    <img src="{% static 'images/default-service.svg' %}" alt="{{ svc.name }}" class="h-full w-full object-cover transition duration-200 group-hover:scale-105">
     {% endif %}
     {% if svc.duration_minutes %}
     <span class="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-xs font-bold text-slate-700 shadow-sm">
