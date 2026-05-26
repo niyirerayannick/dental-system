@@ -58,6 +58,13 @@ def base_patient_queryset(request):
     return patients.distinct()
 
 
+def accessible_patient_queryset(request):
+    patients = PatientProfile.objects.select_related("user")
+    if request.user.role == User.Role.DENTIST:
+        patients = patients.filter(appointments__dentist__user=request.user)
+    return patients.distinct()
+
+
 def build_patient_rows(patients):
     rows = []
     for patient in patients:
@@ -156,13 +163,23 @@ def patient_create(request):
 
 @role_required(User.Role.ADMIN, User.Role.DENTIST, User.Role.RECEPTIONIST)
 def patient_detail(request, pk):
-    patient = get_object_or_404(PatientProfile.objects.select_related("user"), pk=pk)
-    treatments = Treatment.objects.filter(patient=patient).select_related("dentist__user")[:8]
-    appointments = Appointment.objects.filter(patient=patient).select_related("dentist__user")[:8]
+    patient = get_object_or_404(accessible_patient_queryset(request), pk=pk)
+    treatments = Treatment.objects.filter(patient=patient).select_related("dentist__user")
+    appointments = Appointment.objects.filter(patient=patient).select_related("dentist__user")
+
+    if request.user.role == User.Role.DENTIST:
+        treatments = treatments.filter(dentist__user=request.user)
+        appointments = appointments.filter(dentist__user=request.user)
+
     return render(
         request,
         "patients/patient_detail.html",
-        {"patient": patient, "age": calculate_age(patient.date_of_birth), "treatments": treatments, "appointments": appointments},
+        {
+            "patient": patient,
+            "age": calculate_age(patient.date_of_birth),
+            "treatments": treatments[:8],
+            "appointments": appointments[:8],
+        },
     )
 
 
@@ -202,7 +219,7 @@ def patient_payload(patient):
 
 @role_required(User.Role.ADMIN, User.Role.DENTIST, User.Role.RECEPTIONIST)
 def patient_json(request, pk):
-    patient = get_object_or_404(PatientProfile.objects.select_related("user"), pk=pk)
+    patient = get_object_or_404(accessible_patient_queryset(request), pk=pk)
     return JsonResponse({"ok": True, "record": patient_payload(patient)})
 
 

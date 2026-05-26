@@ -33,7 +33,7 @@ def filtered_treatments(request):
     return qs
 
 
-@role_required(User.Role.ADMIN, User.Role.DENTIST, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
 def treatment_list(request):
     form = TreatmentRecordForm()
     modal_open = False
@@ -58,7 +58,7 @@ def treatment_list(request):
 
 
 @require_POST
-@role_required(User.Role.ADMIN, User.Role.DENTIST, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
 def treatment_delete(request, pk):
     treatment = get_object_or_404(Treatment, pk=pk)
     if request.user.role == User.Role.DENTIST:
@@ -75,9 +75,6 @@ def treatment_delete(request, pk):
 def can_manage_treatment(user, treatment):
     if user.role in {User.Role.ADMIN, User.Role.RECEPTIONIST}:
         return True
-    if user.role == User.Role.DENTIST:
-        dentist = DentistProfile.objects.filter(user=user).first()
-        return treatment.dentist_id == getattr(dentist, "pk", None)
     return False
 
 
@@ -102,7 +99,7 @@ def treatment_payload(treatment):
     }
 
 
-@role_required(User.Role.ADMIN, User.Role.DENTIST, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
 def treatment_json(request, pk):
     treatment = get_object_or_404(Treatment.objects.select_related("patient__user", "dentist__user", "appointment"), pk=pk)
     if not can_manage_treatment(request.user, treatment):
@@ -111,7 +108,7 @@ def treatment_json(request, pk):
 
 
 @require_POST
-@role_required(User.Role.ADMIN, User.Role.DENTIST, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
 def treatment_update(request, pk):
     treatment = get_object_or_404(Treatment, pk=pk)
     if not can_manage_treatment(request.user, treatment):

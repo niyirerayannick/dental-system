@@ -284,6 +284,9 @@ def admin_user_reset_password(request, pk):
 def dentist_dashboard(request):
     from notifications.models import Notification
     from django.utils import timezone as tz
+    from datetime import date as _date
+    from ask_doctor.models import DoctorConversation, DoctorMessage
+    from followups.models import FollowUp
 
     dentist = get_dentist_profile(request.user)
     today = tz.localdate()
@@ -293,20 +296,48 @@ def dentist_dashboard(request):
     unread_count = notifications_qs.filter(is_read=False).count()
     notifications = list(notifications_qs[:8])
 
+    dentist_conversations = DoctorConversation.objects.filter(
+        Q(assigned_doctor=request.user)
+        | Q(
+            assigned_doctor__isnull=True,
+            status__in=[DoctorConversation.Status.OPEN, DoctorConversation.Status.PENDING],
+        )
+    ).select_related("patient", "assigned_doctor").prefetch_related("messages")
+    recent_ask_messages = (
+        DoctorMessage.objects.filter(conversation__in=dentist_conversations)
+        .select_related("conversation__patient", "sender")
+        .order_by("-created_at")[:5]
+    )
+    followup_queue = (
+        FollowUp.objects.filter(assigned_to=request.user)
+        .select_related("patient__user", "appointment")
+        .filter(status__in=[FollowUp.Status.PENDING, FollowUp.Status.CONTACTED])
+        .order_by("followup_date")[:6]
+    )
+    followups_due = FollowUp.objects.filter(
+        assigned_to=request.user,
+        followup_date__lte=today,
+        status__in=[FollowUp.Status.PENDING, FollowUp.Status.CONTACTED],
+    ).count()
+
     if not dentist:
         return render(request, "dashboard/dentist.html", {
             "dentist": None,
             "unread_count": unread_count,
             "notifications": notifications,
-            "kpis": [
-                {"label": "Today's Appointments", "value": 0, "icon": "event_available"},
-                {"label": "Pending Appointments", "value": 0, "icon": "pending_actions"},
-                {"label": "Treatments Done", "value": 0, "icon": "healing"},
-                {"label": "Patients Seen", "value": 0, "icon": "groups"},
+            "stats": [
+                {"label": "My Appointments Today", "value": 0, "change": "Today", "tone": "green", "icon": "event_available"},
+                {"label": "Pending Appointments", "value": 0, "change": "Review", "tone": "amber", "icon": "pending_actions"},
+                {"label": "Completed Appointments", "value": 0, "change": "Done", "tone": "green", "icon": "task_alt"},
+                {"label": "Follow-ups Due", "value": followups_due, "change": "Due", "tone": "amber", "icon": "next_plan"},
+                {"label": "Ask Doctor Conversations", "value": dentist_conversations.count(), "change": "Inbox", "tone": "green", "icon": "mark_unread_chat_alt"},
+                {"label": "Notification Summary", "value": unread_count, "change": "Unread", "tone": "amber" if unread_count else "green", "icon": "notifications"},
             ],
             "today_appointments": [],
             "filtered_appointments": [],
-            "recent_treatments": [],
+            "recent_patients": [],
+            "recent_ask_messages": recent_ask_messages,
+            "followup_queue": followup_queue,
             "treatment_form": DentistTreatmentForm(dentist=None),
             "treatment_open": False,
             "today": today,
@@ -314,6 +345,9 @@ def dentist_dashboard(request):
             "status_filter": "",
             "date_filter": "",
             "status_choices": Appointment.Status.choices,
+            "appointment_chart": json.dumps({"labels": [], "booked": [], "completed": []}),
+            "status_chart": json.dumps({"labels": ["Pending", "Confirmed", "Completed", "Cancelled"], "values": [0, 0, 0, 0]}),
+            "appt_status": {"pending": 0, "approved": 0, "completed": 0, "cancelled": 0},
         })
 
     all_appointments = (
@@ -327,7 +361,7 @@ def dentist_dashboard(request):
 
     today_count = today_appointments.count()
     pending_count = all_appointments.filter(status=Appointment.Status.PENDING).count()
-    completed_treatments = Treatment.objects.filter(dentist=dentist).count()
+    completed_count = all_appointments.filter(status=Appointment.Status.COMPLETED).count()
     patients_seen = (
         all_appointments.filter(status=Appointment.Status.COMPLETED)
         .values("patient").distinct().count()
@@ -349,32 +383,31 @@ def dentist_dashboard(request):
     if date_filter:
         filtered_appointments = filtered_appointments.filter(appointment_date=date_filter)
 
-    recent_treatments = (
-        Treatment.objects.filter(dentist=dentist)
-        .select_related("patient__user")
-        .order_by("-treatment_date")[:10]
+    recent_patients = (
+        PatientProfile.objects.filter(appointments__dentist=dentist)
+        .select_related("user")
+        .distinct()
+        .order_by("-appointments__appointment_date")[:6]
     )
 
-    treatment_form = DentistTreatmentForm(dentist=dentist)
+    chart_labels, chart_booked, chart_completed = [], [], []
+    for i in range(5, -1, -1):
+        month = today.month - i
+        year = today.year + (month - 1) // 12
+        month = ((month - 1) % 12) + 1
+        month_start = _date(year, month, 1)
+        month_end = _date(year + (month // 12), (month % 12) + 1, 1)
+        month_qs = all_appointments.filter(appointment_date__gte=month_start, appointment_date__lt=month_end)
+        chart_labels.append(month_start.strftime("%b"))
+        chart_booked.append(month_qs.count())
+        chart_completed.append(month_qs.filter(status=Appointment.Status.COMPLETED).count())
 
-    if request.method == "POST" and request.POST.get("form_type") == "treatment":
-        treatment_open = True
-        treatment_form = DentistTreatmentForm(request.POST, dentist=dentist)
-        if treatment_form.is_valid():
-            t = treatment_form.save(commit=False)
-            t.dentist = dentist
-            if t.appointment:
-                t.patient = t.appointment.patient
-            t.save()
-            if t.appointment and t.appointment.status != Appointment.Status.COMPLETED:
-                old_status = t.appointment.status
-                t.appointment.status = Appointment.Status.COMPLETED
-                t.appointment.save(update_fields=["status"])
-                notify_appointment_status_change(t.appointment, old_status=old_status)
-            elif t.appointment:
-                notify_service_completed(t.appointment)
-            messages.success(request, "Treatment record saved successfully.")
-            return redirect("dashboard:dentist")
+    appt_status = all_appointments.aggregate(
+        pending=Count("id", filter=Q(status=Appointment.Status.PENDING)),
+        approved=Count("id", filter=Q(status=Appointment.Status.APPROVED)),
+        completed=Count("id", filter=Q(status=Appointment.Status.COMPLETED)),
+        cancelled=Count("id", filter=Q(status=Appointment.Status.CANCELLED)),
+    )
 
     return render(
         request,
@@ -383,14 +416,16 @@ def dentist_dashboard(request):
             "dentist": dentist,
             "today_appointments": today_appointments,
             "filtered_appointments": filtered_appointments[:20],
-            "recent_treatments": recent_treatments,
-            "treatment_form": treatment_form,
-            "treatment_open": treatment_open,
-            "kpis": [
-                {"label": "Today's Appointments", "value": today_count, "icon": "event_available"},
-                {"label": "Pending Appointments", "value": pending_count, "icon": "pending_actions"},
-                {"label": "Treatments Done", "value": completed_treatments, "icon": "healing"},
-                {"label": "Patients Seen", "value": patients_seen, "icon": "groups"},
+            "recent_patients": recent_patients,
+            "recent_ask_messages": recent_ask_messages,
+            "followup_queue": followup_queue,
+            "stats": [
+                {"label": "My Appointments Today", "value": today_count, "change": "Today", "tone": "green", "icon": "event_available"},
+                {"label": "Pending Appointments", "value": pending_count, "change": "Review", "tone": "amber", "icon": "pending_actions"},
+                {"label": "Completed Appointments", "value": completed_count, "change": "Done", "tone": "green", "icon": "task_alt"},
+                {"label": "Follow-ups Due", "value": followups_due, "change": "Due", "tone": "amber", "icon": "next_plan"},
+                {"label": "Ask Doctor Conversations", "value": dentist_conversations.count(), "change": "Inbox", "tone": "green", "icon": "mark_unread_chat_alt"},
+                {"label": "Notification Summary", "value": unread_count, "change": "Unread", "tone": "amber" if unread_count else "green", "icon": "notifications"},
             ],
             "notifications": notifications,
             "unread_count": unread_count,
@@ -399,6 +434,17 @@ def dentist_dashboard(request):
             "date_filter": date_filter,
             "today": today,
             "status_choices": Appointment.Status.choices,
+            "appointment_chart": json.dumps({"labels": chart_labels, "booked": chart_booked, "completed": chart_completed}),
+            "status_chart": json.dumps({
+                "labels": ["Pending", "Confirmed", "Completed", "Cancelled"],
+                "values": [
+                    appt_status["pending"],
+                    appt_status["approved"],
+                    appt_status["completed"],
+                    appt_status["cancelled"],
+                ],
+            }),
+            "appt_status": appt_status,
         },
     )
 
