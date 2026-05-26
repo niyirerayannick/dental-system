@@ -2,6 +2,7 @@ import re
 
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, ReadOnlyPasswordHashField, UserCreationForm
+from django.core.validators import validate_email
 
 from .models import User, normalize_phone
 
@@ -23,9 +24,21 @@ def validate_rwanda_phone(value):
 
 
 class LoginForm(AuthenticationForm):
+    LOGIN_METHOD_EMAIL = "email"
+    LOGIN_METHOD_PHONE = "phone"
+    LOGIN_METHOD_CHOICES = (
+        (LOGIN_METHOD_PHONE, "Phone number"),
+        (LOGIN_METHOD_EMAIL, "Email"),
+    )
+
+    login_method = forms.ChoiceField(
+        choices=LOGIN_METHOD_CHOICES,
+        initial=LOGIN_METHOD_PHONE,
+        widget=forms.RadioSelect,
+    )
     username = forms.CharField(
-        label="Email or phone number",
-        widget=forms.TextInput(attrs={"placeholder": "Email or phone number", "class": _BARE, "autocomplete": "username"}),
+        label="Phone number",
+        widget=forms.TextInput(attrs={"placeholder": "0780474044", "class": _BARE, "autocomplete": "username", "inputmode": "tel"}),
     )
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={"placeholder": "••••••••", "class": _BARE}),
@@ -37,10 +50,32 @@ class LoginForm(AuthenticationForm):
     }
 
     def clean_username(self):
-        raw = self.cleaned_data.get("username", "").strip()
-        if "@" in raw:
-            return User.objects.normalize_email(raw).lower()
-        return normalize_phone(raw)
+        return self.cleaned_data.get("username", "").strip()
+
+    def clean(self):
+        cleaned_data = self.cleaned_data
+        raw = cleaned_data.get("username", "").strip()
+        login_method = self.cleaned_data.get("login_method", self.LOGIN_METHOD_PHONE)
+
+        if not raw:
+            return super().clean()
+
+        if login_method == self.LOGIN_METHOD_EMAIL:
+            try:
+                validate_email(raw)
+            except forms.ValidationError:
+                self.add_error("username", "Enter a valid email address.")
+                return cleaned_data
+            cleaned_data["username"] = User.objects.normalize_email(raw).lower()
+        else:
+            try:
+                validate_rwanda_phone(raw)
+            except forms.ValidationError as exc:
+                self.add_error("username", exc)
+                return cleaned_data
+            cleaned_data["username"] = normalize_phone(raw)
+
+        return super().clean()
 
 
 class RegisterForm(UserCreationForm):

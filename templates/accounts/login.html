@@ -22,16 +22,46 @@
         </div>
     {% endif %}
 
-    <!-- Email or Phone -->
+    <!-- Login Method -->
     <div>
-        <label for="{{ form.username.id_for_label }}" class="mb-1.5 block text-sm font-medium text-slate-700">
-            Email or phone number
+        <span class="mb-2 block text-sm font-medium text-slate-700">Login with</span>
+        <div class="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
+            <label class="login-method-option flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg text-sm font-semibold transition">
+                <input type="radio"
+                       name="login_method"
+                       value="phone"
+                       class="sr-only"
+                       {% if form.login_method.value != "email" %}checked{% endif %}
+                       onchange="setLoginMethod('phone')">
+                <span class="material-symbols-rounded text-base leading-none">call</span>
+                Phone
+            </label>
+            <label class="login-method-option flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg text-sm font-semibold transition">
+                <input type="radio"
+                       name="login_method"
+                       value="email"
+                       class="sr-only"
+                       {% if form.login_method.value == "email" %}checked{% endif %}
+                       onchange="setLoginMethod('email')">
+                <span class="material-symbols-rounded text-base leading-none">mail</span>
+                Email
+            </label>
+        </div>
+        {% for error in form.login_method.errors %}
+            <p class="mt-1 text-xs text-rose-600">{{ error }}</p>
+        {% endfor %}
+    </div>
+
+    <!-- Identifier -->
+    <div>
+        <label id="identifierLabel" for="{{ form.username.id_for_label }}" class="mb-1.5 block text-sm font-medium text-slate-700">
+            Phone number
         </label>
         <div class="group flex h-12 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 shadow-sm transition-all duration-150 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-100">
-            <span class="material-symbols-rounded flex-none select-none text-xl leading-none text-slate-400 transition-colors duration-150 group-focus-within:text-emerald-500">person</span>
+            <span id="identifierIcon" class="material-symbols-rounded flex-none select-none text-xl leading-none text-slate-400 transition-colors duration-150 group-focus-within:text-emerald-500">call</span>
             {{ form.username }}
         </div>
-        <p class="mt-1 text-xs text-slate-400">Use your email address or phone number (e.g. 0780474044)</p>
+        <p id="identifierHelp" class="mt-1 text-xs text-slate-400">Use your phone number, for example 0780474044</p>
         {% for error in form.username.errors %}
             <p class="mt-1 text-xs text-rose-600">{{ error }}</p>
         {% endfor %}
@@ -92,6 +122,27 @@
 </form>
 
 <script>
+function setLoginMethod(method) {
+    const isPhone = method === 'phone';
+    const input = document.getElementById('{{ form.username.id_for_label }}');
+    document.getElementById('identifierLabel').textContent = isPhone ? 'Phone number' : 'Email address';
+    document.getElementById('identifierIcon').textContent = isPhone ? 'call' : 'mail';
+    document.getElementById('identifierHelp').textContent = isPhone
+        ? 'Use your phone number, for example 0780474044'
+        : 'Use your email address, for example you@example.com';
+    input.placeholder = isPhone ? '0780474044' : 'you@example.com';
+    input.inputMode = isPhone ? 'tel' : 'email';
+    input.type = isPhone ? 'tel' : 'email';
+
+    document.querySelectorAll('.login-method-option').forEach((label) => {
+        const checked = label.querySelector('input').checked;
+        label.classList.toggle('bg-white', checked);
+        label.classList.toggle('text-emerald-700', checked);
+        label.classList.toggle('shadow-sm', checked);
+        label.classList.toggle('text-slate-500', !checked);
+    });
+}
+
 function togglePassword(btn) {
     const wrapper = btn.closest('.group');
     const input   = wrapper.querySelector('input[type="password"], input[type="text"]');
@@ -100,6 +151,11 @@ function togglePassword(btn) {
     input.type       = hidden ? 'text'           : 'password';
     icon.textContent = hidden ? 'visibility_off' : 'visibility';
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const selected = document.querySelector('input[name="login_method"]:checked');
+    setLoginMethod(selected ? selected.value : 'phone');
+});
 </script>
 
 {% endblock %}

@@ -8,25 +8,21 @@ class EmailOrPhoneBackend(ModelBackend):
     """Authenticate by email (case-insensitive) or Rwanda phone number."""
 
     def authenticate(self, request, username=None, password=None, **kwargs):
-        identifier = username or kwargs.get("phone") or kwargs.get("email")
-        if identifier is None:
+        User = get_user_model()
+        identifier = username or kwargs.get(User.USERNAME_FIELD) or kwargs.get("phone") or kwargs.get("email")
+        if identifier is None or password is None:
             return None
 
-        User = get_user_model()
         identifier = str(identifier).strip()
-        user = None
+        if not identifier:
+            return None
 
         if "@" in identifier:
-            try:
-                user = User.objects.get(email__iexact=identifier)
-            except User.DoesNotExist:
-                pass
+            identifier = User.objects.normalize_email(identifier).lower()
+            user = User.objects.filter(email__iexact=identifier).first()
         else:
             normalized = normalize_phone(identifier)
-            try:
-                user = User.objects.get(phone=normalized)
-            except User.DoesNotExist:
-                pass
+            user = User.objects.filter(phone=normalized).first()
 
         if user is not None and user.check_password(password) and self.user_can_authenticate(user):
             return user

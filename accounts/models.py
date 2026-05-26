@@ -75,6 +75,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     def save(self, *args, **kwargs):
         if self.phone:
             self.phone = normalize_phone(self.phone)
+        if self.email:
+            self.email = self.__class__.objects.normalize_email(self.email.strip()).lower()
         if self.email == "":
             self.email = None
         super().save(*args, **kwargs)
