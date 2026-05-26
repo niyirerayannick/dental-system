@@ -79,6 +79,10 @@
           <span class="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-xs font-bold text-white">{{ unread_count }}</span>
           {% endif %}
         </a>
+        <a href="{% url 'notifications:logs' %}"
+           class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {% if request.resolver_match.namespace == 'notifications' and request.resolver_match.url_name == 'logs' %}bg-green-50 font-semibold text-green-700{% else %}text-gray-600 hover:bg-green-50 hover:text-green-700{% endif %}">
+          <span class="material-symbols-rounded w-8 text-center text-green-700">mark_chat_read</span> Notification Logs
+        </a>
         <a href="{% url 'dashboard:receptionist_profile' %}"
            class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {% if request.resolver_match.url_name == 'receptionist_profile' %}bg-green-50 font-semibold text-green-700{% else %}text-gray-600 hover:bg-green-50 hover:text-green-700{% endif %}">
           <span class="material-symbols-rounded w-8 text-center text-green-700">person</span> My Profile

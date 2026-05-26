@@ -18,6 +18,12 @@ from patients.forms import PatientProfileForm, PatientRegistrationForm
 from patients.models import PatientProfile
 from treatments.forms import TreatmentRecordForm
 from treatments.models import Treatment
+from notifications.notifiers import (
+    notify_appointment_created,
+    notify_appointment_status_change,
+    notify_patient_created,
+    notify_service_completed,
+)
 
 
 @login_required
@@ -134,6 +140,7 @@ def _handle_patient_booking(request, profile, success_redirect):
                     "This dentist already has an appointment at the selected date and time.",
                 )
             else:
+                notify_appointment_created(appt)
                 Notification.objects.create(
                     user=request.user,
                     title="Appointment Requested",
@@ -242,8 +249,12 @@ def dentist_dashboard(request):
                 t.patient = t.appointment.patient
             t.save()
             if t.appointment and t.appointment.status != Appointment.Status.COMPLETED:
+                old_status = t.appointment.status
                 t.appointment.status = Appointment.Status.COMPLETED
                 t.appointment.save(update_fields=["status"])
+                notify_appointment_status_change(t.appointment, old_status=old_status)
+            elif t.appointment:
+                notify_service_completed(t.appointment)
             messages.success(request, "Treatment record saved successfully.")
             return redirect("dashboard:dentist")
 
@@ -301,8 +312,10 @@ def update_appointment_status(request, pk, status):
         return redirect(redirect_url)
 
     if appointment.status != status:
+        old_status = appointment.status
         appointment.status = status
         appointment.save(update_fields=["status"])
+        notify_appointment_status_change(appointment, old_status=old_status)
         messages.success(request, f"Appointment marked as {appointment.get_status_display().lower()}.")
     else:
         messages.success(request, "Appointment status is already up to date.")
@@ -374,14 +387,16 @@ def receptionist_dashboard(request):
             appt_open = True
             appointment_form = AppointmentManageForm(request.POST, prefix="appointment")
             if appointment_form.is_valid():
-                appointment_form.save()
+                appointment = appointment_form.save()
+                notify_appointment_created(appointment)
                 messages.success(request, "Appointment created successfully.")
                 return redirect("dashboard:receptionist")
         elif form_type == "patient":
             patient_open = True
             patient_form = PatientRegistrationForm(request.POST, prefix="patient")
             if patient_form.is_valid():
-                patient_form.save()
+                user = patient_form.save()
+                notify_patient_created(user.patient_profile)
                 messages.success(request, "Patient registered successfully.")
                 return redirect("dashboard:receptionist")
 
@@ -579,6 +594,7 @@ def patient_book_page(request):
             appt.patient = profile
             appt.status = Appointment.Status.PENDING
             appt.save()
+            notify_appointment_created(appt)
             Notification.objects.create(
                 user=request.user,
                 title="Appointment Requested",
@@ -681,7 +697,8 @@ def receptionist_appointments_page(request):
         appt_open = True
         appointment_form = AppointmentManageForm(request.POST, prefix="appointment")
         if appointment_form.is_valid():
-            appointment_form.save()
+            appointment = appointment_form.save()
+            notify_appointment_created(appointment)
             messages.success(request, "Appointment created successfully.")
             return redirect("dashboard:receptionist_appointments")
 

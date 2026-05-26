@@ -12,6 +12,7 @@ from reportlab.platypus import SimpleDocTemplate, Table
 
 from accounts.models import User
 from accounts.permissions import role_required
+from notifications.notifiers import notify_appointment_created, notify_appointment_status_change
 from .forms import AppointmentManageForm, available_dentists
 from .models import Appointment
 from .services import availability_summary, booked_count, booked_times, generate_time_slots, is_fully_booked
@@ -39,7 +40,8 @@ def appointment_list(request):
         form = AppointmentManageForm(request.POST)
         modal_open = True
         if form.is_valid():
-            form.save()
+            appointment = form.save()
+            notify_appointment_created(appointment)
             messages.success(request, "Appointment booked successfully and is pending approval.")
             return redirect("appointments:list")
         messages.error(request, "Please correct the appointment form errors.")
@@ -108,9 +110,11 @@ def appointment_json(request, pk):
 @role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
 def appointment_update(request, pk):
     appointment = get_object_or_404(Appointment, pk=pk)
+    old_status = appointment.status
     form = AppointmentManageForm(request.POST, instance=appointment)
     if form.is_valid():
         appointment = form.save()
+        notify_appointment_status_change(appointment, old_status=old_status)
         return JsonResponse({"ok": True, "message": "Appointment updated successfully.", "record": appointment_payload(appointment)})
     return JsonResponse({"ok": False, "message": "Please correct the appointment form errors.", "errors": form.errors}, status=400)
 
@@ -120,8 +124,10 @@ def appointment_update(request, pk):
 def appointment_status(request, pk, status):
     appointment = get_object_or_404(Appointment, pk=pk)
     if status in Appointment.Status.values:
+        old_status = appointment.status
         appointment.status = status
         appointment.save(update_fields=["status"])
+        notify_appointment_status_change(appointment, old_status=old_status)
         messages.success(request, "Appointment status updated.")
     if request.headers.get("x-requested-with") == "XMLHttpRequest":
         return JsonResponse({"ok": True, "message": "Appointment status updated.", "record": appointment_payload(appointment)})

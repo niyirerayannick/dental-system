@@ -17,6 +17,7 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, Tabl
 from accounts.models import User
 from accounts.permissions import role_required
 from appointments.models import Appointment
+from notifications.notifiers import notify_patient_created
 from treatments.models import Treatment
 from .forms import PatientForm
 from .models import PatientProfile
@@ -115,7 +116,8 @@ def patient_list(request):
         patient_form = PatientForm(request.POST)
         modal_open = True
         if patient_form.is_valid():
-            patient_form.save()
+            patient = patient_form.save()
+            notify_patient_created(patient)
             messages.success(request, "Patient created successfully.")
             return redirect("patients:list")
         messages.error(request, "Please correct the patient form errors.")
@@ -143,7 +145,8 @@ def patient_list(request):
 def patient_create(request):
     form = PatientForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
-        form.save()
+        patient = form.save()
+        notify_patient_created(patient)
         messages.success(request, "Patient created successfully.")
         return redirect("patients:list")
     return render(request, "patients/patient_form.html", {"form": form, "title": "Add New Patient"})

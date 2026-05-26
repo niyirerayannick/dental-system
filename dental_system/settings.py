@@ -133,6 +133,13 @@ AUTHENTICATION_BACKENDS = [
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+TWILIO_ACCOUNT_SID = config("TWILIO_ACCOUNT_SID", default="")
+TWILIO_AUTH_TOKEN = config("TWILIO_AUTH_TOKEN", default="")
+TWILIO_SMS_FROM = config("TWILIO_SMS_FROM", default="")
+TWILIO_WHATSAPP_FROM = config("TWILIO_WHATSAPP_FROM", default="whatsapp:+14155238886")
+CLINIC_NAME = config("CLINIC_NAME", default="Plan Healthcare Clinic")
+CLINIC_PHONE = config("CLINIC_PHONE", default="0780474044")
+
 TINYMCE_DEFAULT_CONFIG = {
     "height": 500,
     "plugins": "advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount",

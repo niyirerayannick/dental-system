@@ -13,6 +13,7 @@ from reportlab.platypus import SimpleDocTemplate, Table
 from accounts.models import User
 from accounts.permissions import role_required
 from dentists.models import DentistProfile
+from notifications.notifiers import notify_service_completed
 from patients.models import PatientProfile
 from .forms import TreatmentRecordForm
 from .models import Treatment
@@ -40,7 +41,9 @@ def treatment_list(request):
         form = TreatmentRecordForm(request.POST)
         modal_open = True
         if form.is_valid():
-            form.save()
+            treatment = form.save()
+            if treatment.appointment:
+                notify_service_completed(treatment.appointment)
             messages.success(request, "Treatment saved successfully.")
             return redirect("treatments:list")
     treatments = filtered_treatments(request)
@@ -116,6 +119,8 @@ def treatment_update(request, pk):
     form = TreatmentRecordForm(request.POST, instance=treatment)
     if form.is_valid():
         treatment = form.save()
+        if treatment.appointment:
+            notify_service_completed(treatment.appointment)
         return JsonResponse({"ok": True, "message": "Treatment updated successfully.", "record": treatment_payload(treatment)})
     return JsonResponse({"ok": False, "message": "Please correct the treatment form errors.", "errors": form.errors}, status=400)
 
