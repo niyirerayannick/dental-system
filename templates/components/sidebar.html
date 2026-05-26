@@ -1,3 +1,12 @@
+<style>
+    #dashboardSidebarNav {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    #dashboardSidebarNav::-webkit-scrollbar {
+        display: none;
+    }
+</style>
 <aside id="dashboardSidebar" class="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-gray-100 bg-white shadow-sm lg:block">
     <div class="flex h-full flex-col">
         <div class="flex h-16 items-center justify-between gap-3 border-b border-gray-100 px-5">
@@ -5,29 +14,24 @@
                 <span class="material-symbols-rounded flex h-10 w-10 items-center justify-center rounded-2xl bg-green-600 text-white shadow-md">dentistry</span>
                 <div>
                     <p class="text-lg font-bold text-gray-900">DentalCare</p>
-                    <p class="text-xs font-medium text-green-600">Clinic System</p>
+                    <p class="text-xs font-medium text-green-600">{{ dashboard_role_label }}</p>
                 </div>
             </div>
             <button type="button" data-sidebar-close class="rounded-xl px-2 py-1 text-gray-400 hover:bg-gray-100 lg:hidden"><span class="material-symbols-rounded">close</span></button>
         </div>
 
-        <nav class="flex-1 space-y-1 px-3 py-5 text-sm font-medium">
-            <a href="{% url 'dashboard:redirect' %}" class="flex items-center gap-3 rounded-2xl bg-green-50 px-4 py-3 text-green-700 transition hover:bg-green-100">
-                <span class="material-symbols-rounded flex h-8 w-8 items-center justify-center rounded-xl bg-green-600 text-white">dashboard</span> Dashboard
+        <nav id="dashboardSidebarNav" class="flex-1 space-y-1 overflow-y-auto px-3 py-5 text-sm font-medium">
+            {% for item in dashboard_menu %}
+            <a href="{{ item.href }}" class="flex items-center gap-3 rounded-2xl px-4 py-3 transition {% if item.is_active %}bg-green-50 font-semibold text-green-700{% else %}text-gray-600 hover:bg-green-50 hover:text-green-700{% endif %}">
+                <span class="material-symbols-rounded {% if item.is_active %}flex h-8 w-8 items-center justify-center rounded-xl bg-green-600 text-white{% else %}w-8 text-center text-green-600{% endif %}">{{ item.icon }}</span>
+                <span>{{ item.label }}</span>
             </a>
-            <a href="{% url 'patients:list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700"><span class="material-symbols-rounded w-8 text-center text-green-600">groups</span> Patients</a>
-            <a href="{% url 'dentists:list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700"><span class="material-symbols-rounded w-8 text-center text-green-600">medical_services</span> Dentists</a>
-            <a href="{% url 'appointments:list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700"><span class="material-symbols-rounded w-8 text-center text-green-600">calendar_month</span> Appointments</a>
-            <a href="{% url 'followups:list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700"><span class="material-symbols-rounded w-8 text-center text-green-600">next_plan</span> Follow-ups</a>
-            <a href="{% url 'notifications:logs' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700"><span class="material-symbols-rounded w-8 text-center text-green-600">mark_chat_read</span> Notification Logs</a>
-            <a href="{% url 'services:list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700"><span class="material-symbols-rounded w-8 text-center text-green-600">category</span> Services</a>
-            {% if request.user.role == 'ADMIN' or request.user.role == 'DENTIST' or request.user.is_superuser %}
-            <a href="{% url 'articles:dashboard_list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700"><span class="material-symbols-rounded w-8 text-center text-green-600">article</span> Dental Articles</a>
-            <a href="{% url 'articles:dashboard_comments' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700"><span class="material-symbols-rounded w-8 text-center text-green-600">forum</span> Comments</a>
-            <a href="{% url 'ask_doctor:inbox' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700"><span class="material-symbols-rounded w-8 text-center text-green-600">mark_unread_chat_alt</span> Ask Doctor Inbox</a>
-            {% endif %}
-            <a href="{% url 'reports:list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700"><span class="material-symbols-rounded w-8 text-center text-green-600">analytics</span> Reports</a>
-            {% if request.user.role == 'ADMIN' or request.user.is_superuser %}<a href="{% url 'clinic_settings:settings' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700"><span class="material-symbols-rounded w-8 text-center text-green-600">settings</span> Settings</a>{% endif %}
+            {% empty %}
+            <a href="{% url 'dashboard:redirect' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-gray-600 transition hover:bg-green-50 hover:text-green-700">
+                <span class="material-symbols-rounded w-8 text-center text-green-600">dashboard</span>
+                <span>Dashboard</span>
+            </a>
+            {% endfor %}
         </nav>
 
         <div class="border-t border-gray-100 p-3">

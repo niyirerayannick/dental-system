@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from accounts.models import User
-from accounts.permissions import get_dashboard_url_for_user
+from accounts.permissions import get_dashboard_url_for_user, role_required
 from .models import Notification, NotificationLog
 from .services.twilio_service import send_sms, send_whatsapp
 
@@ -50,7 +50,7 @@ def _log_queryset_for_user(user):
     return qs.none()
 
 
-@login_required
+@role_required(User.Role.ADMIN)
 def log_list(request):
     logs = _log_queryset_for_user(request.user)
     channel = request.GET.get("channel", "")
@@ -90,7 +90,7 @@ def log_list(request):
 
 
 @require_POST
-@login_required
+@role_required(User.Role.ADMIN)
 def resend_log(request, pk):
     log = get_object_or_404(_log_queryset_for_user(request.user), pk=pk, status=NotificationLog.Status.FAILED)
     if log.channel == NotificationLog.Channel.SMS:

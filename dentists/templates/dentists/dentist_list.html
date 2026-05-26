@@ -30,10 +30,10 @@
 </div>
 
 <section class="mt-6 rounded-2xl bg-white p-5 shadow-sm">
-  <form method="get" class="grid gap-4 lg:grid-cols-12 lg:items-end">
-    <div class="lg:col-span-5"><label class="flex items-center gap-2 text-sm font-semibold"><span class="material-symbols-rounded text-green-600">search</span>Search</label><input class="mt-2" name="q" value="{{ request.GET.q }}" placeholder="Name, email, phone, license"></div>
-    <div class="lg:col-span-3"><label class="block text-sm font-semibold">Specialization</label><input class="mt-2" name="specialization" value="{{ request.GET.specialization }}"></div>
-    <div class="lg:col-span-3"><label class="block text-sm font-semibold">Availability</label><input class="mt-2" name="availability" value="{{ request.GET.availability }}" placeholder="Monday"></div>
+  <form method="get" class="flex flex-wrap items-end gap-4">
+    <div class="min-w-[260px] flex-1"><label class="flex items-center gap-2 text-sm font-semibold"><span class="material-symbols-rounded text-green-600">search</span>Search</label><input class="mt-2" name="q" value="{{ request.GET.q }}" placeholder="Name, email, phone, license"></div>
+    <div class="min-w-[190px]"><label class="block text-sm font-semibold">Specialization</label><input class="mt-2" name="specialization" value="{{ request.GET.specialization }}"></div>
+    <div class="min-w-[170px]"><label class="block text-sm font-semibold">Availability</label><input class="mt-2" name="availability" value="{{ request.GET.availability }}" placeholder="Monday"></div>
     <button class="rounded-2xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white">Filter</button>
   </form>
 </section>

@@ -32,6 +32,8 @@ def calculate_age(date_of_birth):
 
 def base_patient_queryset(request):
     patients = PatientProfile.objects.select_related("user").prefetch_related("appointments", "treatments")
+    if request.user.role == User.Role.DENTIST:
+        patients = patients.filter(appointments__dentist__user=request.user)
     search = request.GET.get("q", "").strip()
     gender = request.GET.get("gender", "").strip()
     status = request.GET.get("status", "").strip()

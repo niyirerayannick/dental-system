@@ -32,7 +32,7 @@ def filtered_appointments(request):
     return qs
 
 
-@role_required(User.Role.ADMIN, User.Role.DENTIST, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
 def appointment_list(request):
     form = AppointmentManageForm()
     modal_open = False
@@ -100,7 +100,7 @@ def appointment_payload(appointment):
     }
 
 
-@role_required(User.Role.ADMIN, User.Role.DENTIST, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
 def appointment_json(request, pk):
     appointment = get_object_or_404(Appointment.objects.select_related("patient__user", "dentist__user"), pk=pk)
     return JsonResponse({"ok": True, "record": appointment_payload(appointment)})
@@ -120,7 +120,7 @@ def appointment_update(request, pk):
 
 
 @require_POST
-@role_required(User.Role.ADMIN, User.Role.DENTIST, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
 def appointment_status(request, pk, status):
     appointment = get_object_or_404(Appointment, pk=pk)
     if status in Appointment.Status.values:

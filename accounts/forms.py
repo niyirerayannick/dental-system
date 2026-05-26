@@ -1,7 +1,7 @@
 import re
 
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm, ReadOnlyPasswordHashField, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, ReadOnlyPasswordHashField, SetPasswordForm, UserCreationForm
 from django.core.validators import validate_email
 
 from .models import User, normalize_phone
@@ -194,3 +194,90 @@ class UserAdminChangeForm(forms.ModelForm):
         if qs.exists():
             raise forms.ValidationError("A user with this phone number already exists.")
         return phone
+
+
+class DashboardUserCreateForm(UserCreationForm):
+    email = forms.EmailField(required=False, label="Email address (optional)")
+    is_active = forms.BooleanField(required=False, initial=True)
+    is_staff = forms.BooleanField(required=False)
+
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name", "phone", "email", "role", "is_active", "is_staff", "password1", "password2"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            if isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs.setdefault("class", "h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500")
+            else:
+                field.widget.attrs.setdefault("class", _BARE)
+        self.fields["phone"].validators.append(validate_rwanda_phone)
+        self.fields["password1"].widget.attrs.setdefault("placeholder", "Temporary password")
+        self.fields["password2"].widget.attrs.setdefault("placeholder", "Confirm password")
+
+    def clean_phone(self):
+        phone = normalize_phone(self.cleaned_data.get("phone", "").strip())
+        if not phone:
+            raise forms.ValidationError("Phone number is required.")
+        if User.objects.filter(phone=phone).exists():
+            raise forms.ValidationError("A user with this phone number already exists.")
+        return phone
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email", "").strip()
+        if not email:
+            return None
+        email = User.objects.normalize_email(email).lower()
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("A user with this email already exists.")
+        return email
+
+
+class DashboardUserUpdateForm(forms.ModelForm):
+    email = forms.EmailField(required=False, label="Email address (optional)")
+    is_active = forms.BooleanField(required=False)
+    is_staff = forms.BooleanField(required=False)
+
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name", "phone", "email", "role", "is_active", "is_staff"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            if isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs.setdefault("class", "h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500")
+            else:
+                field.widget.attrs.setdefault("class", _BARE)
+        self.fields["phone"].validators.append(validate_rwanda_phone)
+
+    def clean_phone(self):
+        phone = normalize_phone(self.cleaned_data.get("phone", "").strip())
+        if not phone:
+            raise forms.ValidationError("Phone number is required.")
+        qs = User.objects.filter(phone=phone)
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise forms.ValidationError("A user with this phone number already exists.")
+        return phone
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email", "").strip()
+        if not email:
+            return None
+        email = User.objects.normalize_email(email).lower()
+        qs = User.objects.filter(email=email)
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise forms.ValidationError("A user with this email already exists.")
+        return email
+
+
+class DashboardUserPasswordResetForm(SetPasswordForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.setdefault("class", _BARE)

@@ -33,7 +33,7 @@ def filtered_treatments(request):
     return qs
 
 
-@role_required(User.Role.ADMIN, User.Role.DENTIST, User.Role.RECEPTIONIST, User.Role.PATIENT)
+@role_required(User.Role.ADMIN, User.Role.DENTIST, User.Role.RECEPTIONIST)
 def treatment_list(request):
     form = TreatmentRecordForm()
     modal_open = False

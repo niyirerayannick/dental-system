@@ -29,16 +29,16 @@
 </div>
 
 <section class="mt-6 rounded-2xl bg-white p-5 shadow-sm">
-  <form method="get" class="grid gap-4 lg:grid-cols-12 lg:items-end">
-    <div class="lg:col-span-2">
+  <form method="get" class="flex flex-wrap items-end gap-4">
+    <div class="min-w-[150px]">
       <label class="block text-sm font-semibold text-gray-700">Date From</label>
       <input class="mt-2" type="date" name="date_from" value="{{ request.GET.date_from }}">
     </div>
-    <div class="lg:col-span-2">
+    <div class="min-w-[150px]">
       <label class="block text-sm font-semibold text-gray-700">Date To</label>
       <input class="mt-2" type="date" name="date_to" value="{{ request.GET.date_to }}">
     </div>
-    <div class="lg:col-span-3">
+    <div class="min-w-[220px]">
       <label class="block text-sm font-semibold text-gray-700">Dentist</label>
       <select class="mt-2" name="dentist">
         <option value="">All dentists</option>
@@ -47,7 +47,7 @@
         {% endfor %}
       </select>
     </div>
-    <div class="lg:col-span-2">
+    <div class="min-w-[180px]">
       <label class="block text-sm font-semibold text-gray-700">Appointment Status</label>
       <select class="mt-2" name="status">
         <option value="">All statuses</option>
@@ -56,7 +56,7 @@
         {% endfor %}
       </select>
     </div>
-    <div class="lg:col-span-2">
+    <div class="min-w-[170px]">
       <label class="block text-sm font-semibold text-gray-700">Report Type</label>
       <select class="mt-2" name="report_type">
         <option value="">All Reports</option>
@@ -66,7 +66,7 @@
       </select>
     </div>
     <div>
-      <button class="w-full rounded-2xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-700">Filter</button>
+      <button class="rounded-2xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-700">Filter</button>
     </div>
   </form>
 </section>

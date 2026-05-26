@@ -41,7 +41,7 @@ def filtered_invoices(request):
     return qs
 
 
-@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN)
 def invoice_list(request):
     form = InvoiceForm()
     modal_open = False
@@ -65,7 +65,7 @@ def invoice_list(request):
 
 
 @require_POST
-@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN)
 def invoice_status(request, pk, status):
     invoice = get_object_or_404(Invoice, pk=pk)
     if status in Invoice.Status.values:
@@ -77,7 +77,7 @@ def invoice_status(request, pk, status):
 
 
 @require_POST
-@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN)
 def invoice_delete(request, pk):
     get_object_or_404(Invoice, pk=pk).delete()
     if request.headers.get("x-requested-with") == "XMLHttpRequest":
@@ -102,14 +102,14 @@ def invoice_payload(invoice):
     }
 
 
-@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN)
 def invoice_json(request, pk):
     invoice = get_object_or_404(Invoice.objects.select_related("patient__user", "appointment"), pk=pk)
     return JsonResponse({"ok": True, "record": invoice_payload(invoice)})
 
 
 @require_POST
-@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN)
 def invoice_update(request, pk):
     invoice = get_object_or_404(Invoice, pk=pk)
     form = InvoiceForm(request.POST, instance=invoice)
@@ -123,7 +123,7 @@ def export_rows(qs):
     return [["Invoice No", "Patient", "Appointment", "Amount", "Status", "Created"]] + [[f"INV-{i.pk:05d}", str(i.patient), str(i.appointment or "-"), i.amount, i.get_status_display(), i.created_at.date()] for i in qs]
 
 
-@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN)
 def export_pdf(request):
     response = HttpResponse(content_type="application/pdf")
     response["Content-Disposition"] = 'attachment; filename="invoices.pdf"'
@@ -133,7 +133,7 @@ def export_pdf(request):
     return response
 
 
-@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN)
 def export_excel(request):
     wb = Workbook()
     ws = wb.active

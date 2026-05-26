@@ -2,6 +2,12 @@ from django.urls import path
 
 from .views import (
     admin_dashboard,
+    admin_user_add,
+    admin_user_delete,
+    admin_user_detail,
+    admin_user_edit,
+    admin_user_reset_password,
+    admin_users,
     dentist_dashboard,
     patient_appointments_page,
     patient_book_page,
@@ -24,6 +30,12 @@ app_name = "dashboard"
 urlpatterns = [
     path("", role_dashboard_redirect, name="redirect"),
     path("admin/", admin_dashboard, name="admin"),
+    path("admin/users/", admin_users, name="admin_users"),
+    path("admin/users/add/", admin_user_add, name="admin_user_add"),
+    path("admin/users/<int:pk>/", admin_user_detail, name="admin_user_detail"),
+    path("admin/users/<int:pk>/edit/", admin_user_edit, name="admin_user_edit"),
+    path("admin/users/<int:pk>/reset-password/", admin_user_reset_password, name="admin_user_reset_password"),
+    path("admin/users/<int:pk>/delete/", admin_user_delete, name="admin_user_delete"),
     path("dentist/", dentist_dashboard, name="dentist"),
     path("dentist/appointments/<int:pk>/<str:status>/", update_appointment_status, name="dentist_appointment_status"),
     path("receptionist/", receptionist_dashboard, name="receptionist"),

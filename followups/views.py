@@ -44,7 +44,7 @@ def _followup_ctx(request):
     }
 
 
-@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN, User.Role.DENTIST, User.Role.RECEPTIONIST)
 def followup_list(request):
     today = tz.localdate()
     modal_open = False
@@ -59,6 +59,8 @@ def followup_list(request):
             return redirect("followups:list")
 
     qs = FollowUp.objects.select_related("patient__user", "appointment", "assigned_to")
+    if request.user.role == User.Role.DENTIST:
+        qs = qs.filter(assigned_to=request.user)
 
     # Filters
     status_filter = request.GET.get("status", "")
@@ -103,9 +105,12 @@ def followup_list(request):
 
 
 @require_POST
-@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN, User.Role.DENTIST, User.Role.RECEPTIONIST)
 def followup_status(request, pk, status):
-    fu = get_object_or_404(FollowUp, pk=pk)
+    qs = FollowUp.objects.all()
+    if request.user.role == User.Role.DENTIST:
+        qs = qs.filter(assigned_to=request.user)
+    fu = get_object_or_404(qs, pk=pk)
     if status in FollowUp.Status.values:
         fu.status = status
         fu.save(update_fields=["status"])
@@ -114,8 +119,11 @@ def followup_status(request, pk, status):
 
 
 @require_POST
-@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN, User.Role.DENTIST, User.Role.RECEPTIONIST)
 def followup_delete(request, pk):
-    get_object_or_404(FollowUp, pk=pk).delete()
+    qs = FollowUp.objects.all()
+    if request.user.role == User.Role.DENTIST:
+        qs = qs.filter(assigned_to=request.user)
+    get_object_or_404(qs, pk=pk).delete()
     messages.success(request, "Follow-up deleted.")
     return redirect("followups:list")

@@ -139,8 +139,6 @@
           <span class="material-symbols-rounded text-green-600">healing</span>
           <h2 class="text-lg font-bold text-gray-900">Treatment History</h2>
         </div>
-        <a href="{% url 'dashboard:patient_treatments' %}"
-           class="text-xs font-semibold text-green-600 hover:text-green-800">View all →</a>
       </div>
       <div class="divide-y divide-gray-100">
         {% for treatment in treatments %}
@@ -232,8 +230,6 @@
           <span class="material-symbols-rounded text-green-600">receipt_long</span>
           <h2 class="text-lg font-bold text-gray-900">My Invoices</h2>
         </div>
-        <a href="{% url 'dashboard:patient_invoices' %}"
-           class="text-xs font-semibold text-green-600 hover:text-green-800">View all →</a>
       </div>
 
       <div class="divide-y divide-gray-100">

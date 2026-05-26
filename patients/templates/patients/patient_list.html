@@ -34,12 +34,12 @@
 </div>
 
 <section class="mt-6 rounded-2xl bg-white p-5 shadow-sm">
-    <form method="get" class="grid gap-4 lg:grid-cols-12 lg:items-end">
-        <div class="lg:col-span-4">
+    <form method="get" class="flex flex-wrap items-end gap-4">
+        <div class="min-w-[240px] flex-1">
             <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-lg text-green-600">search</span> Search</label>
             <input type="search" name="q" value="{{ filters.q }}" placeholder="Name, phone, or email" class="mt-2">
         </div>
-        <div class="lg:col-span-2">
+        <div class="min-w-[150px]">
             <label class="block text-sm font-semibold text-gray-700">Gender</label>
             <select name="gender" class="mt-2">
                 <option value="">All genders</option>
@@ -48,7 +48,7 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="lg:col-span-2">
+        <div class="min-w-[130px]">
             <label class="block text-sm font-semibold text-gray-700">Status</label>
             <select name="status" class="mt-2">
                 <option value="">All</option>
@@ -56,7 +56,7 @@
                 <option value="inactive" {% if filters.status == "inactive" %}selected{% endif %}>Inactive</option>
             </select>
         </div>
-        <div class="lg:col-span-2">
+        <div class="min-w-[170px]">
             <label class="block text-sm font-semibold text-gray-700">Appointment</label>
             <select name="appointment_status" class="mt-2">
                 <option value="">All</option>
@@ -65,7 +65,7 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="flex gap-2 lg:col-span-2">
+        <div class="flex gap-2">
             <button class="flex-1 rounded-2xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700">Filter</button>
             <a href="{% url 'patients:list' %}" class="rounded-2xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-50">Clear</a>
         </div>
@@ -271,4 +271,3 @@
     }
 </script>
 {% endblock %}
-

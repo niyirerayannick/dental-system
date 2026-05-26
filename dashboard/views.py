@@ -2,12 +2,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import json
 
+from django.core.exceptions import PermissionDenied
 from django.db import IntegrityError
 from django.db.models import Count, Q, Sum
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from accounts.models import User
+from accounts.forms import DashboardUserCreateForm, DashboardUserPasswordResetForm, DashboardUserUpdateForm
 from accounts.permissions import get_dashboard_url_for_user, role_required
 from appointments.forms import AppointmentBookingForm, AppointmentManageForm
 from treatments.forms import DentistTreatmentForm
@@ -114,6 +116,13 @@ def get_dentist_profile(user):
     return DentistProfile.objects.filter(user=user).first()
 
 
+def ensure_role_profile(user):
+    if user.role == User.Role.PATIENT:
+        PatientProfile.objects.get_or_create(user=user)
+    elif user.role == User.Role.DENTIST:
+        DentistProfile.ensure_for_user(user)
+
+
 def _patient_ctx(user):
     from notifications.models import Notification
     return {"unread_count": Notification.objects.filter(user=user, is_read=False).count()}
@@ -160,6 +169,115 @@ def _handle_patient_booking(request, profile, success_redirect):
 @role_required(User.Role.ADMIN)
 def admin_dashboard(request):
     return render(request, "dashboard/dashboard.html", admin_dashboard_context())
+
+
+@role_required(User.Role.ADMIN)
+def admin_users(request):
+    search = request.GET.get("q", "").strip()
+    role_filter = request.GET.get("role", "").strip()
+    users = User.objects.order_by("last_name", "first_name", "phone")
+
+    if search:
+        users = users.filter(
+            Q(first_name__icontains=search)
+            | Q(last_name__icontains=search)
+            | Q(email__icontains=search)
+            | Q(phone__icontains=search)
+        )
+    if role_filter:
+        users = users.filter(role=role_filter)
+
+    return render(
+        request,
+        "dashboard/admin_users.html",
+        {
+            "users": users,
+            "role_choices": User.Role.choices,
+            "search": search,
+            "role_filter": role_filter,
+        },
+    )
+
+
+@role_required(User.Role.ADMIN)
+def admin_user_add(request):
+    create_form = DashboardUserCreateForm()
+    if request.method == "POST":
+        create_form = DashboardUserCreateForm(request.POST)
+        if create_form.is_valid():
+            user = create_form.save()
+            ensure_role_profile(user)
+            messages.success(request, f"{user.full_name or user.phone} was added successfully.")
+            return redirect("dashboard:admin_users")
+
+    return render(
+        request,
+        "dashboard/admin_user_add.html",
+        {"form": create_form},
+    )
+
+
+@role_required(User.Role.ADMIN)
+def admin_user_edit(request, pk):
+    user_obj = get_object_or_404(User, pk=pk)
+    form = DashboardUserUpdateForm(instance=user_obj)
+
+    if request.method == "POST":
+        form = DashboardUserUpdateForm(request.POST, instance=user_obj)
+        if form.is_valid():
+            user_obj = form.save()
+            ensure_role_profile(user_obj)
+            messages.success(request, "User information updated.")
+            return redirect("dashboard:admin_users")
+
+    return render(request, "dashboard/admin_user_edit.html", {"managed_user": user_obj, "form": form})
+
+
+@role_required(User.Role.ADMIN)
+def admin_user_detail(request, pk):
+    user_obj = get_object_or_404(User, pk=pk)
+    patient_profile = PatientProfile.objects.filter(user=user_obj).first()
+    dentist_profile = DentistProfile.objects.filter(user=user_obj).first()
+    return render(
+        request,
+        "dashboard/admin_user_detail.html",
+        {
+            "managed_user": user_obj,
+            "patient_profile": patient_profile,
+            "dentist_profile": dentist_profile,
+        },
+    )
+
+
+@role_required(User.Role.ADMIN)
+def admin_user_delete(request, pk):
+    user_obj = get_object_or_404(User, pk=pk)
+    if user_obj.pk == request.user.pk:
+        messages.error(request, "You cannot delete your own account while you are logged in.")
+        return redirect("dashboard:admin_users")
+
+    if request.method == "POST":
+        label = user_obj.full_name or user_obj.phone
+        user_obj.delete()
+        messages.success(request, f"{label} was deleted.")
+        return redirect("dashboard:admin_users")
+
+    return render(request, "dashboard/admin_user_delete.html", {"managed_user": user_obj})
+
+
+@role_required(User.Role.ADMIN)
+def admin_user_reset_password(request, pk):
+    user_obj = get_object_or_404(User, pk=pk)
+    form = DashboardUserPasswordResetForm(user_obj)
+
+    if request.method == "POST":
+        form = DashboardUserPasswordResetForm(user_obj, request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "User password reset successfully.")
+            return redirect("dashboard:admin_users")
+
+    return render(request, "dashboard/admin_user_reset_password.html", {"managed_user": user_obj, "form": form})
 
 
 @role_required(User.Role.DENTIST)
@@ -627,28 +745,12 @@ def patient_notifications_page(request):
 
 @role_required(User.Role.PATIENT)
 def patient_treatments_page(request):
-    profile = get_patient_profile(request.user)
-    treatments = (
-        Treatment.objects.filter(patient=profile)
-        .select_related("dentist__user", "appointment")
-        .order_by("-treatment_date")
-    )
-    ctx = _patient_ctx(request.user)
-    ctx["treatments"] = treatments
-    return render(request, "dashboard/patient/treatments.html", ctx)
+    raise PermissionDenied
 
 
 @role_required(User.Role.PATIENT)
 def patient_invoices_page(request):
-    profile = get_patient_profile(request.user)
-    invoices = (
-        Invoice.objects.filter(patient=profile)
-        .select_related("appointment")
-        .order_by("-created_at")
-    )
-    ctx = _patient_ctx(request.user)
-    ctx["invoices"] = invoices
-    return render(request, "dashboard/patient/invoices.html", ctx)
+    raise PermissionDenied
 
 
 @role_required(User.Role.RECEPTIONIST)

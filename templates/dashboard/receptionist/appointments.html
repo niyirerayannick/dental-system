@@ -105,7 +105,7 @@
       <span class="ml-2 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-500 px-1.5 text-xs font-bold text-white">{{ pending_appointments|length }}</span>
       {% endif %}
     </h2>
-    <a href="{% url 'appointments:list' %}" class="text-sm font-semibold text-green-700 hover:text-green-800">Full list →</a>
+    <a href="{% url 'dashboard:receptionist_appointments' %}" class="text-sm font-semibold text-green-700 hover:text-green-800">Full list →</a>
   </div>
 
   {% if pending_appointments %}

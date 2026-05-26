@@ -47,7 +47,7 @@ def _apply_filters(request):
     return appointments, invoices, treatments
 
 
-@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN)
 def report_list(request):
     appointments, invoices, treatments = _apply_filters(request)
 
@@ -138,7 +138,7 @@ def _treatment_rows(qs):
     return rows
 
 
-@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN)
 def export_pdf(request):
     appointments, invoices, treatments = _apply_filters(request)
     buffer = BytesIO()
@@ -156,7 +156,7 @@ def export_pdf(request):
     return response
 
 
-@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN)
 def export_excel(request):
     appointments, invoices, treatments = _apply_filters(request)
     wb = Workbook()

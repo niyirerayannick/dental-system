@@ -39,7 +39,7 @@ def filtered_dentists(request):
     return qs
 
 
-@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN)
 def dentist_list(request):
     form = DentistForm()
     edit_form = DentistEditForm()
@@ -157,7 +157,7 @@ def dentist_update(request, pk):
 
 
 @require_POST
-@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN)
 def dentist_delete(request, pk):
     dentist = get_object_or_404(DentistProfile.objects.select_related("user"), pk=pk)
     dentist.user.delete()
@@ -171,7 +171,7 @@ def export_rows(qs):
     return [["Dentist", "Email", "Phone", "Specialization", "License", "Available Days", "Hours", "Duration", "Daily Capacity", "Status"]] + [[str(dentist), dentist.user.email, dentist.user.phone, dentist.specialization, dentist.license_number, dentist.available_days, f"{dentist.available_from}-{dentist.available_to}", dentist.appointment_duration, dentist.max_patients_per_day, "Available" if dentist.user.is_active and dentist.is_available else "Inactive"] for dentist in qs]
 
 
-@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN)
 def export_pdf(request):
     response = HttpResponse(content_type="application/pdf")
     response["Content-Disposition"] = 'attachment; filename="dentists.pdf"'
@@ -181,7 +181,7 @@ def export_pdf(request):
     return response
 
 
-@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN)
 def export_excel(request):
     wb = Workbook()
     ws = wb.active

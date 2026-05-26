@@ -1,0 +1,98 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}User Management{% endblock %}
+
+{% block dashboard_content %}
+<div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <p class="text-sm font-semibold uppercase tracking-wide text-green-700">Admin</p>
+    <h1 class="mt-1 text-3xl font-bold tracking-tight text-gray-950">User management</h1>
+    <p class="mt-2 max-w-2xl text-sm text-gray-600">Add staff and patient accounts, update user details, and reset passwords.</p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <a href="{% url 'dashboard:admin_user_add' %}" class="inline-flex items-center justify-center gap-2 rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-green-700">
+      <span class="material-symbols-rounded text-base">person_add</span>
+      Add user
+    </a>
+    <a href="{% url 'dashboard:admin' %}" class="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
+      <span class="material-symbols-rounded text-base">dashboard</span>
+      Dashboard
+    </a>
+  </div>
+</div>
+
+<section class="mt-6 rounded-xl border border-gray-200 bg-white shadow-sm">
+  <div class="border-b border-gray-100 p-5">
+    <form method="get" class="flex flex-wrap items-end gap-3">
+      <div class="min-w-[240px] flex-1">
+        <label class="mb-1 block text-sm font-semibold text-gray-700" for="user-search">Search</label>
+        <input id="user-search" type="search" name="q" value="{{ search }}" placeholder="Name, email, or phone" class="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
+      </div>
+      <div class="min-w-[220px]">
+        <label class="mb-1 block text-sm font-semibold text-gray-700" for="role-filter">Role</label>
+        <select id="role-filter" name="role" class="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
+          <option value="">All roles</option>
+          {% for value,label in role_choices %}
+            <option value="{{ value }}" {% if role_filter == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button class="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-gray-900 px-4 text-sm font-semibold text-white hover:bg-gray-800">
+        <span class="material-symbols-rounded text-base">search</span>
+        Filter
+      </button>
+    </form>
+  </div>
+
+  <div class="hidden grid-cols-12 gap-4 bg-gray-50 px-5 py-3 text-xs font-bold uppercase tracking-wide text-gray-500 lg:grid">
+    <span class="col-span-3">User</span>
+    <span class="col-span-2">Phone</span>
+    <span class="col-span-2">Role</span>
+    <span class="col-span-2">Status</span>
+    <span class="col-span-3 text-right">Actions</span>
+  </div>
+  <div class="divide-y divide-gray-100">
+    {% for user in users %}
+      <div class="grid gap-3 px-5 py-4 lg:grid-cols-12 lg:items-center">
+        <div class="lg:col-span-3">
+          <p class="font-semibold text-gray-950">{{ user.full_name|default:user.phone }}</p>
+          <p class="break-all text-sm text-gray-500">{{ user.email|default:"No email saved" }}</p>
+        </div>
+        <p class="text-sm font-medium text-gray-700 lg:col-span-2">{{ user.phone }}</p>
+        <div class="lg:col-span-2">
+          <span class="inline-flex rounded-full bg-green-50 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-green-700">{{ user.get_role_display }}</span>
+        </div>
+        <div class="flex flex-wrap gap-2 lg:col-span-2">
+          <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-bold {% if user.is_active %}bg-emerald-50 text-emerald-700{% else %}bg-red-50 text-red-700{% endif %}">{% if user.is_active %}Active{% else %}Inactive{% endif %}</span>
+          {% if user.is_staff %}<span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">Staff</span>{% endif %}
+        </div>
+        <div class="flex flex-wrap gap-2 lg:col-span-3 lg:justify-end">
+          <a href="{% url 'dashboard:admin_user_detail' user.pk %}" class="inline-flex h-9 items-center justify-center gap-1 rounded-lg border border-gray-200 px-3 text-xs font-bold text-gray-700 hover:bg-gray-50">
+            <span class="material-symbols-rounded text-sm">visibility</span>
+            View
+          </a>
+          <a href="{% url 'dashboard:admin_user_edit' user.pk %}" class="inline-flex h-9 items-center justify-center gap-1 rounded-lg border border-gray-200 px-3 text-xs font-bold text-gray-700 hover:bg-gray-50">
+            <span class="material-symbols-rounded text-sm">edit</span>
+            Edit
+          </a>
+          <a href="{% url 'dashboard:admin_user_reset_password' user.pk %}" class="inline-flex h-9 items-center justify-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-3 text-xs font-bold text-amber-800 hover:bg-amber-100">
+            <span class="material-symbols-rounded text-sm">lock_reset</span>
+            Reset
+          </a>
+          {% if user.pk != request.user.pk %}
+            <a href="{% url 'dashboard:admin_user_delete' user.pk %}" class="inline-flex h-9 items-center justify-center gap-1 rounded-lg border border-red-200 bg-red-50 px-3 text-xs font-bold text-red-700 hover:bg-red-100">
+              <span class="material-symbols-rounded text-sm">delete</span>
+              Delete
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    {% empty %}
+      <div class="px-5 py-12 text-center">
+        <p class="font-semibold text-gray-900">No users found</p>
+        <p class="mt-1 text-sm text-gray-500">Try a different search or add a new user.</p>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
