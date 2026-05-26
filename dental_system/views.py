@@ -41,21 +41,13 @@ def home(request):
 
 
 def public_services(request):
-    """Public-facing services listing grouped by category."""
+    """Public-facing services listing."""
     if request.user.is_authenticated:
         return redirect("dashboard:redirect")
 
-    categories = []
     all_services = []
     try:
-        from services.models import DentalService, ServiceCategory
-        cats = ServiceCategory.objects.filter(is_active=True).prefetch_related(
-            "services"
-        )
-        for cat in cats:
-            svcs = list(cat.services.filter(is_active=True))
-            if svcs:
-                categories.append({"category": cat, "services": svcs})
+        from services.models import DentalService
         all_services = list(DentalService.objects.filter(is_active=True).select_related("category"))
     except Exception:
         pass
@@ -63,7 +55,6 @@ def public_services(request):
     footer_services = all_services[3:8]
 
     return render(request, "public/services.html", {
-        "categories": categories,
         "all_services": all_services,
         "footer_services": footer_services,
     })

@@ -1,65 +1,47 @@
-{% comment %}
-  Variables:
-    card_name   – service title
-    card_desc   – short description
-    card_index  – 1 / 2 / 3 — selects the gradient variant (optional, defaults to 1)
-    card_bg     – override gradient as full CSS string (optional; takes priority over card_index)
-{% endcomment %}
-
-<div class="bg-white rounded-2xl shadow-md overflow-hidden"
-     style="transition:box-shadow .24s,transform .24s;"
-     onmouseover="this.style.boxShadow='0 20px 44px rgba(11,122,75,.15)';this.style.transform='translateY(-6px)'"
-     onmouseout="this.style.boxShadow='';this.style.transform=''">
-
-  <!-- ── Gradient image area ── -->
-  <div class="relative flex items-center justify-center"
-       style="height:210px;
-              {% if card_bg %}{{ card_bg }}
-              {% elif card_index == 2 %}background:linear-gradient(135deg,#C5E8D8 0%,#0B7A4B 100%)
-              {% elif card_index == 3 %}background:linear-gradient(135deg,#8DC9AE 0%,#075A38 100%)
-              {% else %}background:linear-gradient(135deg,#EAF7F1 0%,#8DC9AE 100%){% endif %}">
-
-    <!-- Decorative background circle -->
-    <div style="position:absolute;bottom:-20px;right:-20px;width:100px;height:100px;
-                border-radius:50%;background:rgba(255,255,255,0.12);"></div>
-
-    <!-- Tooth silhouette -->
-    <svg style="width:90px;height:90px;opacity:.2;" fill="white" viewBox="0 0 64 64" aria-hidden="true">
-      <path d="M32 4c-5.5 0-9.5 3.5-11 7.5C19.5 9 17.5 8 15 8 10.5 8 7 11.5 7 16c0 7 5 11.5 9 16 2 2.5 3.5 5 4.5 8.5.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5c.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5C35 37 36.5 34.5 39 32c4-4 9-8.5 9-16C48 11.5 44 8 39.5 8c-2.5 0-4.5 1-6 3.5C32 8 31 4 32 4Z"/>
-    </svg>
-
-    <!-- Sparkle dots -->
-    <div style="position:absolute;top:18px;right:22px;width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.45);"></div>
-    <div style="position:absolute;top:28px;right:34px;width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.3);"></div>
-    <div style="position:absolute;top:14px;right:38px;width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,.25);"></div>
+{% load static %}
+<article class="group flex h-full flex-col overflow-hidden rounded-2xl bg-white"
+         style="border:1px solid rgba(11,122,75,.12);
+                box-shadow:0 8px 24px rgba(15,23,42,.06);
+                transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;"
+         onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 18px 40px rgba(11,122,75,.16)';this.style.borderColor='rgba(11,122,75,.28)'"
+         onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 8px 24px rgba(15,23,42,.06)';this.style.borderColor='rgba(11,122,75,.12)'">
+  <div class="relative h-48 overflow-hidden bg-[#EAF7F1]">
+    {% if svc.image %}
+    <img src="{{ svc.image.url }}" alt="{{ svc.name }}" class="h-full w-full object-cover transition duration-200 group-hover:scale-105">
+    {% else %}
+    <img src="{% static 'img/service-placeholder.svg' %}" alt="" class="h-full w-full object-cover transition duration-200 group-hover:scale-105">
+    {% endif %}
+    {% if svc.duration_minutes %}
+    <span class="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-xs font-bold text-slate-700 shadow-sm">
+      <svg style="width:13px;height:13px;" fill="none" stroke="#0B7A4B" viewBox="0 0 24 24" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>
+      </svg>
+      {{ svc.duration_minutes }} min
+    </span>
+    {% endif %}
   </div>
 
-  <!-- ── Content with floating icon ── -->
-  <div class="relative px-5 pb-6" style="padding-top:32px;">
-
-    <!-- Floating white circle icon -->
-    <div class="absolute bg-white border border-slate-100 shadow-md rounded-full flex items-center justify-center"
-         style="width:54px;height:54px;top:-27px;left:18px;box-shadow:0 4px 16px rgba(11,122,75,.15);">
-      <!-- Tooth icon in brand green -->
-      <svg style="width:24px;height:24px;" fill="none" stroke="#0B7A4B" viewBox="0 0 64 64" stroke-width="3.5">
-        <path stroke-linecap="round" stroke-linejoin="round"
-              d="M32 6c-7 0-12 4.5-14 9.5C16 13 13.5 12 11 12c-5.5 0-10 4.5-10 10 0 9 6 14 11.5 20.5 2.5 3 4.5 6.5 5.5 11 .75 3 2.5 4.5 5 4.5s4.5-1.5 5-4.5c.5 3 2.5 4.5 5 4.5s4.25-1.5 5-4.5c1-4.5 3-8 5.5-11C49 36 55 31 55 22c0-5.5-4.5-10-10-10-2.5 0-5 1-7 3C36 10 34 6 32 6Z"/>
-      </svg>
-    </div>
-
-    <h3 class="font-bold text-slate-900" style="font-size:16px;line-height:1.35;">{{ card_name }}</h3>
-    <p class="text-slate-500 mt-1.5"
-       style="font-size:13.5px;line-height:1.65;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;">
-      {{ card_desc }}
+  <div class="flex flex-1 flex-col p-5">
+    <h3 class="text-base font-extrabold leading-snug text-slate-900">{{ svc.name }}</h3>
+    <p class="mt-2 min-h-[66px] text-sm leading-relaxed text-slate-500"
+       style="display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;">
+      {% if svc.short_description %}{{ svc.short_description }}{% elif svc.description %}{{ svc.description|truncatechars:150 }}{% else %}Professional dental care by our experienced team.{% endif %}
     </p>
-    <a href="#" class="inline-flex items-center gap-1.5 font-semibold"
-       style="margin-top:14px;font-size:13.5px;color:#0B7A4B;transition:gap .18s;"
-       onmouseover="this.style.color='#075A38';" onmouseout="this.style.color='#0B7A4B';">
-      Learn More
-      <svg style="width:14px;height:14px;" fill="none" stroke="currentColor"
-           viewBox="0 0 24 24" stroke-width="2.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-      </svg>
-    </a>
+
+    <div class="mt-auto grid grid-cols-1 gap-2 pt-5 sm:grid-cols-2">
+      <a href="{% url 'pub_service_detail' svc.slug %}"
+         class="inline-flex items-center justify-center rounded-xl px-3 py-2.5 text-sm font-bold transition"
+         style="color:#0B7A4B;border:1.5px solid rgba(11,122,75,.28);"
+         onmouseover="this.style.background='#EAF7F1';this.style.borderColor='#0B7A4B'"
+         onmouseout="this.style.background='transparent';this.style.borderColor='rgba(11,122,75,.28)'">
+        Read More
+      </a>
+      <a href="{% url 'pub_book' %}?service={{ svc.pk }}"
+         class="inline-flex items-center justify-center rounded-xl px-3 py-2.5 text-sm font-bold text-white transition"
+         style="background:#0B7A4B;"
+         onmouseover="this.style.background='#075A38'" onmouseout="this.style.background='#0B7A4B'">
+        Book
+      </a>
+    </div>
   </div>
-</div>
+</article>

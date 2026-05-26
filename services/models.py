@@ -20,7 +20,7 @@ class DentalService(models.Model):
     category = models.ForeignKey(ServiceCategory, on_delete=models.PROTECT, related_name="services")
     name = models.CharField(max_length=150)
     slug = models.SlugField(max_length=180, unique=True, blank=True)
-    image = models.ImageField(upload_to="services/images/", blank=True, null=True)
+    image = models.ImageField(upload_to="services/", blank=True, null=True)
     short_description = models.CharField(max_length=300, blank=True)
     description = models.TextField(blank=True)
     full_description = models.TextField(blank=True)

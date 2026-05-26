@@ -63,10 +63,6 @@
             <span class="material-symbols-rounded text-base text-green-600">schedule</span>
             <span id="summaryDuration" class="text-sm font-semibold text-gray-800"></span>
           </div>
-          <div class="flex items-center gap-1.5">
-            <span class="material-symbols-rounded text-base text-green-600">payments</span>
-            <span id="summaryPrice" class="text-sm font-semibold text-gray-800"></span>
-          </div>
         </div>
       </div>
 
@@ -154,12 +150,11 @@
   const summaryCategory = document.getElementById('summaryCategory');
   const summaryDesc    = document.getElementById('summaryDescription');
   const summaryDuration = document.getElementById('summaryDuration');
-  const summaryPrice   = document.getElementById('summaryPrice');
   const reasonField    = document.querySelector('[name="reason"]');
 
   function loadServiceSummary(pk) {
     if (!pk) { summaryCard.classList.add('hidden'); return; }
-    fetch(`/services/api/${pk}/`)
+    fetch(`/manage/services/api/${pk}/`)
       .then(r => r.json())
       .then(svc => {
         summaryIcon.textContent      = svc.icon || 'medical_services';
@@ -167,7 +162,6 @@
         summaryCategory.textContent  = svc.category;
         summaryDesc.textContent      = svc.description || '';
         summaryDuration.textContent  = svc.duration_minutes + ' min';
-        summaryPrice.textContent     = '$' + parseFloat(svc.base_price).toFixed(2);
         if (reasonField && !reasonField.value) { reasonField.value = svc.name; }
         summaryCard.classList.remove('hidden');
       });

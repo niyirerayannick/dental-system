@@ -71,11 +71,9 @@
 
       <!-- Left: full description + image -->
       <div style="flex:1;min-width:0;">
-        {% if service.image %}
-        <img src="{{ service.image.url }}" alt="{{ service.name }}"
+        <img src="{% if service.image %}{{ service.image.url }}{% else %}{% static 'img/service-placeholder.svg' %}{% endif %}" alt="{{ service.name }}"
              style="width:100%;max-height:420px;object-fit:cover;border-radius:20px;margin-bottom:32px;
                     box-shadow:0 8px 32px rgba(11,122,75,.12);">
-        {% endif %}
 
         {% if service.full_description %}
         <div style="font-size:15.5px;color:#334155;line-height:1.8;">
@@ -189,7 +187,7 @@
         <img src="{{ rel.image.url }}" alt="{{ rel.name }}"
              style="width:100%;height:140px;object-fit:cover;display:block;">
         {% else %}
-        <div style="height:6px;background:linear-gradient(90deg,#0B7A4B,#4FA882);"></div>
+        <img src="{% static 'img/service-placeholder.svg' %}" alt="" style="width:100%;height:140px;object-fit:cover;display:block;">
         {% endif %}
         <div style="padding:18px 20px;">
           <p class="font-bold text-slate-900" style="font-size:14.5px;margin:0 0 6px;">{{ rel.name }}</p>

@@ -37,7 +37,7 @@ def service_list_api(request):
     services = (
         DentalService.objects.filter(is_active=True)
         .select_related("category")
-        .values("id", "name", "category__name", "duration_minutes", "base_price", "icon", "description")
+        .values("id", "name", "category__name", "duration_minutes", "icon", "description", "short_description")
     )
     return JsonResponse({"services": list(services)})
 
@@ -50,9 +50,8 @@ def service_detail_api(request, pk):
         "name": svc.name,
         "category": svc.category.name,
         "duration_minutes": svc.duration_minutes,
-        "base_price": str(svc.base_price),
         "icon": svc.icon,
-        "description": svc.description,
+        "description": svc.short_description or svc.description,
     })
 
 
@@ -128,6 +127,7 @@ def service_delete(request, pk):
     return redirect("services:list")
 
 
+@role_required(User.Role.ADMIN)
 def service_json(request, pk):
     svc = get_object_or_404(DentalService.objects.select_related("category"), pk=pk)
     return JsonResponse({
@@ -208,6 +208,7 @@ def category_delete(request, pk):
     return redirect("services:categories")
 
 
+@role_required(User.Role.ADMIN)
 def category_json(request, pk):
     cat = get_object_or_404(ServiceCategory, pk=pk)
     return JsonResponse({

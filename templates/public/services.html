@@ -80,129 +80,24 @@
 </section>
 
 <!-- ══════════════════════════════════════════
-     SERVICES BY CATEGORY
+     SERVICES
 ══════════════════════════════════════════ -->
 <section class="py-20 bg-white">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-    {% if categories %}
+    {% if all_services %}
 
-      {% for group in categories %}
-      <div style="margin-bottom:56px;">
+    <div class="mb-10 max-w-2xl">
+      <p class="text-sm font-bold uppercase tracking-wide" style="color:#0B7A4B;">Our Services</p>
+      <h2 class="mt-2 text-3xl font-extrabold leading-tight text-slate-900">Dental care for every smile</h2>
+      <p class="mt-3 text-slate-500">Browse our active dental services and book the care that fits your needs.</p>
+    </div>
 
-        <!-- Category header -->
-        <div class="flex items-center gap-4" style="margin-bottom:28px;">
-          <div class="rounded-full flex items-center justify-center flex-none"
-               style="width:48px;height:48px;background-color:#EAF7F1;">
-            <svg style="width:22px;height:22px;" fill="#0B7A4B" viewBox="0 0 64 64" aria-hidden="true">
-              <path d="M32 4c-5.5 0-9.5 3.5-11 7.5C19.5 9 17.5 8 15 8 10.5 8 7 11.5 7 16c0 7 5 11.5 9 16 2 2.5 3.5 5 4.5 8.5.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5c.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5C35 37 36.5 34.5 39 32c4-4 9-8.5 9-16C48 11.5 44 8 39.5 8c-2.5 0-4.5 1-6 3.5C32 8 31 4 32 4Z"/>
-            </svg>
-          </div>
-          <div>
-            <h2 class="font-extrabold text-slate-900" style="font-size:1.35rem;margin:0;">
-              {{ group.category.name }}
-            </h2>
-            {% if group.category.description %}
-            <p class="text-slate-400" style="font-size:13.5px;margin:2px 0 0;">{{ group.category.description }}</p>
-            {% endif %}
-          </div>
-          <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(11,122,75,.15),transparent);margin-left:8px;"></div>
-        </div>
-
-        <!-- Services grid -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;">
-          {% for svc in group.services %}
-          <div class="bg-white rounded-2xl overflow-hidden"
-               style="border:1.5px solid rgba(11,122,75,.1);
-                      box-shadow:0 2px 10px rgba(11,122,75,.06);
-                      transition:transform .22s,box-shadow .22s;"
-               onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(11,122,75,.14)'"
-               onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 10px rgba(11,122,75,.06)'">
-
-            <!-- Service image / placeholder -->
-            {% if svc.image %}
-            <img src="{{ svc.image.url }}" alt="{{ svc.name }}"
-                 style="width:100%;height:180px;object-fit:cover;display:block;">
-            {% else %}
-            <div style="height:6px;background:linear-gradient(90deg,#0B7A4B,#4FA882);"></div>
-            {% endif %}
-
-            <div style="padding:24px;">
-              <!-- Icon + name -->
-              <div class="flex items-start gap-4" style="margin-bottom:14px;">
-                {% if not svc.image %}
-                <div class="rounded-xl flex items-center justify-center flex-none"
-                     style="width:48px;height:48px;background-color:#EAF7F1;">
-                  <svg style="width:22px;height:22px;" fill="#0B7A4B" viewBox="0 0 64 64" aria-hidden="true">
-                    <path d="M32 4c-5.5 0-9.5 3.5-11 7.5C19.5 9 17.5 8 15 8 10.5 8 7 11.5 7 16c0 7 5 11.5 9 16 2 2.5 3.5 5 4.5 8.5.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5c.5 2 1.5 3.5 3.5 3.5s3-1.5 3.5-3.5C35 37 36.5 34.5 39 32c4-4 9-8.5 9-16C48 11.5 44 8 39.5 8c-2.5 0-4.5 1-6 3.5C32 8 31 4 32 4Z"/>
-                  </svg>
-                </div>
-                {% endif %}
-                <div style="flex:1;">
-                  <h3 class="font-bold text-slate-900" style="font-size:15.5px;margin:0 0 4px;">{{ svc.name }}</h3>
-                  <span style="font-size:11px;font-weight:600;color:#0B7A4B;background:#EAF7F1;
-                               padding:2px 9px;border-radius:9999px;">{{ group.category.name }}</span>
-                </div>
-              </div>
-
-              <!-- Description -->
-              {% if svc.short_description %}
-              <p class="text-slate-500" style="font-size:13.5px;line-height:1.65;margin-bottom:18px;">
-                {{ svc.short_description }}
-              </p>
-              {% elif svc.description %}
-              <p class="text-slate-500" style="font-size:13.5px;line-height:1.65;margin-bottom:18px;">
-                {{ svc.description|truncatechars:120 }}
-              </p>
-              {% else %}
-              <p class="text-slate-400" style="font-size:13.5px;line-height:1.65;margin-bottom:18px;font-style:italic;">
-                Professional dental care by our experienced team.
-              </p>
-              {% endif %}
-
-              <!-- Meta row -->
-              <div class="flex items-center justify-between flex-wrap" style="gap:8px;margin-bottom:18px;">
-                <span class="flex items-center gap-1.5"
-                      style="font-size:12.5px;font-weight:600;color:#475569;">
-                  <svg style="width:13px;height:13px;" fill="none" stroke="#0B7A4B" viewBox="0 0 24 24" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>
-                  </svg>
-                  {{ svc.duration_minutes }} min
-                </span>
-                <span style="font-size:11.5px;font-weight:600;color:#0B7A4B;background:#EAF7F1;
-                             padding:3px 10px;border-radius:9999px;">
-                  Free consultation
-                </span>
-              </div>
-
-              <!-- Action buttons -->
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                <a href="{% url 'pub_book' %}?service={{ svc.pk }}"
-                   class="flex items-center justify-center gap-2 font-semibold text-white"
-                   style="padding:10px 16px;border-radius:10px;font-size:13px;
-                          background:linear-gradient(135deg,#0B7A4B,#075A38);
-                          text-decoration:none;transition:opacity .2s;"
-                   onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
-                  <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                  </svg>
-                  Book
-                </a>
-                <a href="{% url 'pub_service_detail' svc.slug %}"
-                   style="padding:9px 16px;border-radius:10px;font-size:13px;font-weight:600;
-                          color:#0B7A4B;border:1.5px solid rgba(11,122,75,.3);
-                          text-align:center;text-decoration:none;transition:all .2s;"
-                   onmouseover="this.style.background='#EAF7F1';this.style.borderColor='#0B7A4B'"
-                   onmouseout="this.style.background='transparent';this.style.borderColor='rgba(11,122,75,.3)'">
-                  Details
-                </a>
-              </div>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+      {% for svc in all_services %}
+      {% include "public/partials/service_card.html" with svc=svc %}
       {% endfor %}
+    </div>
 
     {% else %}
     <!-- Empty state -->
