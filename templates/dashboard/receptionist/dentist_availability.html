@@ -1,0 +1,86 @@
+{% extends "dashboard/receptionist_base.html" %}
+{% block title %}Dentist Availability{% endblock %}
+
+{% block receptionist_content %}
+<div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+        <p class="text-sm font-semibold uppercase tracking-wide text-green-600">Front desk</p>
+        <h1 class="mt-1 text-3xl font-bold text-gray-900">Dentist availability</h1>
+        <p class="mt-2 text-sm text-gray-500">Check working hours, booked load, and the next open slot before booking.</p>
+    </div>
+    <a href="{% url 'dashboard:receptionist_appointments' %}" class="inline-flex items-center gap-2 rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-700">
+        <span class="material-symbols-rounded text-lg">add_circle</span>
+        Book from dashboard
+    </a>
+</div>
+
+<section class="overflow-hidden rounded-2xl bg-white shadow-sm">
+    <div class="border-b border-gray-100 px-5 py-4">
+        <form method="get" class="flex flex-wrap items-center gap-3">
+            <div class="flex min-w-[270px] flex-1 items-center gap-2">
+                <label class="whitespace-nowrap text-sm font-semibold text-gray-700">Search</label>
+                <input name="q" value="{{ search }}" placeholder="Dentist name, phone, specialty" class="h-10 rounded-xl border border-gray-200 bg-white px-3 text-sm shadow-sm focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
+            </div>
+            <div class="flex min-w-[190px] items-center gap-2">
+                <label class="whitespace-nowrap text-sm font-semibold text-gray-700">Date</label>
+                <input type="date" name="date" value="{{ selected_date|date:'Y-m-d' }}" class="h-10 rounded-xl border border-gray-200 bg-white px-3 text-sm shadow-sm focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
+            </div>
+            <div class="flex min-w-[210px] items-center gap-2">
+                <label class="whitespace-nowrap text-sm font-semibold text-gray-700">Status</label>
+                <select name="status" class="h-10 rounded-xl border border-gray-200 bg-white px-3 text-sm shadow-sm focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
+                    <option value="">All statuses</option>
+                    <option value="available" {% if status_filter == "available" %}selected{% endif %}>Available</option>
+                    <option value="busy" {% if status_filter == "busy" %}selected{% endif %}>Busy</option>
+                    <option value="off_duty" {% if status_filter == "off_duty" %}selected{% endif %}>Off duty</option>
+                </select>
+            </div>
+            <button class="h-10 rounded-xl bg-green-600 px-4 text-sm font-semibold text-white hover:bg-green-700">Filter</button>
+            {% if search or status_filter %}
+            <a href="{% url 'dashboard:receptionist_dentist_availability' %}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 px-4 text-sm font-semibold text-gray-600 hover:bg-gray-50">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <div class="hidden grid-cols-9 gap-4 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 xl:grid">
+        <span class="xl:col-span-2">Dentist</span>
+        <span>Specialty</span>
+        <span>Working days</span>
+        <span>Hours</span>
+        <span>Booked</span>
+        <span>Next slot</span>
+        <span>Status</span>
+        <span class="text-right">Action</span>
+    </div>
+
+    <div class="divide-y divide-gray-100">
+        {% for row in rows %}
+        <div class="grid gap-4 px-5 py-4 hover:bg-green-50 xl:grid-cols-9 xl:items-center">
+            <div class="xl:col-span-2">
+                <p class="font-semibold text-gray-900">{{ row.dentist.user.full_name|default:row.dentist.user.phone }}</p>
+                <p class="text-sm text-gray-500">{{ row.dentist.user.phone|default:"No phone" }}</p>
+            </div>
+            <p class="text-sm text-gray-600">{{ row.dentist.specialization|default:"General dentistry" }}</p>
+            <p class="text-sm text-gray-600">{{ row.working_days|default:"-" }}</p>
+            <p class="text-sm text-gray-600">{{ row.working_hours }}</p>
+            <p class="text-sm font-semibold text-gray-900">{{ row.today_count }}</p>
+            <div>
+                <p class="text-sm font-semibold text-gray-900">{{ row.next_slot }}</p>
+                {% if row.available_slots %}
+                <p class="mt-1 text-xs text-gray-500">{{ row.available_slots|join:", " }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <span class="rounded-full px-3 py-1 text-xs font-bold {% if row.status == 'available' %}bg-green-50 text-green-700{% elif row.status == 'busy' %}bg-amber-50 text-amber-700{% else %}bg-gray-100 text-gray-600{% endif %}">
+                    {{ row.status_label }}
+                </span>
+            </div>
+            <div class="flex justify-start xl:justify-end">
+                <a href="/book/?dentist={{ row.dentist.pk }}&date={{ selected_date|date:'Y-m-d' }}" class="rounded-xl border border-green-200 px-3 py-2 text-xs font-bold text-green-700 hover:bg-white">Book Appointment</a>
+            </div>
+        </div>
+        {% empty %}
+        {% include "components/empty_state.html" with title="No dentists found" message="Try changing the date, status, or search filters." %}
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

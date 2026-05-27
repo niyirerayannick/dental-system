@@ -188,7 +188,7 @@ class DashboardSidebarMenuTests(TestCase):
     def test_receptionist_sidebar_structure(self):
         user = self.make_user(User.Role.RECEPTIONIST, "0781000003")
         labels = self.labels_for(user)
-        self.assertEqual(labels, ["Dashboard", "Appointments", "Patients", "Notifications", "Follow-ups"])
+        self.assertEqual(labels, ["Dashboard", "Appointments", "Dentist Availability", "Patients", "Notifications", "Follow-ups"])
         self.assertNotIn("Ask Doctor Inbox", labels)
         self.assert_no_hidden_billing_or_treatments(labels)
 

@@ -7,7 +7,7 @@ from django.views.decorators.http import require_POST
 from accounts.models import User
 from accounts.permissions import role_required
 from .forms import DentalServiceForm, ServiceCategoryForm
-from .models import DentalService, ServiceCategory
+from .models import DentalService, ServiceCategory, ServiceImage
 
 
 def _ctx():
@@ -30,6 +30,23 @@ def _service_kpis():
     ]
 
 
+def _save_service_images(service, files):
+    files = [file for file in files if file]
+    start_order = service.gallery_images.count()
+    for offset, image in enumerate(files):
+        ServiceImage.objects.create(
+            service=service,
+            image=image,
+            sort_order=start_order + offset,
+            alt_text=service.name,
+        )
+
+
+def _service_image_url(service):
+    image = service.primary_image
+    return image.url if image else ""
+
+
 # ── Public API (no auth) ─────────────────────────────────────────────────────
 
 def service_list_api(request):
@@ -37,7 +54,7 @@ def service_list_api(request):
     services = (
         DentalService.objects.filter(is_active=True)
         .select_related("category")
-        .values("id", "name", "category__name", "duration_minutes", "icon", "description", "short_description")
+        .values("id", "name", "category__name", "icon", "description", "short_description")
     )
     return JsonResponse({"services": list(services)})
 
@@ -49,7 +66,6 @@ def service_detail_api(request, pk):
         "id": svc.pk,
         "name": svc.name,
         "category": svc.category.name,
-        "duration_minutes": svc.duration_minutes,
         "icon": svc.icon,
         "description": svc.short_description or svc.description,
     })
@@ -63,7 +79,7 @@ def service_list(request):
     cat_filter = request.GET.get("category", "")
     status_filter = request.GET.get("status", "")
 
-    qs = DentalService.objects.select_related("category")
+    qs = DentalService.objects.select_related("category").prefetch_related("gallery_images")
     if q:
         qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q))
     if cat_filter:
@@ -79,7 +95,8 @@ def service_list(request):
         form = DentalServiceForm(request.POST, request.FILES)
         modal_open = True
         if form.is_valid():
-            form.save()
+            service = form.save()
+            _save_service_images(service, request.FILES.getlist("images"))
             messages.success(request, "Service created successfully.")
             return redirect("services:list")
 
@@ -101,7 +118,8 @@ def service_update(request, pk):
     svc = get_object_or_404(DentalService, pk=pk)
     form = DentalServiceForm(request.POST, request.FILES, instance=svc)
     if form.is_valid():
-        form.save()
+        service = form.save()
+        _save_service_images(service, request.FILES.getlist("images"))
         messages.success(request, "Service updated successfully.")
     else:
         messages.error(request, "Could not save service. Please check the form.")
@@ -127,9 +145,30 @@ def service_delete(request, pk):
     return redirect("services:list")
 
 
+@require_POST
+@role_required(User.Role.ADMIN)
+def service_image_delete(request, pk):
+    image = get_object_or_404(ServiceImage, pk=pk)
+    image.delete()
+    messages.success(request, "Service image removed.")
+    return redirect("services:list")
+
+
 @role_required(User.Role.ADMIN)
 def service_json(request, pk):
-    svc = get_object_or_404(DentalService.objects.select_related("category"), pk=pk)
+    svc = get_object_or_404(
+        DentalService.objects.select_related("category").prefetch_related("gallery_images"),
+        pk=pk,
+    )
+    images = [
+        {
+            "id": image.pk,
+            "url": image.image.url,
+            "alt_text": image.alt_text or svc.name,
+        }
+        for image in svc.gallery_images.all()
+        if image.image
+    ]
     return JsonResponse({
         "ok": True,
         "record": {
@@ -139,11 +178,10 @@ def service_json(request, pk):
             "short_description": svc.short_description,
             "description": svc.description,
             "full_description": svc.full_description,
-            "duration_minutes": svc.duration_minutes,
-            "base_price": str(svc.base_price),
             "icon": svc.icon,
             "is_active": svc.is_active,
-            "image_url": svc.image.url if svc.image else "",
+            "image_url": _service_image_url(svc),
+            "images": images,
         },
     })
 

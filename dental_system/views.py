@@ -15,7 +15,7 @@ def home(request):
     footer_services = []
     try:
         from services.models import DentalService
-        qs = DentalService.objects.filter(is_active=True).select_related("category")
+        qs = DentalService.objects.filter(is_active=True).select_related("category").prefetch_related("gallery_images")
         featured_services = list(qs[:3])
         footer_services = list(qs[3:8])
     except Exception:
@@ -48,7 +48,12 @@ def public_services(request):
     all_services = []
     try:
         from services.models import DentalService
-        all_services = list(DentalService.objects.filter(is_active=True).select_related("category"))
+        all_services = list(
+            DentalService.objects
+            .filter(is_active=True)
+            .select_related("category")
+            .prefetch_related("gallery_images")
+        )
     except Exception:
         pass
 
@@ -82,16 +87,26 @@ def public_book(request):
 def public_service_detail(request, slug):
     """Public detail page for a single dental service."""
     from services.models import DentalService
-    svc = DentalService.objects.filter(slug=slug, is_active=True).select_related("category").first()
+    svc = (
+        DentalService.objects
+        .filter(slug=slug, is_active=True)
+        .select_related("category")
+        .prefetch_related("gallery_images")
+        .first()
+    )
     if not svc:
         from django.http import Http404
         raise Http404
 
     related = list(
         DentalService.objects.filter(is_active=True, category=svc.category)
+        .select_related("category")
+        .prefetch_related("gallery_images")
         .exclude(pk=svc.pk)[:3]
     )
-    footer_services = list(DentalService.objects.filter(is_active=True).select_related("category")[3:8])
+    footer_services = list(
+        DentalService.objects.filter(is_active=True).select_related("category").prefetch_related("gallery_images")[3:8]
+    )
 
     return render(request, "public/service_detail.html", {
         "service": svc,

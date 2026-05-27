@@ -40,6 +40,7 @@ ROLE_MENUS = {
     User.Role.RECEPTIONIST: [
         {"label": "Dashboard", "icon": "dashboard", "url_name": "dashboard:receptionist", "active_url_names": {"receptionist"}},
         {"label": "Appointments", "icon": "calendar_month", "url_name": "dashboard:receptionist_appointments", "active_url_names": {"receptionist_appointments"}},
+        {"label": "Dentist Availability", "icon": "event_available", "url_name": "dashboard:receptionist_dentist_availability", "active_url_names": {"receptionist_dentist_availability"}},
         {"label": "Patients", "icon": "groups", "url_name": "patients:list", "active_namespaces": {"patients"}},
         {"label": "Notifications", "icon": "notifications", "url_name": "dashboard:receptionist_notifications", "active_url_names": {"receptionist_notifications"}},
         {"label": "Follow-ups", "icon": "next_plan", "url_name": "followups:list", "active_namespaces": {"followups"}},

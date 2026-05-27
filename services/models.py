@@ -25,7 +25,6 @@ class DentalService(models.Model):
     description = models.TextField(blank=True)
     full_description = models.TextField(blank=True)
     duration_minutes = models.PositiveIntegerField(default=30, help_text="Duration in minutes")
-    base_price = models.DecimalField(max_digits=10, decimal_places=2)
     icon = models.CharField(max_length=50, default="medical_services")
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -47,3 +46,24 @@ class DentalService(models.Model):
                 counter += 1
             self.slug = slug
         super().save(*args, **kwargs)
+
+    @property
+    def primary_image(self):
+        gallery_image = self.gallery_images.filter(image__isnull=False).first()
+        if gallery_image:
+            return gallery_image.image
+        return self.image
+
+
+class ServiceImage(models.Model):
+    service = models.ForeignKey(DentalService, on_delete=models.CASCADE, related_name="gallery_images")
+    image = models.ImageField(upload_to="services/")
+    alt_text = models.CharField(max_length=160, blank=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["sort_order", "created_at", "pk"]
+
+    def __str__(self):
+        return self.alt_text or f"{self.service.name} image"

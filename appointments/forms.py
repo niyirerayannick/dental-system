@@ -53,7 +53,6 @@ class AppointmentBookingForm(forms.ModelForm):
         cleaned_data = super().clean()
         svc = cleaned_data.get("service")
         if svc:
-            cleaned_data.setdefault("estimated_cost", svc.base_price)
             cleaned_data.setdefault("estimated_duration", svc.duration_minutes)
             if not cleaned_data.get("reason"):
                 cleaned_data["reason"] = svc.name
@@ -79,7 +78,6 @@ class AppointmentBookingForm(forms.ModelForm):
         instance = super().save(commit=False)
         svc = self.cleaned_data.get("service")
         if svc:
-            instance.estimated_cost = svc.base_price
             instance.estimated_duration = svc.duration_minutes
         if commit:
             instance.save()

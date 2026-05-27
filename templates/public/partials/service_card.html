@@ -6,19 +6,15 @@
          onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 18px 40px rgba(11,122,75,.16)';this.style.borderColor='rgba(11,122,75,.28)'"
          onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 8px 24px rgba(15,23,42,.06)';this.style.borderColor='rgba(11,122,75,.12)'">
   <div class="relative h-48 overflow-hidden bg-[#EAF7F1]">
-    {% if svc.image %}
-    <img src="{{ svc.image.url }}" alt="{{ svc.name }}" class="h-full w-full object-cover transition duration-200 group-hover:scale-105">
-    {% else %}
-    <img src="{% static 'images/default-service.svg' %}" alt="{{ svc.name }}" class="h-full w-full object-cover transition duration-200 group-hover:scale-105">
-    {% endif %}
-    {% if svc.duration_minutes %}
-    <span class="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-xs font-bold text-slate-700 shadow-sm">
-      <svg style="width:13px;height:13px;" fill="none" stroke="#0B7A4B" viewBox="0 0 24 24" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>
-      </svg>
-      {{ svc.duration_minutes }} min
-    </span>
-    {% endif %}
+    {% with first_image=svc.gallery_images.first %}
+      {% if first_image and first_image.image %}
+      <img src="{{ first_image.image.url }}" alt="{{ first_image.alt_text|default:svc.name }}" class="h-full w-full object-cover transition duration-200 group-hover:scale-105">
+      {% elif svc.image %}
+      <img src="{{ svc.image.url }}" alt="{{ svc.name }}" class="h-full w-full object-cover transition duration-200 group-hover:scale-105">
+      {% else %}
+      <img src="{% static 'images/default-service.svg' %}" alt="{{ svc.name }}" class="h-full w-full object-cover transition duration-200 group-hover:scale-105">
+      {% endif %}
+    {% endwith %}
   </div>
 
   <div class="flex flex-1 flex-col p-5">
@@ -40,7 +36,7 @@
          class="inline-flex items-center justify-center rounded-xl px-3 py-2.5 text-sm font-bold text-white transition"
          style="background:#0B7A4B;"
          onmouseover="this.style.background='#075A38'" onmouseout="this.style.background='#0B7A4B'">
-        Book
+        Book Appointment
       </a>
     </div>
   </div>

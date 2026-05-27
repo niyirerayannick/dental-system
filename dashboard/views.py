@@ -5,8 +5,10 @@ import json
 from django.core.exceptions import PermissionDenied
 from django.db import IntegrityError
 from django.db.models import Count, Max, Q, Sum
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone as tz
 from django.views.decorators.http import require_POST
 
 from accounts.models import User
@@ -422,16 +424,28 @@ def dentist_appointment_detail(request, pk):
 def dentist_my_patients(request):
     dentist = get_dentist_profile(request.user)
     patients = PatientProfile.objects.none()
+    today = tz.localdate()
     if dentist:
         patients = (
             PatientProfile.objects.filter(appointments__dentist=dentist)
             .select_related("user")
             .annotate(appointment_count=Count("appointments", filter=Q(appointments__dentist=dentist), distinct=True))
             .annotate(last_appointment=Max("appointments__appointment_date", filter=Q(appointments__dentist=dentist)))
+            .annotate(
+                next_appointment=Max(
+                    "appointments__appointment_date",
+                    filter=Q(
+                        appointments__dentist=dentist,
+                        appointments__appointment_date__gte=today,
+                        appointments__status__in=[Appointment.Status.PENDING, Appointment.Status.APPROVED],
+                    ),
+                )
+            )
             .distinct()
         )
 
     search = request.GET.get("q", "").strip()
+    appointment_status = request.GET.get("appointment_status", "").strip()
     if search:
         patients = patients.filter(
             Q(user__first_name__icontains=search)
@@ -439,11 +453,19 @@ def dentist_my_patients(request):
             | Q(user__phone__icontains=search)
             | Q(user__email__icontains=search)
         )
+    if dentist and appointment_status:
+        patients = patients.filter(appointments__dentist=dentist, appointments__status=appointment_status)
 
+    paginator = Paginator(patients.order_by("-last_appointment", "user__first_name"), 12)
+    page_obj = paginator.get_page(request.GET.get("page"))
     return render(request, "dashboard/dentist/my_patients.html", {
         "dentist": dentist,
-        "patients": patients.order_by("-last_appointment", "user__first_name"),
+        "patients": page_obj,
+        "page_obj": page_obj,
         "search": search,
+        "appointment_status": appointment_status,
+        "status_choices": Appointment.Status.choices,
+        "today": today,
     })
 
 
@@ -616,6 +638,84 @@ def dentist_followup_status(request, pk, status):
         followup.save(update_fields=["status"])
         messages.success(request, f"Follow-up marked as {followup.get_status_display().lower()}.")
     return redirect("dashboard:dentist_followups")
+
+
+@role_required(User.Role.RECEPTIONIST)
+def receptionist_dentist_availability_page(request):
+    from appointments.services import booked_count, dentist_available_days, generate_time_slots, get_day_schedule, is_dentist_active, is_working_date
+
+    selected_date = tz.localdate()
+    date_value = request.GET.get("date", "").strip()
+    if date_value:
+        from django.utils.dateparse import parse_date
+
+        selected_date = parse_date(date_value) or selected_date
+
+    search = request.GET.get("q", "").strip()
+    status_filter = request.GET.get("status", "").strip()
+    dentists = DentistProfile.objects.select_related("user").prefetch_related("day_schedules").order_by("user__first_name", "user__last_name")
+    if search:
+        dentists = dentists.filter(
+            Q(user__first_name__icontains=search)
+            | Q(user__last_name__icontains=search)
+            | Q(user__phone__icontains=search)
+            | Q(specialization__icontains=search)
+        )
+
+    rows = []
+    for dentist in dentists:
+        active = is_dentist_active(dentist)
+        working = is_working_date(dentist, selected_date) if active else False
+        slots = generate_time_slots(dentist, selected_date) if working else []
+        today_count = booked_count(dentist, selected_date) if working else 0
+        if not active or not working:
+            status = "off_duty"
+            status_label = "Off duty"
+        elif slots:
+            status = "available"
+            status_label = "Available"
+        else:
+            status = "busy"
+            status_label = "Busy"
+
+        next_slot = slots[0] if slots else ""
+        if not next_slot and active:
+            from datetime import timedelta
+
+            for offset in range(1, 15):
+                future_date = selected_date + timedelta(days=offset)
+                future_slots = generate_time_slots(dentist, future_date)
+                if future_slots:
+                    next_slot = f"{future_date:%b %d} at {future_slots[0]}"
+                    break
+
+        schedule = get_day_schedule(dentist, selected_date)
+        if schedule:
+            working_hours = f"{schedule.start_time:%H:%M} - {schedule.end_time:%H:%M}"
+        elif working:
+            working_hours = f"{dentist.available_from:%H:%M} - {dentist.available_to:%H:%M}"
+        else:
+            working_hours = "-"
+
+        row = {
+            "dentist": dentist,
+            "working_days": ", ".join(day.title() for day in sorted(dentist_available_days(dentist))),
+            "working_hours": working_hours,
+            "today_count": today_count,
+            "next_slot": next_slot or "-",
+            "status": status,
+            "status_label": status_label,
+            "available_slots": slots[:6],
+        }
+        if not status_filter or status_filter == status:
+            rows.append(row)
+
+    return render(request, "dashboard/receptionist/dentist_availability.html", {
+        "rows": rows,
+        "selected_date": selected_date,
+        "search": search,
+        "status_filter": status_filter,
+    })
 
 
 @require_POST

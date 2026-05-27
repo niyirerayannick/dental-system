@@ -30,12 +30,6 @@
                    padding:4px 12px;border-radius:9999px;letter-spacing:.05em;text-transform:uppercase;">
         {{ service.category.name }}
       </span>
-      <span class="flex items-center gap-1.5" style="font-size:13px;font-weight:600;color:#475569;">
-        <svg style="width:14px;height:14px;" fill="none" stroke="#0B7A4B" viewBox="0 0 24 24" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>
-        </svg>
-        {{ service.duration_minutes }} minutes
-      </span>
     </div>
 
     <h1 class="font-extrabold text-slate-900 leading-tight"
@@ -71,9 +65,41 @@
 
       <!-- Left: full description + image -->
       <div style="flex:1;min-width:0;">
-        <img src="{% if service.image %}{{ service.image.url }}{% else %}{% static 'images/default-service.svg' %}{% endif %}" alt="{{ service.name }}"
-             style="width:100%;max-height:420px;object-fit:cover;border-radius:20px;margin-bottom:32px;
-                    box-shadow:0 8px 32px rgba(11,122,75,.12);">
+        {% with first_image=service.gallery_images.first %}
+          {% if first_image and first_image.image %}
+          <button type="button" onclick="openServiceLightbox('{{ first_image.image.url }}', '{{ first_image.alt_text|default:service.name|escapejs }}')"
+                  style="display:block;width:100%;border:0;background:transparent;padding:0;margin-bottom:20px;cursor:pointer;">
+            <img src="{{ first_image.image.url }}" alt="{{ first_image.alt_text|default:service.name }}"
+                 style="width:100%;max-height:420px;object-fit:cover;border-radius:20px;
+                        box-shadow:0 8px 32px rgba(11,122,75,.12);">
+          </button>
+          {% elif service.image %}
+          <button type="button" onclick="openServiceLightbox('{{ service.image.url }}', '{{ service.name|escapejs }}')"
+                  style="display:block;width:100%;border:0;background:transparent;padding:0;margin-bottom:20px;cursor:pointer;">
+            <img src="{{ service.image.url }}" alt="{{ service.name }}"
+                 style="width:100%;max-height:420px;object-fit:cover;border-radius:20px;
+                        box-shadow:0 8px 32px rgba(11,122,75,.12);">
+          </button>
+          {% else %}
+          <img src="{% static 'images/default-service.svg' %}" alt="{{ service.name }}"
+               style="width:100%;max-height:420px;object-fit:cover;border-radius:20px;margin-bottom:20px;
+                      box-shadow:0 8px 32px rgba(11,122,75,.12);">
+          {% endif %}
+        {% endwith %}
+
+        {% if service.gallery_images.all %}
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4" style="margin-bottom:32px;">
+          {% for image in service.gallery_images.all %}
+          {% if image.image %}
+          <button type="button" onclick="openServiceLightbox('{{ image.image.url }}', '{{ image.alt_text|default:service.name|escapejs }}')"
+                  style="border:0;background:transparent;padding:0;cursor:pointer;">
+            <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:service.name }}"
+                 style="width:100%;height:92px;object-fit:cover;border-radius:14px;border:2px solid rgba(11,122,75,.12);">
+          </button>
+          {% endif %}
+          {% endfor %}
+        </div>
+        {% endif %}
 
         {% if service.full_description %}
         <div style="font-size:15.5px;color:#334155;line-height:1.8;">
@@ -99,18 +125,6 @@
           <p style="font-size:11px;font-weight:700;color:#0B7A4B;letter-spacing:.1em;
                     text-transform:uppercase;margin-bottom:16px;">Service Details</p>
           <div style="display:flex;flex-direction:column;gap:14px;">
-            <div class="flex items-center gap-3">
-              <div style="width:36px;height:36px;border-radius:10px;background:#EAF7F1;
-                          display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                <svg style="width:16px;height:16px;" fill="none" stroke="#0B7A4B" viewBox="0 0 24 24" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>
-                </svg>
-              </div>
-              <div>
-                <p style="font-size:11px;color:#94a3b8;font-weight:600;margin:0;">Duration</p>
-                <p style="font-size:14px;font-weight:700;color:#1e293b;margin:0;">{{ service.duration_minutes }} minutes</p>
-              </div>
-            </div>
             <div class="flex items-center gap-3">
               <div style="width:36px;height:36px;border-radius:10px;background:#EAF7F1;
                           display:flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -183,12 +197,17 @@
                 text-decoration:none;display:block;transition:transform .22s,box-shadow .22s;"
          onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 10px 28px rgba(11,122,75,.13)'"
          onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 10px rgba(11,122,75,.06)'">
-        {% if rel.image %}
-        <img src="{{ rel.image.url }}" alt="{{ rel.name }}"
-             style="width:100%;height:140px;object-fit:cover;display:block;">
-        {% else %}
-        <img src="{% static 'images/default-service.svg' %}" alt="{{ rel.name }}" style="width:100%;height:140px;object-fit:cover;display:block;">
-        {% endif %}
+        {% with rel_image=rel.gallery_images.first %}
+          {% if rel_image and rel_image.image %}
+          <img src="{{ rel_image.image.url }}" alt="{{ rel_image.alt_text|default:rel.name }}"
+               style="width:100%;height:140px;object-fit:cover;display:block;">
+          {% elif rel.image %}
+          <img src="{{ rel.image.url }}" alt="{{ rel.name }}"
+               style="width:100%;height:140px;object-fit:cover;display:block;">
+          {% else %}
+          <img src="{% static 'images/default-service.svg' %}" alt="{{ rel.name }}" style="width:100%;height:140px;object-fit:cover;display:block;">
+          {% endif %}
+        {% endwith %}
         <div style="padding:18px 20px;">
           <p class="font-bold text-slate-900" style="font-size:14.5px;margin:0 0 6px;">{{ rel.name }}</p>
           {% if rel.short_description %}
@@ -196,12 +215,6 @@
             {{ rel.short_description|truncatechars:80 }}
           </p>
           {% endif %}
-          <span class="flex items-center gap-1.5" style="font-size:12px;font-weight:600;color:#0B7A4B;">
-            <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>
-            </svg>
-            {{ rel.duration_minutes }} min
-          </span>
         </div>
       </a>
       {% endfor %}
@@ -243,5 +256,35 @@
     </div>
   </div>
 </section>
+
+<div id="serviceLightbox" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 p-4" onclick="closeServiceLightbox()">
+  <button type="button" class="absolute right-5 top-5 rounded-full bg-white/90 p-2 text-slate-700" onclick="closeServiceLightbox()" aria-label="Close image preview">
+    <svg style="width:22px;height:22px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+    </svg>
+  </button>
+  <img id="serviceLightboxImage" src="" alt="" style="max-width:min(100%,1100px);max-height:85vh;border-radius:18px;object-fit:contain;" onclick="event.stopPropagation()">
+</div>
+
+<script>
+  function openServiceLightbox(src, alt) {
+    const lightbox = document.getElementById('serviceLightbox');
+    const image = document.getElementById('serviceLightboxImage');
+    if (!lightbox || !image) return;
+    image.src = src;
+    image.alt = alt || '';
+    lightbox.classList.remove('hidden');
+    lightbox.classList.add('flex');
+    document.body.classList.add('overflow-hidden');
+  }
+
+  function closeServiceLightbox() {
+    const lightbox = document.getElementById('serviceLightbox');
+    if (!lightbox) return;
+    lightbox.classList.add('hidden');
+    lightbox.classList.remove('flex');
+    document.body.classList.remove('overflow-hidden');
+  }
+</script>
 
 {% endblock %}

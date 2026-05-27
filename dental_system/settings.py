@@ -121,6 +121,7 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+SERVE_MEDIA = config("SERVE_MEDIA", default=DEBUG, cast=bool)
 
 LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "dashboard:redirect"
