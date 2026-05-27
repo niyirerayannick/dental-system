@@ -4,10 +4,12 @@ from django.contrib import admin
 from django.urls import include, path
 
 from .views import health, home, public_book, public_contact, public_service_detail, public_services
+from notifications.views import twilio_status_callback
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("health/", health, name="health"),
+    path("api/twilio/status-callback/", twilio_status_callback, name="twilio_status_callback"),
     path("", home, name="home"),
     # Public pages
     path("services/", public_services, name="pub_services"),

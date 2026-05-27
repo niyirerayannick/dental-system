@@ -13,8 +13,8 @@ class NotificationAdmin(admin.ModelAdmin):
 
 @admin.register(NotificationLog)
 class NotificationLogAdmin(admin.ModelAdmin):
-    list_display = ("created_at", "channel", "status", "phone_number", "patient", "appointment", "provider_sid")
-    list_filter = ("channel", "status", "provider", "created_at")
+    list_display = ("created_at", "channel", "status", "phone_number", "patient", "appointment", "fallback_sent", "provider_sid")
+    list_filter = ("channel", "status", "fallback_sent", "provider", "created_at")
     search_fields = (
         "phone_number",
         "message",

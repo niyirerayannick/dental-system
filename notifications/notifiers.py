@@ -8,7 +8,7 @@ from .message_templates import (
     appointment_message,
     patient_welcome_message,
 )
-from .services.twilio_service import send_both
+from .services.twilio_service import send_preferred
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ def _patient_phone(patient):
 
 def notify_patient_created(patient, dentist_name="our dental team"):
     try:
-        return send_both(
+        return send_preferred(
             _patient_phone(patient),
             patient_welcome_message(patient, dentist_name=dentist_name),
             patient=patient,
@@ -31,7 +31,7 @@ def notify_patient_created(patient, dentist_name="our dental team"):
 
 def notify_appointment_created(appointment):
     try:
-        return send_both(
+        return send_preferred(
             _patient_phone(appointment.patient),
             appointment_message(NEXT_APPOINTMENT, appointment),
             patient=appointment.patient,
@@ -44,7 +44,7 @@ def notify_appointment_created(appointment):
 
 def notify_appointment_confirmed(appointment):
     try:
-        return send_both(
+        return send_preferred(
             _patient_phone(appointment.patient),
             appointment_message(APPOINTMENT_CONFIRMED, appointment),
             patient=appointment.patient,
@@ -57,7 +57,7 @@ def notify_appointment_confirmed(appointment):
 
 def notify_service_completed(appointment):
     try:
-        return send_both(
+        return send_preferred(
             _patient_phone(appointment.patient),
             appointment_message(THANK_YOU_AFTER_SERVICE, appointment),
             patient=appointment.patient,

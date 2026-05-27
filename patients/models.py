@@ -10,8 +10,17 @@ class PatientProfile(models.Model):
         OTHER = "other", "Other"
         PREFER_NOT_TO_SAY = "prefer_not_to_say", "Prefer not to say"
 
+    class Language(models.TextChoices):
+        KINYARWANDA = "rw", "Kinyarwanda"
+        ENGLISH = "en", "English"
+
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="patient_profile")
     profile_image = models.ImageField(upload_to="profile_images/", null=True, blank=True)
+    preferred_language = models.CharField(
+        max_length=2,
+        choices=Language.choices,
+        default=Language.KINYARWANDA,
+    )
     date_of_birth = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=20, choices=Gender.choices, blank=True)
     address = models.TextField(blank=True)

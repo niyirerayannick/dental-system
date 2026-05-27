@@ -1,14 +1,17 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.conf import settings
 from django.db.models import Q
-from django.http import JsonResponse
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from accounts.models import User
 from accounts.permissions import get_dashboard_url_for_user, role_required
 from .models import Notification, NotificationLog
 from .services.twilio_service import send_sms, send_whatsapp
+from .services.twilio_service import handle_status_callback
 
 
 def _next_url(request):
@@ -103,3 +106,26 @@ def resend_log(request, pk):
     else:
         messages.error(request, result.get("error", "Notification resend failed."))
     return redirect(request.META.get("HTTP_REFERER") or "notifications:logs")
+
+
+def _twilio_signature_is_valid(request):
+    if not settings.TWILIO_VALIDATE_SIGNATURE:
+        return True
+    signature = request.headers.get("X-Twilio-Signature", "")
+    if not signature or not settings.TWILIO_AUTH_TOKEN:
+        return False
+    from twilio.request_validator import RequestValidator
+
+    validator = RequestValidator(settings.TWILIO_AUTH_TOKEN)
+    url = request.build_absolute_uri()
+    return validator.validate(url, request.POST.dict(), signature)
+
+
+@csrf_exempt
+@require_POST
+def twilio_status_callback(request):
+    if not _twilio_signature_is_valid(request):
+        return HttpResponseForbidden("Invalid Twilio signature.")
+    result = handle_status_callback(request.POST)
+    status = 200 if result.get("ok") else 404
+    return JsonResponse(result, status=status)

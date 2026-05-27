@@ -38,8 +38,11 @@ class NotificationLog(models.Model):
 
     class Status(models.TextChoices):
         PENDING = "pending", "Pending"
+        QUEUED = "queued", "Queued"
         SENT = "sent", "Sent"
+        DELIVERED = "delivered", "Delivered"
         FAILED = "failed", "Failed"
+        UNDELIVERED = "undelivered", "Undelivered"
 
     patient = models.ForeignKey(
         "patients.PatientProfile",
@@ -63,6 +66,21 @@ class NotificationLog(models.Model):
     provider_sid = models.CharField(max_length=100, blank=True)
     response_data = models.JSONField(default=dict, blank=True)
     error_message = models.TextField(blank=True)
+    fallback_sent = models.BooleanField(default=False)
+    fallback_log = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="fallback_for",
+    )
+    parent_log = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="fallback_attempts",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -71,6 +89,7 @@ class NotificationLog(models.Model):
         indexes = [
             models.Index(fields=["channel", "status"]),
             models.Index(fields=["created_at"]),
+            models.Index(fields=["provider_sid"]),
         ]
 
     def __str__(self):

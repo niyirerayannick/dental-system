@@ -5,6 +5,6 @@ from .models import PatientProfile
 
 @admin.register(PatientProfile)
 class PatientProfileAdmin(admin.ModelAdmin):
-    list_display = ("user", "date_of_birth", "gender", "emergency_contact")
-    list_filter = ("gender",)
+    list_display = ("user", "preferred_language", "date_of_birth", "gender", "emergency_contact")
+    list_filter = ("preferred_language", "gender")
     search_fields = ("user__first_name", "user__last_name", "user__email", "emergency_contact")

@@ -95,10 +95,16 @@ class RegisterForm(UserCreationForm):
         label="Email address",
         widget=forms.EmailInput(attrs={"placeholder": "you@example.com (optional)", "class": _BARE}),
     )
+    preferred_language = forms.ChoiceField(
+        label="Message language",
+        choices=(("rw", "Kinyarwanda"), ("en", "English")),
+        initial="rw",
+        widget=forms.Select(attrs={"class": _BARE}),
+    )
 
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "phone", "email", "password1", "password2"]
+        fields = ["first_name", "last_name", "phone", "email", "preferred_language", "password1", "password2"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

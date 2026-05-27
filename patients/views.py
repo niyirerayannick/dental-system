@@ -201,6 +201,7 @@ def patient_payload(patient):
         "email": patient.user.email,
         "phone": patient.user.phone,
         "gender": patient.gender,
+        "preferred_language": patient.preferred_language,
         "date_of_birth": patient.date_of_birth.isoformat() if patient.date_of_birth else "",
         "address": patient.address,
         "emergency_contact": patient.emergency_contact,
@@ -212,6 +213,7 @@ def patient_payload(patient):
             "email": patient.user.email,
             "phone": patient.user.phone or "-",
             "gender": patient.get_gender_display() or "-",
+            "preferred_language": patient.get_preferred_language_display(),
             "status": "Active" if patient.user.is_active else "Inactive",
         },
     }

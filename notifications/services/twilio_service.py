@@ -2,6 +2,7 @@ import logging
 import re
 
 from django.conf import settings
+from django.db import transaction
 
 from notifications.models import NotificationLog
 
@@ -66,7 +67,23 @@ def _missing_credentials(channel):
     return missing
 
 
-def _send(channel, phone, message, patient=None, appointment=None):
+FINAL_FAILURE_STATUSES = {
+    NotificationLog.Status.FAILED,
+    NotificationLog.Status.UNDELIVERED,
+}
+
+TWILIO_STATUS_MAP = {
+    "accepted": NotificationLog.Status.QUEUED,
+    "queued": NotificationLog.Status.QUEUED,
+    "sending": NotificationLog.Status.QUEUED,
+    "sent": NotificationLog.Status.SENT,
+    "delivered": NotificationLog.Status.DELIVERED,
+    "failed": NotificationLog.Status.FAILED,
+    "undelivered": NotificationLog.Status.UNDELIVERED,
+}
+
+
+def _send(channel, phone, message, patient=None, appointment=None, parent_log=None):
     log = None
     try:
         normalized_phone = normalize_rwanda_phone(phone)
@@ -79,6 +96,7 @@ def _send(channel, phone, message, patient=None, appointment=None):
             message=message,
             status=NotificationLog.Status.FAILED,
             error_message=str(exc),
+            parent_log=parent_log,
         )
         return {"ok": False, "status": "failed", "error": str(exc), "log_id": log.pk}
 
@@ -89,6 +107,7 @@ def _send(channel, phone, message, patient=None, appointment=None):
         phone_number=normalized_phone,
         message=message,
         status=NotificationLog.Status.PENDING,
+        parent_log=parent_log,
     )
 
     missing = _missing_credentials(channel)
@@ -110,11 +129,15 @@ def _send(channel, phone, message, patient=None, appointment=None):
             to_number = f"whatsapp:{normalized_phone}"
             from_number = settings.TWILIO_WHATSAPP_FROM
 
-        twilio_message = client.messages.create(
-            body=message,
-            from_=from_number,
-            to=to_number,
-        )
+        send_kwargs = {
+            "body": message,
+            "from_": from_number,
+            "to": to_number,
+        }
+        if settings.TWILIO_STATUS_CALLBACK_URL:
+            send_kwargs["status_callback"] = settings.TWILIO_STATUS_CALLBACK_URL
+
+        twilio_message = client.messages.create(**send_kwargs)
         response_data = _clean_response(twilio_message)
         log.status = NotificationLog.Status.SENT
         log.provider_sid = response_data["sid"]
@@ -131,12 +154,33 @@ def _send(channel, phone, message, patient=None, appointment=None):
         return {"ok": False, "status": "failed", "error": log.error_message, "log_id": log.pk}
 
 
-def send_sms(phone, message, patient=None, appointment=None):
-    return _send(NotificationLog.Channel.SMS, phone, message, patient=patient, appointment=appointment)
+def send_sms(phone, message, patient=None, appointment=None, parent_log=None):
+    return _send(NotificationLog.Channel.SMS, phone, message, patient=patient, appointment=appointment, parent_log=parent_log)
 
 
-def send_whatsapp(phone, message, patient=None, appointment=None):
-    return _send(NotificationLog.Channel.WHATSAPP, phone, message, patient=patient, appointment=appointment)
+def send_whatsapp(phone, message, patient=None, appointment=None, parent_log=None):
+    return _send(NotificationLog.Channel.WHATSAPP, phone, message, patient=patient, appointment=appointment, parent_log=parent_log)
+
+
+def send_preferred(phone, message, patient=None, appointment=None):
+    whatsapp_result = send_whatsapp(phone, message, patient=patient, appointment=appointment)
+    if whatsapp_result.get("ok"):
+        return {
+            "ok": True,
+            "channel": NotificationLog.Channel.WHATSAPP,
+            "result": whatsapp_result,
+            "whatsapp": whatsapp_result,
+            "sms": None,
+        }
+
+    sms_result = send_sms(phone, message, patient=patient, appointment=appointment)
+    return {
+        "ok": sms_result.get("ok", False),
+        "channel": NotificationLog.Channel.SMS if sms_result.get("ok") else None,
+        "result": sms_result,
+        "whatsapp": whatsapp_result,
+        "sms": sms_result,
+    }
 
 
 def send_both(phone, message, patient=None, appointment=None):
@@ -144,3 +188,72 @@ def send_both(phone, message, patient=None, appointment=None):
         "sms": send_sms(phone, message, patient=patient, appointment=appointment),
         "whatsapp": send_whatsapp(phone, message, patient=patient, appointment=appointment),
     }
+
+
+def normalize_twilio_status(status):
+    return TWILIO_STATUS_MAP.get(str(status or "").strip().lower(), NotificationLog.Status.PENDING)
+
+
+def handle_status_callback(payload):
+    provider_sid = payload.get("MessageSid") or payload.get("SmsSid") or payload.get("SmsMessageSid")
+    if not provider_sid:
+        return {"ok": False, "error": "Missing MessageSid."}
+
+    with transaction.atomic():
+        log = (
+            NotificationLog.objects.select_for_update()
+            .select_related("patient", "appointment", "fallback_log", "parent_log")
+            .filter(provider_sid=provider_sid)
+            .first()
+        )
+        if not log:
+            return {"ok": False, "error": "NotificationLog not found.", "sid": provider_sid}
+
+        raw_status = payload.get("MessageStatus") or payload.get("SmsStatus") or payload.get("MessageStatusCallback")
+        status = normalize_twilio_status(raw_status)
+        error_code = payload.get("ErrorCode") or ""
+        error_message = payload.get("ErrorMessage") or ""
+        response_data = dict(log.response_data or {})
+        response_data.update(
+            {
+                "callback_status": raw_status,
+                "callback_error_code": error_code,
+                "callback_error_message": error_message,
+                "callback_to": payload.get("To", ""),
+                "callback_from": payload.get("From", ""),
+            }
+        )
+
+        log.status = status
+        log.response_data = response_data
+        if error_code or error_message:
+            log.error_message = " ".join(part for part in (error_code, error_message) if part)
+        elif status not in FINAL_FAILURE_STATUSES:
+            log.error_message = ""
+
+        fallback_result = None
+        should_fallback = (
+            log.channel == NotificationLog.Channel.WHATSAPP
+            and status in FINAL_FAILURE_STATUSES
+            and not log.fallback_sent
+            and not log.fallback_log_id
+            and not log.fallback_attempts.exists()
+        )
+        if should_fallback:
+            log.fallback_sent = True
+            log.save(update_fields=["status", "response_data", "error_message", "fallback_sent", "updated_at"])
+            fallback_result = send_sms(
+                log.phone_number,
+                log.message,
+                patient=log.patient,
+                appointment=log.appointment,
+                parent_log=log,
+            )
+            fallback_log_id = fallback_result.get("log_id")
+            if fallback_log_id:
+                log.fallback_log_id = fallback_log_id
+                log.save(update_fields=["fallback_log", "updated_at"])
+        else:
+            log.save(update_fields=["status", "response_data", "error_message", "updated_at"])
+
+    return {"ok": True, "log_id": log.pk, "status": status, "fallback": fallback_result}

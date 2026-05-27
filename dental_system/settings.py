@@ -147,6 +147,8 @@ TWILIO_ACCOUNT_SID = config("TWILIO_ACCOUNT_SID", default="")
 TWILIO_AUTH_TOKEN = config("TWILIO_AUTH_TOKEN", default="")
 TWILIO_SMS_FROM = config("TWILIO_SMS_FROM", default="")
 TWILIO_WHATSAPP_FROM = config("TWILIO_WHATSAPP_FROM", default="whatsapp:+14155238886")
+TWILIO_STATUS_CALLBACK_URL = config("TWILIO_STATUS_CALLBACK_URL", default="")
+TWILIO_VALIDATE_SIGNATURE = config("TWILIO_VALIDATE_SIGNATURE", default=not DEBUG, cast=bool)
 CLINIC_NAME = config("CLINIC_NAME", default="Plan Healthcare Clinic")
 CLINIC_PHONE = config("CLINIC_PHONE", default="0780474044")
 

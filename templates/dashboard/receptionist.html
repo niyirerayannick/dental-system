@@ -278,6 +278,11 @@
           </div>
         </div>
         <div>
+          <label class="mb-1 block text-sm font-semibold text-gray-700">Message Language</label>
+          {{ patient_form.preferred_language }}
+          {% if patient_form.preferred_language.errors %}<p class="mt-1 text-xs text-red-600">{{ patient_form.preferred_language.errors.0 }}</p>{% endif %}
+        </div>
+        <div>
           <label class="mb-1 block text-sm font-semibold text-gray-700">Date of Birth</label>
           {{ patient_form.date_of_birth }}
         </div>

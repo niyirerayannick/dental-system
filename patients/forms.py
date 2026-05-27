@@ -11,7 +11,7 @@ from .models import PatientProfile
 class PatientProfileForm(forms.ModelForm):
     class Meta:
         model = PatientProfile
-        fields = ["profile_image", "date_of_birth", "gender", "address", "emergency_contact", "medical_history", "allergies"]
+        fields = ["profile_image", "preferred_language", "date_of_birth", "gender", "address", "emergency_contact", "medical_history", "allergies"]
         widgets = {
             "profile_image": forms.FileInput(attrs={"accept": "image/*", "class": "hidden", "id": "avatarFileInput"}),
             "date_of_birth": forms.DateInput(attrs={"type": "date"}),
@@ -38,6 +38,11 @@ class PatientRegistrationForm(forms.Form):
     last_name = forms.CharField(max_length=150)
     phone = forms.CharField(max_length=20, label="Phone number")
     email = forms.EmailField(required=False, label="Email address (optional)")
+    preferred_language = forms.ChoiceField(
+        label="Message language",
+        choices=PatientProfile.Language.choices,
+        initial=PatientProfile.Language.KINYARWANDA,
+    )
     date_of_birth = forms.DateField(required=False, widget=forms.DateInput(attrs={"type": "date"}))
     gender = forms.ChoiceField(required=False, choices=[("", "---------")] + list(PatientProfile.Gender.choices))
     address = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 3}))
@@ -81,6 +86,7 @@ class PatientRegistrationForm(forms.Form):
         )
         PatientProfile.objects.create(
             user=user,
+            preferred_language=self.cleaned_data.get("preferred_language") or PatientProfile.Language.KINYARWANDA,
             date_of_birth=self.cleaned_data.get("date_of_birth"),
             gender=self.cleaned_data.get("gender", ""),
             address=self.cleaned_data.get("address", ""),
@@ -95,6 +101,11 @@ class PatientForm(forms.Form):
     full_name = forms.CharField(max_length=300)
     phone = forms.CharField(max_length=20, label="Phone number")
     email = forms.EmailField(required=False, label="Email address (optional)")
+    preferred_language = forms.ChoiceField(
+        label="Message language",
+        choices=PatientProfile.Language.choices,
+        initial=PatientProfile.Language.KINYARWANDA,
+    )
     gender = forms.ChoiceField(required=False, choices=[("", "---------")] + list(PatientProfile.Gender.choices))
     date_of_birth = forms.DateField(required=False, widget=forms.DateInput(attrs={"type": "date"}))
     address = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 3}))
@@ -112,6 +123,7 @@ class PatientForm(forms.Form):
                     "full_name": instance.user.full_name,
                     "email": instance.user.email,
                     "phone": instance.user.phone,
+                    "preferred_language": instance.preferred_language,
                     "gender": instance.gender,
                     "date_of_birth": instance.date_of_birth,
                     "address": instance.address,
@@ -179,6 +191,7 @@ class PatientForm(forms.Form):
         user.save()
 
         profile.date_of_birth = self.cleaned_data.get("date_of_birth")
+        profile.preferred_language = self.cleaned_data.get("preferred_language") or PatientProfile.Language.KINYARWANDA
         profile.gender = self.cleaned_data.get("gender", "")
         profile.address = self.cleaned_data.get("address", "")
         profile.emergency_contact = self.cleaned_data.get("emergency_contact", "")

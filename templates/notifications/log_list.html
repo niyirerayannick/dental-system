@@ -51,9 +51,12 @@
       <p class="text-sm text-gray-600">{{ log.created_at|date:"Y-m-d H:i" }}</p>
       <p class="text-sm font-semibold text-gray-900">{{ log.get_channel_display }}</p>
       <p>
-        <span class="rounded-full px-2 py-1 text-xs font-bold {% if log.status == 'sent' %}bg-green-50 text-green-700{% elif log.status == 'failed' %}bg-red-50 text-red-700{% else %}bg-amber-50 text-amber-700{% endif %}">
+        <span class="rounded-full px-2 py-1 text-xs font-bold {% if log.status == 'delivered' %}bg-green-100 text-green-800{% elif log.status == 'sent' %}bg-green-50 text-green-700{% elif log.status == 'failed' or log.status == 'undelivered' %}bg-red-50 text-red-700{% elif log.status == 'queued' %}bg-blue-50 text-blue-700{% else %}bg-amber-50 text-amber-700{% endif %}">
           {{ log.get_status_display }}
         </span>
+        {% if log.fallback_sent %}
+        <span class="mt-1 inline-flex rounded-full bg-amber-50 px-2 py-1 text-xs font-bold text-amber-700">Fallback sent</span>
+        {% endif %}
       </p>
       <p class="text-sm text-gray-700">{{ log.patient|default:"-" }}</p>
       <p class="text-sm text-gray-600">{{ log.phone_number }}</p>
@@ -61,9 +64,15 @@
         <p class="line-clamp-2 text-sm text-gray-700">{{ log.message }}</p>
         {% if log.error_message %}<p class="mt-1 text-xs font-semibold text-red-600">{{ log.error_message }}</p>{% endif %}
         {% if log.provider_sid %}<p class="mt-1 text-xs text-gray-400">SID: {{ log.provider_sid }}</p>{% endif %}
+        {% if log.fallback_log %}
+          <p class="mt-1 text-xs text-amber-700">SMS fallback log #{{ log.fallback_log_id }}</p>
+        {% endif %}
+        {% if log.parent_log %}
+          <p class="mt-1 text-xs text-blue-700">Fallback for WhatsApp log #{{ log.parent_log_id }}</p>
+        {% endif %}
       </div>
       <div>
-        {% if log.status == 'failed' %}
+        {% if log.status == 'failed' or log.status == 'undelivered' %}
         <form method="post" action="{% url 'notifications:resend_log' log.pk %}">
           {% csrf_token %}
           <button class="inline-flex items-center gap-1 rounded-xl border border-green-200 px-3 py-2 text-xs font-bold text-green-700 hover:bg-green-50">

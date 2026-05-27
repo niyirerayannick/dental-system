@@ -3,7 +3,7 @@ from django.db import DatabaseError
 from django.core.management.base import BaseCommand, CommandError
 
 from notifications.models import NotificationLog
-from notifications.services.twilio_service import send_both
+from notifications.services.twilio_service import send_both, send_preferred
 from notifications.services.twilio_service import normalize_rwanda_phone
 
 
@@ -15,7 +15,12 @@ class Command(BaseCommand):
         parser.add_argument(
             "--with-log",
             action="store_true",
-            help="Use the normal notification service and create NotificationLog records.",
+            help="Use the normal preferred-channel notification service and create NotificationLog records.",
+        )
+        parser.add_argument(
+            "--both",
+            action="store_true",
+            help="Send both SMS and WhatsApp for provider testing only.",
         )
 
     def handle(self, *args, **options):
@@ -23,6 +28,13 @@ class Command(BaseCommand):
         message = "Plan Healthcare Clinic test notification. SMS and WhatsApp delivery are configured."
 
         if options["with_log"]:
+            result = send_preferred(phone, message)
+            self._write_result("WhatsApp", result["whatsapp"])
+            if result["sms"]:
+                self._write_result("SMS fallback", result["sms"])
+            return
+
+        if options["both"]:
             result = send_both(phone, message)
             self._write_result("SMS", result["sms"])
             self._write_result("WhatsApp", result["whatsapp"])
@@ -63,7 +75,10 @@ class Command(BaseCommand):
         log = self._create_log(channel=channel, phone_number=to, message=body)
         client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
         try:
-            message = client.messages.create(body=body, from_=from_, to=to)
+            kwargs = {"body": body, "from_": from_, "to": to}
+            if settings.TWILIO_STATUS_CALLBACK_URL:
+                kwargs["status_callback"] = settings.TWILIO_STATUS_CALLBACK_URL
+            message = client.messages.create(**kwargs)
         except TwilioRestException as exc:
             error = self._twilio_error_message(exc)
             self._save_log_failure(log, error, exc)
