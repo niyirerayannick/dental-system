@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 RWANDA_PHONE_RE = re.compile(r"^\+2507\d{8}$")
+ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
 
 
 def normalize_rwanda_phone(phone):
@@ -16,6 +17,8 @@ def normalize_rwanda_phone(phone):
         raise ValueError("Phone number is required.")
 
     cleaned = re.sub(r"[\s().-]", "", str(phone).strip())
+    if cleaned.lower().startswith("whatsapp:"):
+        cleaned = cleaned.split(":", 1)[1]
     digits = cleaned.lstrip("+")
 
     if digits.startswith("07") and len(digits) == 10:
@@ -41,6 +44,13 @@ def _clean_response(message):
         "error_code": getattr(message, "error_code", None),
         "error_message": getattr(message, "error_message", None),
     }
+
+
+def _twilio_error_message(exc):
+    code = getattr(exc, "code", None) or "unknown"
+    message = getattr(exc, "msg", "") or str(exc)
+    message = ANSI_RE.sub("", message).strip()
+    return f"Twilio error {code}: {message}"
 
 
 def _missing_credentials(channel):
@@ -115,10 +125,10 @@ def _send(channel, phone, message, patient=None, appointment=None):
     except Exception as exc:
         logger.exception("Twilio %s notification failed", channel)
         log.status = NotificationLog.Status.FAILED
-        log.error_message = str(exc)
+        log.error_message = _twilio_error_message(exc)
         log.response_data = {"exception": exc.__class__.__name__}
         log.save(update_fields=["status", "error_message", "response_data", "updated_at"])
-        return {"ok": False, "status": "failed", "error": str(exc), "log_id": log.pk}
+        return {"ok": False, "status": "failed", "error": log.error_message, "log_id": log.pk}
 
 
 def send_sms(phone, message, patient=None, appointment=None):
