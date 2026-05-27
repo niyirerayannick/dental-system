@@ -1,0 +1,90 @@
+{% extends "dashboard/dentist_base.html" %}
+{% block title %}Dentist Dashboard{% endblock %}
+
+{% block dentist_content %}
+<div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+        <p class="text-sm font-semibold uppercase tracking-wide text-green-600">Dentist workspace</p>
+        <h1 class="mt-1 text-3xl font-bold text-gray-900">Dashboard overview</h1>
+        <p class="mt-2 text-sm text-gray-500">A focused summary of your appointments, messages, follow-ups, and notifications.</p>
+    </div>
+    <a href="{% url 'dashboard:dentist_my_appointments' %}" class="inline-flex items-center justify-center gap-2 rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-green-700">
+        <span class="material-symbols-rounded text-lg">calendar_month</span>
+        My appointments
+    </a>
+</div>
+
+{% if not dentist %}
+<div class="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900 shadow-sm">
+    <strong>No dentist profile found.</strong> Ask an administrator to create one before appointments can be assigned to this account.
+</div>
+{% endif %}
+
+<div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+    {% for stat in stats %}
+    <div class="rounded-2xl bg-white p-5 shadow-sm">
+        <div class="flex items-start justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-400">{{ stat.label }}</p>
+                <p class="mt-2 text-3xl font-bold text-gray-900">{{ stat.value }}</p>
+            </div>
+            <span class="material-symbols-rounded flex h-11 w-11 items-center justify-center rounded-2xl bg-green-50 text-green-600">{{ stat.icon }}</span>
+        </div>
+        <span class="mt-5 inline-flex rounded-full {% if stat.tone == 'amber' %}bg-yellow-50 text-yellow-700{% else %}bg-green-50 text-green-700{% endif %} px-2.5 py-1 text-xs font-bold">{{ stat.change }}</span>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="mt-6 grid gap-6 xl:grid-cols-3">
+    <section class="overflow-hidden rounded-2xl bg-white shadow-sm">
+        <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+            <h2 class="text-lg font-bold text-gray-900">Next appointments</h2>
+            <a href="{% url 'dashboard:dentist_my_appointments' %}" class="text-sm font-semibold text-green-600">View all</a>
+        </div>
+        <div class="divide-y divide-gray-100">
+            {% for appointment in upcoming_appointments %}
+            <a href="{% url 'dashboard:dentist_appointment_detail' appointment.pk %}" class="block px-5 py-4 hover:bg-green-50">
+                <p class="font-semibold text-gray-900">{{ appointment.patient }}</p>
+                <p class="text-sm text-gray-500">{{ appointment.appointment_date|date:"M j, Y" }} at {{ appointment.appointment_time|time:"g:i A" }}</p>
+            </a>
+            {% empty %}
+            {% include "components/empty_state.html" with title="No upcoming appointments" message="Your next assigned appointments will appear here." %}
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="overflow-hidden rounded-2xl bg-white shadow-sm">
+        <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+            <h2 class="text-lg font-bold text-gray-900">Latest Ask Doctor</h2>
+            <a href="{% url 'dashboard:dentist_ask_doctor' %}" class="text-sm font-semibold text-green-600">Inbox</a>
+        </div>
+        <div class="divide-y divide-gray-100">
+            {% for message in recent_ask_messages %}
+            <a href="{% url 'ask_doctor:inbox_detail' message.conversation.pk %}" class="block px-5 py-4 hover:bg-green-50">
+                <p class="font-semibold text-gray-900">{{ message.conversation.patient.full_name|default:message.conversation.patient.phone }}</p>
+                <p class="text-sm text-gray-500">{{ message.message|truncatechars:80 }}</p>
+            </a>
+            {% empty %}
+            {% include "components/empty_state.html" with title="No recent messages" message="Patient questions assigned to you will appear here." %}
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="overflow-hidden rounded-2xl bg-white shadow-sm">
+        <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+            <h2 class="text-lg font-bold text-gray-900">Follow-ups due today</h2>
+            <a href="{% url 'dashboard:dentist_followups' %}" class="text-sm font-semibold text-green-600">Manage</a>
+        </div>
+        <div class="divide-y divide-gray-100">
+            {% for followup in followups_today %}
+            <div class="px-5 py-4">
+                <p class="font-semibold text-gray-900">{{ followup.patient }}</p>
+                <p class="text-sm text-gray-500">{{ followup.reason|truncatechars:90 }}</p>
+            </div>
+            {% empty %}
+            {% include "components/empty_state.html" with title="No follow-ups today" message="Due follow-ups will appear here." %}
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

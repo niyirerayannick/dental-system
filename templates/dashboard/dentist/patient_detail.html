@@ -1,0 +1,31 @@
+{% extends "dashboard/dentist_base.html" %}
+{% block title %}Patient Detail{% endblock %}
+
+{% block dentist_content %}
+<div class="mb-6 flex items-end justify-between gap-3">
+    <div>
+        <p class="text-sm font-semibold uppercase tracking-wide text-green-600">My patients</p>
+        <h1 class="mt-1 text-3xl font-bold text-gray-900">{{ patient }}</h1>
+        <p class="mt-2 text-sm text-gray-500">{{ patient.user.phone|default:"No phone" }}{% if patient.user.email %} · {{ patient.user.email }}{% endif %}</p>
+    </div>
+    <a href="{% url 'dashboard:dentist_my_patients' %}" class="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">Back</a>
+</div>
+
+<section class="overflow-hidden rounded-2xl bg-white shadow-sm">
+    <div class="border-b border-gray-100 px-5 py-4">
+        <h2 class="text-lg font-bold text-gray-900">Appointments with me</h2>
+    </div>
+    <div class="divide-y divide-gray-100">
+        {% for appointment in appointments %}
+        <a href="{% url 'dashboard:dentist_appointment_detail' appointment.pk %}" class="grid gap-4 px-5 py-4 hover:bg-green-50 md:grid-cols-4 md:items-center">
+            <p class="font-semibold text-gray-900">{{ appointment.appointment_date|date:"M j, Y" }}</p>
+            <p class="text-sm text-gray-600">{{ appointment.appointment_time|time:"g:i A" }}</p>
+            <div>{% include "partials/appointment_status_badge.html" with appointment=appointment %}</div>
+            <p class="text-sm text-gray-600 md:text-right">{{ appointment.reason|default:"-" }}</p>
+        </a>
+        {% empty %}
+        {% include "components/empty_state.html" with title="No appointment history" message="Appointments with this patient will appear here." %}
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

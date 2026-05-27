@@ -100,9 +100,12 @@ def appointment_payload(appointment):
     }
 
 
-@role_required(User.Role.ADMIN, User.Role.RECEPTIONIST)
+@role_required(User.Role.ADMIN, User.Role.DENTIST, User.Role.RECEPTIONIST)
 def appointment_json(request, pk):
-    appointment = get_object_or_404(Appointment.objects.select_related("patient__user", "dentist__user"), pk=pk)
+    appointments = Appointment.objects.select_related("patient__user", "dentist__user")
+    if request.user.role == User.Role.DENTIST:
+        appointments = appointments.filter(dentist__user=request.user)
+    appointment = get_object_or_404(appointments, pk=pk)
     return JsonResponse({"ok": True, "record": appointment_payload(appointment)})
 
 

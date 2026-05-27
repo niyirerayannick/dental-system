@@ -1,0 +1,69 @@
+{% extends "dashboard/dentist_base.html" %}
+{% block title %}Follow-ups{% endblock %}
+
+{% block dentist_content %}
+<div class="mb-6">
+    <p class="text-sm font-semibold uppercase tracking-wide text-green-600">Dentist dashboard</p>
+    <h1 class="mt-1 text-3xl font-bold text-gray-900">Follow-ups</h1>
+    <p class="mt-2 text-sm text-gray-500">Manage follow-ups assigned to you.</p>
+</div>
+
+<div class="grid gap-6 xl:grid-cols-12">
+    <section class="rounded-2xl bg-white p-5 shadow-sm xl:col-span-4">
+        <h2 class="text-lg font-bold text-gray-900">Add follow-up</h2>
+        <form method="post" class="mt-4 space-y-4">
+            {% csrf_token %}
+            {% for field in form %}
+            <div>
+                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}<p class="mt-1 text-xs text-red-600">{{ field.errors.0 }}</p>{% endif %}
+            </div>
+            {% endfor %}
+            <button class="w-full rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-700">Save follow-up</button>
+        </form>
+    </section>
+
+    <section class="overflow-hidden rounded-2xl bg-white shadow-sm xl:col-span-8">
+        <div class="border-b border-gray-100 px-5 py-4">
+            <form method="get" class="flex flex-wrap items-center gap-3">
+                <input type="text" name="q" value="{{ search }}" placeholder="Search patient or reason" class="h-10 min-w-[220px] rounded-xl border border-gray-200 px-3 text-sm shadow-sm">
+                <select name="status" class="h-10 rounded-xl border border-gray-200 px-3 text-sm shadow-sm">
+                    <option value="">All statuses</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <input type="date" name="date" value="{{ date_filter }}" class="h-10 rounded-xl border border-gray-200 px-3 text-sm shadow-sm">
+                <button class="h-10 rounded-xl bg-green-600 px-4 text-sm font-semibold text-white hover:bg-green-700">Filter</button>
+            </form>
+        </div>
+        <div class="divide-y divide-gray-100">
+            {% for followup in followups %}
+            <div class="px-5 py-4 hover:bg-green-50">
+                <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                        <p class="font-semibold text-gray-900">{{ followup.patient }}</p>
+                        <p class="text-sm text-gray-500">{{ followup.followup_date|date:"M j, Y" }} · {{ followup.reason }}</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="rounded-full bg-green-50 px-3 py-1 text-xs font-bold text-green-700">{{ followup.get_status_display }}</span>
+                        <a href="{% url 'dashboard:dentist_followup_edit' followup.pk %}" class="rounded-xl border border-gray-200 px-3 py-2 text-xs font-bold text-gray-700 hover:bg-white">Edit</a>
+                        {% for value, label in status_choices %}
+                        {% if followup.status != value %}
+                        <form method="post" action="{% url 'dashboard:dentist_followup_status' followup.pk value %}">
+                            {% csrf_token %}
+                            <button class="rounded-xl border border-green-200 px-3 py-2 text-xs font-bold text-green-700 hover:bg-white">{{ label }}</button>
+                        </form>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            {% include "components/empty_state.html" with title="No follow-ups found" message="Assigned follow-ups will appear here." %}
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

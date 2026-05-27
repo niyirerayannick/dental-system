@@ -11,6 +11,24 @@ from .forms import FollowUpForm
 from .models import FollowUp
 
 
+def _scope_followup_form(form, request):
+    if request.user.role != User.Role.DENTIST:
+        return form
+
+    from appointments.models import Appointment
+    from patients.models import PatientProfile
+
+    form.fields["patient"].queryset = PatientProfile.objects.filter(
+        appointments__dentist__user=request.user
+    ).distinct()
+    form.fields["appointment"].queryset = Appointment.objects.filter(
+        dentist__user=request.user
+    ).select_related("patient__user")
+    form.fields["assigned_to"].queryset = User.objects.filter(pk=request.user.pk)
+    form.fields["assigned_to"].initial = request.user
+    return form
+
+
 def _followup_ctx(request):
     from notifications.models import Notification
     from appointments.models import Appointment
@@ -48,13 +66,16 @@ def _followup_ctx(request):
 def followup_list(request):
     today = tz.localdate()
     modal_open = False
-    form = FollowUpForm()
+    form = _scope_followup_form(FollowUpForm(), request)
 
     if request.method == "POST":
         modal_open = True
-        form = FollowUpForm(request.POST)
+        form = _scope_followup_form(FollowUpForm(request.POST), request)
         if form.is_valid():
-            form.save()
+            followup = form.save(commit=False)
+            if request.user.role == User.Role.DENTIST:
+                followup.assigned_to = request.user
+            followup.save()
             messages.success(request, "Follow-up created successfully.")
             return redirect("followups:list")
 
@@ -80,6 +101,8 @@ def followup_list(request):
 
     # KPI counters (always unfiltered)
     all_fu = FollowUp.objects
+    if request.user.role == User.Role.DENTIST:
+        all_fu = all_fu.filter(assigned_to=request.user)
     kpis = [
         {"label": "Total Follow-ups", "value": all_fu.count(), "icon": "next_plan"},
         {"label": "Due Today", "value": all_fu.filter(followup_date=today, status=FollowUp.Status.PENDING).count(), "icon": "today"},

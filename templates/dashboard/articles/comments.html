@@ -36,7 +36,7 @@
 {% endif %}
 
 {# ── STATUS TABS + FILTER ── #}
-<form method="get" class="mb-6 flex flex-wrap items-end gap-3">
+<form method="get" class="mb-6 flex flex-wrap items-center gap-3">
   {# Status tabs #}
   <div class="flex rounded-2xl border border-gray-200 bg-white overflow-hidden">
     <a href="?status=pending{% if article_filter %}&article={{ article_filter }}{% endif %}"
@@ -58,8 +58,8 @@
   </div>
 
   {# Article filter #}
-  <div>
-    <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Article</label>
+  <div class="flex items-center gap-2">
+    <label class="whitespace-nowrap text-xs font-semibold uppercase tracking-wide text-gray-500">Article</label>
     <select name="article" onchange="this.form.submit()"
             class="rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
       <option value="">All Articles</option>

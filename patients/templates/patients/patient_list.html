@@ -34,31 +34,31 @@
 </div>
 
 <section class="mt-6 rounded-2xl bg-white p-5 shadow-sm">
-    <form method="get" class="flex flex-wrap items-end gap-4">
-        <div class="min-w-[240px] flex-1">
+    <form method="get" class="flex flex-wrap items-center gap-4">
+        <div class="flex min-w-[260px] flex-1 items-center gap-2">
             <label class="flex items-center gap-2 text-sm font-semibold text-gray-700"><span class="material-symbols-rounded text-lg text-green-600">search</span> Search</label>
-            <input type="search" name="q" value="{{ filters.q }}" placeholder="Name, phone, or email" class="mt-2">
+            <input type="search" name="q" value="{{ filters.q }}" placeholder="Name, phone, or email">
         </div>
-        <div class="min-w-[150px]">
-            <label class="block text-sm font-semibold text-gray-700">Gender</label>
-            <select name="gender" class="mt-2">
+        <div class="flex min-w-[180px] items-center gap-2">
+            <label class="whitespace-nowrap text-sm font-semibold text-gray-700">Gender</label>
+            <select name="gender">
                 <option value="">All genders</option>
                 {% for value,label in gender_choices %}
                     <option value="{{ value }}" {% if filters.gender == value %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
             </select>
         </div>
-        <div class="min-w-[130px]">
-            <label class="block text-sm font-semibold text-gray-700">Status</label>
-            <select name="status" class="mt-2">
+        <div class="flex min-w-[160px] items-center gap-2">
+            <label class="whitespace-nowrap text-sm font-semibold text-gray-700">Status</label>
+            <select name="status">
                 <option value="">All</option>
                 <option value="active" {% if filters.status == "active" %}selected{% endif %}>Active</option>
                 <option value="inactive" {% if filters.status == "inactive" %}selected{% endif %}>Inactive</option>
             </select>
         </div>
-        <div class="min-w-[170px]">
-            <label class="block text-sm font-semibold text-gray-700">Appointment</label>
-            <select name="appointment_status" class="mt-2">
+        <div class="flex min-w-[220px] items-center gap-2">
+            <label class="whitespace-nowrap text-sm font-semibold text-gray-700">Appointment</label>
+            <select name="appointment_status">
                 <option value="">All</option>
                 {% for value,label in appointment_status_choices %}
                     <option value="{{ value }}" {% if filters.appointment_status == value %}selected{% endif %}>{{ label }}</option>

@@ -2,7 +2,10 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from accounts.models import User
+from appointments.models import Appointment
 from dashboard.menu import get_dashboard_menu
+from dentists.models import DentistProfile
+from patients.models import PatientProfile
 
 
 @override_settings(SECURE_SSL_REDIRECT=False)
@@ -180,6 +183,7 @@ class DashboardSidebarMenuTests(TestCase):
             ],
         )
         self.assert_no_hidden_billing_or_treatments(labels)
+        self.assertTrue(all("#" not in item["href"] for item in get_dashboard_menu(user)))
 
     def test_receptionist_sidebar_structure(self):
         user = self.make_user(User.Role.RECEPTIONIST, "0781000003")
@@ -224,3 +228,49 @@ class DashboardSidebarMenuTests(TestCase):
         for name in ["dashboard:patient_treatments", "dashboard:patient_invoices", "treatments:list"]:
             response = self.client.get(reverse(name))
             self.assertEqual(response.status_code, 403, name)
+
+    def test_dentist_dashboard_permissions_and_related_data(self):
+        dentist_user = self.make_user(User.Role.DENTIST, "0781000012")
+        other_dentist_user = self.make_user(User.Role.DENTIST, "0781000013")
+        dentist = DentistProfile.objects.get(user=dentist_user)
+        dentist.license_number = "D-100"
+        dentist.save(update_fields=["license_number"])
+        other_dentist = DentistProfile.objects.get(user=other_dentist_user)
+        other_dentist.license_number = "D-200"
+        other_dentist.save(update_fields=["license_number"])
+        patient_user = self.make_user(User.Role.PATIENT, "0781000014", first_name="Assigned", last_name="Patient")
+        other_patient_user = self.make_user(User.Role.PATIENT, "0781000015", first_name="Other", last_name="Patient")
+        patient = PatientProfile.objects.create(user=patient_user)
+        other_patient = PatientProfile.objects.create(user=other_patient_user)
+        appointment = Appointment.objects.create(
+            patient=patient,
+            dentist=dentist,
+            appointment_date="2026-05-26",
+            appointment_time="09:00",
+            status=Appointment.Status.PENDING,
+        )
+        Appointment.objects.create(
+            patient=other_patient,
+            dentist=other_dentist,
+            appointment_date="2026-05-26",
+            appointment_time="10:00",
+            status=Appointment.Status.PENDING,
+        )
+
+        self.client.force_login(dentist_user)
+        response = self.client.get(reverse("dashboard:dentist"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Dashboard overview")
+
+        response = self.client.get(reverse("dashboard:dentist_my_appointments"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "My appointments")
+        self.assertContains(response, str(patient))
+        self.assertNotContains(response, str(other_patient))
+
+        response = self.client.get(reverse("appointments:json", args=[appointment.pk]))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse("patients:detail", args=[other_patient.pk]))
+        self.assertEqual(response.status_code, 404)
+        response = self.client.get(reverse("treatments:list"))
+        self.assertEqual(response.status_code, 403)

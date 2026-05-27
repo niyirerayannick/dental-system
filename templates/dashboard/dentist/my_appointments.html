@@ -1,0 +1,60 @@
+{% extends "dashboard/dentist_base.html" %}
+{% block title %}My Appointments{% endblock %}
+
+{% block dentist_content %}
+<div class="mb-6 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+    <div>
+        <p class="text-sm font-semibold uppercase tracking-wide text-green-600">Dentist dashboard</p>
+        <h1 class="mt-1 text-3xl font-bold text-gray-900">My appointments</h1>
+        <p class="mt-2 text-sm text-gray-500">Assigned appointments only.</p>
+    </div>
+</div>
+
+<section class="overflow-hidden rounded-2xl bg-white shadow-sm">
+    <div class="border-b border-gray-100 px-5 py-4">
+        <form method="get" class="flex flex-wrap items-center gap-3">
+            <input type="text" name="q" value="{{ search }}" placeholder="Search patient, phone, or reason" class="h-10 min-w-[240px] rounded-xl border border-gray-200 bg-white px-3 text-sm shadow-sm focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
+            <select name="status" class="h-10 rounded-xl border border-gray-200 bg-white px-3 text-sm shadow-sm focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
+                <option value="">All statuses</option>
+                {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <input type="date" name="date" value="{{ date_filter }}" class="h-10 rounded-xl border border-gray-200 bg-white px-3 text-sm shadow-sm focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
+            <button class="h-10 rounded-xl bg-green-600 px-4 text-sm font-semibold text-white hover:bg-green-700">Filter</button>
+            {% if search or status_filter or date_filter %}
+            <a href="{% url 'dashboard:dentist_my_appointments' %}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 px-4 text-sm font-semibold text-gray-600 hover:bg-gray-50">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+    <div class="hidden grid-cols-7 gap-4 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 xl:grid">
+        <span>Patient</span><span>Phone</span><span>Date</span><span>Time</span><span>Status</span><span>Service</span><span class="text-right">Actions</span>
+    </div>
+    <div class="divide-y divide-gray-100">
+        {% for appointment in appointments %}
+        <div class="grid gap-4 px-5 py-4 hover:bg-green-50 xl:grid-cols-7 xl:items-center">
+            <p class="font-semibold text-gray-900">{{ appointment.patient }}</p>
+            <p class="text-sm text-gray-600">{{ appointment.patient.user.phone|default:"-" }}</p>
+            <p class="text-sm text-gray-600">{{ appointment.appointment_date|date:"M j, Y" }}</p>
+            <p class="text-sm text-gray-600">{{ appointment.appointment_time|time:"g:i A" }}</p>
+            <div>{% include "partials/appointment_status_badge.html" with appointment=appointment %}</div>
+            <p class="text-sm text-gray-600">{{ appointment.service.name|default:"-" }}</p>
+            <div class="flex flex-wrap justify-start gap-2 xl:justify-end">
+                <a href="{% url 'dashboard:dentist_appointment_detail' appointment.pk %}" class="rounded-xl border border-gray-200 px-3 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50">View</a>
+                {% if appointment.status == "pending" %}
+                <form method="post" action="{% url 'dashboard:dentist_appointment_status' appointment.pk 'approved' %}">{% csrf_token %}
+                    <button class="rounded-xl border border-green-200 px-3 py-2 text-xs font-bold text-green-700 hover:bg-green-50">Confirm</button>
+                </form>
+                {% elif appointment.status == "approved" %}
+                <form method="post" action="{% url 'dashboard:dentist_appointment_status' appointment.pk 'completed' %}">{% csrf_token %}
+                    <button class="rounded-xl border border-green-200 px-3 py-2 text-xs font-bold text-green-700 hover:bg-green-50">Complete</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        {% include "components/empty_state.html" with title="No appointments found" message="Assigned appointments will appear here." %}
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

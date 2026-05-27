@@ -1,0 +1,46 @@
+{% extends "dashboard/dentist_base.html" %}
+{% block title %}Ask Doctor Inbox{% endblock %}
+
+{% block dentist_content %}
+<div class="mb-6">
+    <p class="text-sm font-semibold uppercase tracking-wide text-green-600">Dentist dashboard</p>
+    <h1 class="mt-1 text-3xl font-bold text-gray-900">Ask Doctor inbox</h1>
+    <p class="mt-2 text-sm text-gray-500">Assigned conversations plus unassigned open conversations.</p>
+</div>
+
+<section class="overflow-hidden rounded-2xl bg-white shadow-sm">
+    <div class="border-b border-gray-100 px-5 py-4">
+        <form method="get" class="flex flex-wrap items-center gap-2">
+            <a href="{% url 'dashboard:dentist_ask_doctor' %}?status=all" class="rounded-full px-3 py-1.5 text-sm font-semibold {% if status_filter == 'all' %}bg-green-600 text-white{% else %}bg-gray-100 text-gray-600{% endif %}">All</a>
+            {% for value, label in status_choices %}
+            <a href="{% url 'dashboard:dentist_ask_doctor' %}?status={{ value }}" class="rounded-full px-3 py-1.5 text-sm font-semibold {% if status_filter == value %}bg-green-600 text-white{% else %}bg-gray-100 text-gray-600{% endif %}">{{ label }}</a>
+            {% endfor %}
+        </form>
+    </div>
+    <div class="divide-y divide-gray-100">
+        {% for conversation in conversations %}
+        <div class="px-5 py-4 hover:bg-green-50">
+            <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <p class="font-semibold text-gray-900">{{ conversation.display_subject }}</p>
+                    <p class="text-sm text-gray-500">{{ conversation.patient.full_name|default:conversation.patient.phone }} · {{ conversation.updated_at|timesince }} ago</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <span class="rounded-full bg-green-50 px-3 py-1 text-xs font-bold text-green-700">{{ conversation.get_status_display }}</span>
+                    <a href="{% url 'ask_doctor:inbox_detail' conversation.pk %}" class="rounded-xl border border-gray-200 px-3 py-2 text-xs font-bold text-gray-700 hover:bg-white">Open</a>
+                    {% if conversation.status != "closed" %}
+                    <form method="post" action="{% url 'ask_doctor:inbox_detail' conversation.pk %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="close">
+                        <button class="rounded-xl border border-red-200 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50">Close</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        {% include "components/empty_state.html" with title="No conversations found" message="Assigned Ask Doctor conversations will appear here." %}
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

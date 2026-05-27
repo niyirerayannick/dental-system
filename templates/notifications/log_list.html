@@ -9,32 +9,32 @@
   </div>
 </div>
 
-<form method="get" class="mb-6 flex flex-wrap items-end gap-4 rounded-2xl bg-white p-4 shadow-sm">
-  <div class="min-w-[140px]">
-    <label class="text-xs font-semibold uppercase text-gray-500">Channel</label>
-    <select name="channel" class="mt-1 w-full rounded-xl border-gray-200 text-sm">
+<form method="get" class="mb-6 flex flex-wrap items-center gap-4 rounded-2xl bg-white p-4 shadow-sm">
+  <div class="flex min-w-[170px] items-center gap-2">
+    <label class="whitespace-nowrap text-xs font-semibold uppercase text-gray-500">Channel</label>
+    <select name="channel" class="w-full rounded-xl border-gray-200 text-sm">
       <option value="">All</option>
       {% for value,label in channel_choices %}
       <option value="{{ value }}" {% if filters.channel == value %}selected{% endif %}>{{ label }}</option>
       {% endfor %}
     </select>
   </div>
-  <div class="min-w-[140px]">
-    <label class="text-xs font-semibold uppercase text-gray-500">Status</label>
-    <select name="status" class="mt-1 w-full rounded-xl border-gray-200 text-sm">
+  <div class="flex min-w-[160px] items-center gap-2">
+    <label class="whitespace-nowrap text-xs font-semibold uppercase text-gray-500">Status</label>
+    <select name="status" class="w-full rounded-xl border-gray-200 text-sm">
       <option value="">All</option>
       {% for value,label in status_choices %}
       <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
       {% endfor %}
     </select>
   </div>
-  <div class="min-w-[150px]">
-    <label class="text-xs font-semibold uppercase text-gray-500">Date</label>
-    <input type="date" name="date" value="{{ filters.date }}" class="mt-1 w-full rounded-xl border-gray-200 text-sm">
+  <div class="flex min-w-[180px] items-center gap-2">
+    <label class="whitespace-nowrap text-xs font-semibold uppercase text-gray-500">Date</label>
+    <input type="date" name="date" value="{{ filters.date }}" class="w-full rounded-xl border-gray-200 text-sm">
   </div>
-  <div class="min-w-[220px] flex-1">
-    <label class="text-xs font-semibold uppercase text-gray-500">Patient or phone</label>
-    <input name="patient" value="{{ filters.patient }}" class="mt-1 w-full rounded-xl border-gray-200 text-sm" placeholder="Search">
+  <div class="flex min-w-[280px] flex-1 items-center gap-2">
+    <label class="whitespace-nowrap text-xs font-semibold uppercase text-gray-500">Patient or phone</label>
+    <input name="patient" value="{{ filters.patient }}" class="w-full rounded-xl border-gray-200 text-sm" placeholder="Search">
   </div>
   <button class="inline-flex items-center justify-center gap-2 rounded-xl bg-green-700 px-4 py-2.5 text-sm font-semibold text-white">
     <span class="material-symbols-rounded text-lg">filter_alt</span> Filter

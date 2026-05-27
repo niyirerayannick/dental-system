@@ -30,12 +30,12 @@ ROLE_MENUS = {
     ],
     User.Role.DENTIST: [
         {"label": "Dashboard", "icon": "dashboard", "url_name": "dashboard:dentist", "active_url_names": {"dentist"}},
-        {"label": "My Appointments", "icon": "calendar_month", "url_name": "dashboard:dentist", "anchor": "appointments"},
-        {"label": "My Patients", "icon": "groups", "url_name": "patients:list", "active_namespaces": {"patients"}},
-        {"label": "Ask Doctor Inbox", "icon": "mark_unread_chat_alt", "url_name": "ask_doctor:inbox", "active_namespaces": {"ask_doctor"}},
-        {"label": "My Dental Articles", "icon": "article", "url_name": "articles:dashboard_list", "active_namespaces": {"articles"}},
-        {"label": "Notifications", "icon": "notifications", "url_name": "dashboard:dentist", "anchor": "notifications"},
-        {"label": "Follow-ups", "icon": "next_plan", "url_name": "followups:list", "active_namespaces": {"followups"}},
+        {"label": "My Appointments", "icon": "calendar_month", "url_name": "dashboard:dentist_my_appointments", "active_url_names": {"dentist_my_appointments", "dentist_appointment_detail"}},
+        {"label": "My Patients", "icon": "groups", "url_name": "dashboard:dentist_my_patients", "active_url_names": {"dentist_my_patients", "dentist_patient_detail"}},
+        {"label": "Ask Doctor Inbox", "icon": "mark_unread_chat_alt", "url_name": "dashboard:dentist_ask_doctor", "active_url_names": {"dentist_ask_doctor"}},
+        {"label": "My Dental Articles", "icon": "article", "url_name": "dashboard:dentist_articles", "active_url_names": {"dentist_articles"}},
+        {"label": "Notifications", "icon": "notifications", "url_name": "dashboard:dentist_notifications", "active_url_names": {"dentist_notifications"}},
+        {"label": "Follow-ups", "icon": "next_plan", "url_name": "dashboard:dentist_followups", "active_url_names": {"dentist_followups", "dentist_followup_edit"}},
     ],
     User.Role.RECEPTIONIST: [
         {"label": "Dashboard", "icon": "dashboard", "url_name": "dashboard:receptionist", "active_url_names": {"receptionist"}},
@@ -88,8 +88,6 @@ def get_dashboard_menu(user, request=None):
             href = reverse(item["url_name"])
         except NoReverseMatch:
             continue
-        if item.get("anchor"):
-            href = f"{href}#{item['anchor']}"
         menu.append(
             {
                 "label": item["label"],

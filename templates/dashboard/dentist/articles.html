@@ -1,0 +1,58 @@
+{% extends "dashboard/dentist_base.html" %}
+{% block title %}My Dental Articles{% endblock %}
+
+{% block dentist_content %}
+<div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+        <p class="text-sm font-semibold uppercase tracking-wide text-green-600">Dentist dashboard</p>
+        <h1 class="mt-1 text-3xl font-bold text-gray-900">My dental articles</h1>
+        <p class="mt-2 text-sm text-gray-500">Create, edit, publish, and review your own articles.</p>
+    </div>
+    <a href="{% url 'articles:dashboard_create' %}" class="inline-flex items-center gap-2 rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-700">
+        <span class="material-symbols-rounded text-lg">add</span>
+        Create article
+    </a>
+</div>
+
+<section class="overflow-hidden rounded-2xl bg-white shadow-sm">
+    <div class="border-b border-gray-100 px-5 py-4">
+        <form method="get" class="flex flex-wrap items-center gap-3">
+            <input type="text" name="q" value="{{ q }}" placeholder="Search title" class="h-10 min-w-[220px] rounded-xl border border-gray-200 px-3 text-sm shadow-sm">
+            <select name="status" class="h-10 rounded-xl border border-gray-200 px-3 text-sm shadow-sm">
+                <option value="">All statuses</option>
+                <option value="published" {% if status_filter == "published" %}selected{% endif %}>Published</option>
+                <option value="draft" {% if status_filter == "draft" %}selected{% endif %}>Draft</option>
+            </select>
+            <select name="category" class="h-10 rounded-xl border border-gray-200 px-3 text-sm shadow-sm">
+                <option value="">All categories</option>
+                {% for category in categories %}
+                <option value="{{ category.slug }}" {% if category_filter == category.slug %}selected{% endif %}>{{ category.name }}</option>
+                {% endfor %}
+            </select>
+            <button class="h-10 rounded-xl bg-green-600 px-4 text-sm font-semibold text-white hover:bg-green-700">Filter</button>
+        </form>
+    </div>
+    <div class="divide-y divide-gray-100">
+        {% for article in articles %}
+        <div class="grid gap-4 px-5 py-4 hover:bg-green-50 lg:grid-cols-6 lg:items-center">
+            <div class="lg:col-span-2">
+                <p class="font-semibold text-gray-900">{{ article.title }}</p>
+                <p class="text-sm text-gray-500">{{ article.category.name|default:"Uncategorized" }}</p>
+            </div>
+            <span class="rounded-full px-3 py-1 text-xs font-bold {% if article.is_published %}bg-green-50 text-green-700{% else %}bg-amber-50 text-amber-700{% endif %}">{{ article.is_published|yesno:"Published,Draft" }}</span>
+            <p class="text-sm text-gray-600">{{ article.views_count }} views · {{ article.likes_count }} likes · {{ article.comments_count }} comments</p>
+            <p class="text-sm text-gray-500">{{ article.created_at|date:"M j, Y" }}</p>
+            <div class="flex flex-wrap justify-start gap-2 lg:justify-end">
+                <a href="{% url 'articles:dashboard_edit' article.pk %}" class="rounded-xl border border-gray-200 px-3 py-2 text-xs font-bold text-gray-700 hover:bg-white">Edit</a>
+                <form method="post" action="{% url 'articles:dashboard_toggle' article.pk %}">{% csrf_token %}
+                    <button class="rounded-xl border border-green-200 px-3 py-2 text-xs font-bold text-green-700 hover:bg-white">{{ article.is_published|yesno:"Unpublish,Publish" }}</button>
+                </form>
+                <a href="{% url 'articles:dashboard_delete' article.pk %}" class="rounded-xl border border-red-200 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50">Delete</a>
+            </div>
+        </div>
+        {% empty %}
+        {% include "components/empty_state.html" with title="No articles yet" message="Create your first dental article for patients." %}
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

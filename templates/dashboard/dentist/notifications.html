@@ -1,0 +1,51 @@
+{% extends "dashboard/dentist_base.html" %}
+{% block title %}Notifications{% endblock %}
+
+{% block dentist_content %}
+<div class="mb-6">
+    <p class="text-sm font-semibold uppercase tracking-wide text-green-600">Dentist dashboard</p>
+    <h1 class="mt-1 text-3xl font-bold text-gray-900">Notifications</h1>
+    <p class="mt-2 text-sm text-gray-500">SMS and WhatsApp logs related to your appointments and patients.</p>
+</div>
+
+<div class="mb-6 grid gap-5 md:grid-cols-3">
+    <div class="rounded-2xl bg-white p-5 shadow-sm">
+        <p class="text-sm font-medium text-gray-400">Failed notifications</p>
+        <p class="mt-2 text-3xl font-bold text-red-600">{{ failed_count }}</p>
+    </div>
+</div>
+
+<section class="overflow-hidden rounded-2xl bg-white shadow-sm">
+    <div class="border-b border-gray-100 px-5 py-4">
+        <form method="get" class="flex flex-wrap items-center gap-3">
+            <select name="channel" class="h-10 rounded-xl border border-gray-200 px-3 text-sm shadow-sm">
+                <option value="">All channels</option>
+                {% for value, label in channel_choices %}
+                <option value="{{ value }}" {% if channel_filter == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="status" class="h-10 rounded-xl border border-gray-200 px-3 text-sm shadow-sm">
+                <option value="">All statuses</option>
+                {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <input type="date" name="date" value="{{ date_filter }}" class="h-10 rounded-xl border border-gray-200 px-3 text-sm shadow-sm">
+            <button class="h-10 rounded-xl bg-green-600 px-4 text-sm font-semibold text-white hover:bg-green-700">Filter</button>
+        </form>
+    </div>
+    <div class="divide-y divide-gray-100">
+        {% for log in logs %}
+        <div class="grid gap-4 px-5 py-4 hover:bg-green-50 lg:grid-cols-6 lg:items-center">
+            <p class="font-semibold text-gray-900">{{ log.get_channel_display }}</p>
+            <p class="text-sm text-gray-600">{{ log.phone_number }}</p>
+            <p class="text-sm text-gray-600 lg:col-span-2">{{ log.message|truncatechars:90 }}</p>
+            <span class="rounded-full px-3 py-1 text-xs font-bold {% if log.status == 'failed' %}bg-red-50 text-red-700{% elif log.status == 'sent' %}bg-green-50 text-green-700{% else %}bg-amber-50 text-amber-700{% endif %}">{{ log.get_status_display }}</span>
+            <p class="text-sm text-gray-500 lg:text-right">{{ log.created_at|date:"M j, Y H:i" }}</p>
+        </div>
+        {% empty %}
+        {% include "components/empty_state.html" with title="No notification logs" message="SMS and WhatsApp logs related to your assigned care will appear here." %}
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

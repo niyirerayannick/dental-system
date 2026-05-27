@@ -23,13 +23,13 @@
 
 <section class="mt-6 rounded-xl border border-gray-200 bg-white shadow-sm">
   <div class="border-b border-gray-100 p-5">
-    <form method="get" class="flex flex-wrap items-end gap-3">
-      <div class="min-w-[240px] flex-1">
-        <label class="mb-1 block text-sm font-semibold text-gray-700" for="user-search">Search</label>
+    <form method="get" class="flex flex-wrap items-center gap-3">
+      <div class="flex min-w-[260px] flex-1 items-center gap-2">
+        <label class="whitespace-nowrap text-sm font-semibold text-gray-700" for="user-search">Search</label>
         <input id="user-search" type="search" name="q" value="{{ search }}" placeholder="Name, email, or phone" class="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
       </div>
-      <div class="min-w-[220px]">
-        <label class="mb-1 block text-sm font-semibold text-gray-700" for="role-filter">Role</label>
+      <div class="flex min-w-[250px] items-center gap-2">
+        <label class="whitespace-nowrap text-sm font-semibold text-gray-700" for="role-filter">Role</label>
         <select id="role-filter" name="role" class="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
           <option value="">All roles</option>
           {% for value,label in role_choices %}

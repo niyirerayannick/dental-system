@@ -1,0 +1,36 @@
+{% extends "dashboard/dentist_base.html" %}
+{% block title %}My Patients{% endblock %}
+
+{% block dentist_content %}
+<div class="mb-6">
+    <p class="text-sm font-semibold uppercase tracking-wide text-green-600">Dentist dashboard</p>
+    <h1 class="mt-1 text-3xl font-bold text-gray-900">My patients</h1>
+    <p class="mt-2 text-sm text-gray-500">Patients connected to your assigned appointments.</p>
+</div>
+
+<section class="overflow-hidden rounded-2xl bg-white shadow-sm">
+    <div class="border-b border-gray-100 px-5 py-4">
+        <form method="get" class="flex flex-wrap items-center gap-3">
+            <input type="text" name="q" value="{{ search }}" placeholder="Search name, phone, or email" class="h-10 min-w-[260px] rounded-xl border border-gray-200 bg-white px-3 text-sm shadow-sm focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100">
+            <button class="h-10 rounded-xl bg-green-600 px-4 text-sm font-semibold text-white hover:bg-green-700">Search</button>
+            {% if search %}<a href="{% url 'dashboard:dentist_my_patients' %}" class="inline-flex h-10 items-center rounded-xl border border-gray-200 px-4 text-sm font-semibold text-gray-600 hover:bg-gray-50">Clear</a>{% endif %}
+        </form>
+    </div>
+    <div class="hidden grid-cols-5 gap-4 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 lg:grid">
+        <span>Patient</span><span>Phone</span><span>Email</span><span>Appointments</span><span class="text-right">Last visit</span>
+    </div>
+    <div class="divide-y divide-gray-100">
+        {% for patient in patients %}
+        <a href="{% url 'dashboard:dentist_patient_detail' patient.pk %}" class="grid gap-4 px-5 py-4 hover:bg-green-50 lg:grid-cols-5 lg:items-center">
+            <p class="font-semibold text-gray-900">{{ patient }}</p>
+            <p class="text-sm text-gray-600">{{ patient.user.phone|default:"-" }}</p>
+            <p class="text-sm text-gray-600">{{ patient.user.email|default:"-" }}</p>
+            <p class="text-sm font-semibold text-green-700">{{ patient.appointment_count }}</p>
+            <p class="text-sm text-gray-600 lg:text-right">{{ patient.last_appointment|date:"M j, Y"|default:"-" }}</p>
+        </a>
+        {% empty %}
+        {% include "components/empty_state.html" with title="No patients found" message="Patients from your assigned appointments will appear here." %}
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

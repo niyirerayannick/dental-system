@@ -1,0 +1,41 @@
+{% extends "dashboard/dentist_base.html" %}
+{% block title %}Appointment Detail{% endblock %}
+
+{% block dentist_content %}
+<div class="mb-6 flex items-end justify-between gap-3">
+    <div>
+        <p class="text-sm font-semibold uppercase tracking-wide text-green-600">My appointments</p>
+        <h1 class="mt-1 text-3xl font-bold text-gray-900">Appointment detail</h1>
+        <p class="mt-2 text-sm text-gray-500">{{ appointment.appointment_date|date:"M j, Y" }} at {{ appointment.appointment_time|time:"g:i A" }}</p>
+    </div>
+    <a href="{% url 'dashboard:dentist_my_appointments' %}" class="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">Back</a>
+</div>
+
+<section class="rounded-2xl bg-white p-6 shadow-sm">
+    <div class="grid gap-6 md:grid-cols-2">
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Patient</p>
+            <p class="mt-1 text-lg font-bold text-gray-900">{{ appointment.patient }}</p>
+            <p class="text-sm text-gray-500">{{ appointment.patient.user.phone|default:"No phone" }}</p>
+        </div>
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Status</p>
+            <div class="mt-2">{% include "partials/appointment_status_badge.html" with appointment=appointment %}</div>
+        </div>
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Service</p>
+            <p class="mt-1 text-sm text-gray-700">{{ appointment.service.name|default:"-" }}</p>
+        </div>
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Reason</p>
+            <p class="mt-1 text-sm text-gray-700">{{ appointment.reason|default:"-" }}</p>
+        </div>
+    </div>
+    {% if appointment.notes %}
+    <div class="mt-6 rounded-2xl bg-gray-50 p-4">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Notes</p>
+        <p class="mt-2 text-sm text-gray-700">{{ appointment.notes }}</p>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "dashboard/dentist_base.html" %}
+{% block title %}Edit Follow-up{% endblock %}
+
+{% block dentist_content %}
+<div class="mb-6 flex items-end justify-between gap-3">
+    <div>
+        <p class="text-sm font-semibold uppercase tracking-wide text-green-600">Follow-ups</p>
+        <h1 class="mt-1 text-3xl font-bold text-gray-900">Edit follow-up</h1>
+        <p class="mt-2 text-sm text-gray-500">{{ followup.patient }}</p>
+    </div>
+    <a href="{% url 'dashboard:dentist_followups' %}" class="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">Back</a>
+</div>
+
+<section class="max-w-2xl rounded-2xl bg-white p-6 shadow-sm">
+    <form method="post" class="space-y-4">
+        {% csrf_token %}
+        {% for field in form %}
+        <div>
+            <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<p class="mt-1 text-xs text-red-600">{{ field.errors.0 }}</p>{% endif %}
+        </div>
+        {% endfor %}
+        <button class="rounded-xl bg-green-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-green-700">Update follow-up</button>
+    </form>
+</section>
+{% endblock %}

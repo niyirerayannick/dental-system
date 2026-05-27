@@ -4,27 +4,25 @@ import json
 
 from django.core.exceptions import PermissionDenied
 from django.db import IntegrityError
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, Max, Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from accounts.models import User
 from accounts.forms import DashboardUserCreateForm, DashboardUserPasswordResetForm, DashboardUserUpdateForm
 from accounts.permissions import get_dashboard_url_for_user, role_required
 from appointments.forms import AppointmentBookingForm, AppointmentManageForm
-from treatments.forms import DentistTreatmentForm
 from appointments.models import Appointment
 from billing.models import Invoice
 from dentists.models import DentistProfile
 from patients.forms import PatientProfileForm, PatientRegistrationForm
 from patients.models import PatientProfile
-from treatments.forms import TreatmentRecordForm
 from treatments.models import Treatment
 from notifications.notifiers import (
     notify_appointment_created,
     notify_appointment_status_change,
     notify_patient_created,
-    notify_service_completed,
 )
 
 
@@ -280,173 +278,344 @@ def admin_user_reset_password(request, pk):
     return render(request, "dashboard/admin_user_reset_password.html", {"managed_user": user_obj, "form": form})
 
 
-@role_required(User.Role.DENTIST)
-def dentist_dashboard(request):
-    from notifications.models import Notification
-    from django.utils import timezone as tz
-    from datetime import date as _date
-    from ask_doctor.models import DoctorConversation, DoctorMessage
-    from followups.models import FollowUp
+def _dentist_conversation_queryset(user):
+    from ask_doctor.models import DoctorConversation
 
-    dentist = get_dentist_profile(request.user)
-    today = tz.localdate()
-    treatment_open = False
-
-    notifications_qs = Notification.objects.filter(user=request.user)
-    unread_count = notifications_qs.filter(is_read=False).count()
-    notifications = list(notifications_qs[:8])
-
-    dentist_conversations = DoctorConversation.objects.filter(
-        Q(assigned_doctor=request.user)
+    return DoctorConversation.objects.filter(
+        Q(assigned_doctor=user)
         | Q(
             assigned_doctor__isnull=True,
             status__in=[DoctorConversation.Status.OPEN, DoctorConversation.Status.PENDING],
         )
-    ).select_related("patient", "assigned_doctor").prefetch_related("messages")
+    )
+
+
+def _dentist_followup_queryset(user):
+    from followups.models import FollowUp
+
+    return FollowUp.objects.filter(assigned_to=user).select_related("patient__user", "appointment")
+
+
+def _dentist_dashboard_context(request):
+    from notifications.models import Notification
+    from django.utils import timezone as tz
+    from ask_doctor.models import DoctorMessage
+    from followups.models import FollowUp
+
+    dentist = get_dentist_profile(request.user)
+    today = tz.localdate()
+    notifications_qs = Notification.objects.filter(user=request.user)
+    unread_count = notifications_qs.filter(is_read=False).count()
+    dentist_conversations = _dentist_conversation_queryset(request.user).select_related("patient", "assigned_doctor")
     recent_ask_messages = (
         DoctorMessage.objects.filter(conversation__in=dentist_conversations)
         .select_related("conversation__patient", "sender")
         .order_by("-created_at")[:5]
     )
-    followup_queue = (
-        FollowUp.objects.filter(assigned_to=request.user)
-        .select_related("patient__user", "appointment")
-        .filter(status__in=[FollowUp.Status.PENDING, FollowUp.Status.CONTACTED])
-        .order_by("followup_date")[:6]
+    followup_queue = _dentist_followup_queryset(request.user).filter(
+        status__in=[FollowUp.Status.PENDING, FollowUp.Status.CONTACTED]
     )
-    followups_due = FollowUp.objects.filter(
-        assigned_to=request.user,
+    followups_due = followup_queue.filter(
         followup_date__lte=today,
-        status__in=[FollowUp.Status.PENDING, FollowUp.Status.CONTACTED],
     ).count()
 
     if not dentist:
-        return render(request, "dashboard/dentist.html", {
+        stats = [
+            {"label": "My Appointments Today", "value": 0, "change": "Today", "tone": "green", "icon": "event_available"},
+            {"label": "Pending Appointments", "value": 0, "change": "Review", "tone": "amber", "icon": "pending_actions"},
+            {"label": "Completed Appointments", "value": 0, "change": "Done", "tone": "green", "icon": "task_alt"},
+            {"label": "Follow-ups Due", "value": followups_due, "change": "Due", "tone": "amber", "icon": "next_plan"},
+            {"label": "Ask Doctor Conversations", "value": dentist_conversations.count(), "change": "Inbox", "tone": "green", "icon": "mark_unread_chat_alt"},
+            {"label": "Notification Summary", "value": unread_count, "change": "Unread", "tone": "amber" if unread_count else "green", "icon": "notifications"},
+        ]
+        return {
             "dentist": None,
             "unread_count": unread_count,
-            "notifications": notifications,
-            "stats": [
-                {"label": "My Appointments Today", "value": 0, "change": "Today", "tone": "green", "icon": "event_available"},
-                {"label": "Pending Appointments", "value": 0, "change": "Review", "tone": "amber", "icon": "pending_actions"},
-                {"label": "Completed Appointments", "value": 0, "change": "Done", "tone": "green", "icon": "task_alt"},
-                {"label": "Follow-ups Due", "value": followups_due, "change": "Due", "tone": "amber", "icon": "next_plan"},
-                {"label": "Ask Doctor Conversations", "value": dentist_conversations.count(), "change": "Inbox", "tone": "green", "icon": "mark_unread_chat_alt"},
-                {"label": "Notification Summary", "value": unread_count, "change": "Unread", "tone": "amber" if unread_count else "green", "icon": "notifications"},
-            ],
-            "today_appointments": [],
-            "filtered_appointments": [],
-            "recent_patients": [],
+            "notifications": notifications_qs[:8],
+            "stats": stats,
+            "upcoming_appointments": [],
             "recent_ask_messages": recent_ask_messages,
-            "followup_queue": followup_queue,
-            "treatment_form": DentistTreatmentForm(dentist=None),
-            "treatment_open": False,
+            "followups_today": followup_queue.filter(followup_date=today)[:5],
             "today": today,
-            "search": "",
-            "status_filter": "",
-            "date_filter": "",
-            "status_choices": Appointment.Status.choices,
-            "appointment_chart": json.dumps({"labels": [], "booked": [], "completed": []}),
-            "status_chart": json.dumps({"labels": ["Pending", "Confirmed", "Completed", "Cancelled"], "values": [0, 0, 0, 0]}),
-            "appt_status": {"pending": 0, "approved": 0, "completed": 0, "cancelled": 0},
-        })
+        }
 
-    all_appointments = (
-        Appointment.objects.filter(dentist=dentist)
-        .select_related("patient__user")
-    )
-    today_appointments = (
-        all_appointments.filter(appointment_date=today)
-        .order_by("appointment_time")
-    )
+    all_appointments = Appointment.objects.filter(dentist=dentist).select_related("patient__user", "service")
+    today_appointments = all_appointments.filter(appointment_date=today)
 
     today_count = today_appointments.count()
     pending_count = all_appointments.filter(status=Appointment.Status.PENDING).count()
     completed_count = all_appointments.filter(status=Appointment.Status.COMPLETED).count()
-    patients_seen = (
-        all_appointments.filter(status=Appointment.Status.COMPLETED)
-        .values("patient").distinct().count()
-    )
+    stats = [
+        {"label": "My Appointments Today", "value": today_count, "change": "Today", "tone": "green", "icon": "event_available"},
+        {"label": "Pending Appointments", "value": pending_count, "change": "Review", "tone": "amber", "icon": "pending_actions"},
+        {"label": "Completed Appointments", "value": completed_count, "change": "Done", "tone": "green", "icon": "task_alt"},
+        {"label": "Follow-ups Due", "value": followups_due, "change": "Due", "tone": "amber", "icon": "next_plan"},
+        {"label": "Ask Doctor Conversations", "value": dentist_conversations.count(), "change": "Inbox", "tone": "green", "icon": "mark_unread_chat_alt"},
+        {"label": "Notification Summary", "value": unread_count, "change": "Unread", "tone": "amber" if unread_count else "green", "icon": "notifications"},
+    ]
+    upcoming = all_appointments.filter(
+        appointment_date__gte=today,
+        status__in=[Appointment.Status.PENDING, Appointment.Status.APPROVED],
+    ).order_by("appointment_date", "appointment_time")[:5]
+    return {
+        "dentist": dentist,
+        "unread_count": unread_count,
+        "notifications": notifications_qs[:8],
+        "stats": stats,
+        "upcoming_appointments": upcoming,
+        "recent_ask_messages": recent_ask_messages,
+        "followups_today": followup_queue.filter(followup_date=today)[:5],
+        "today": today,
+    }
 
-    search = request.GET.get("q", "")
+
+@role_required(User.Role.DENTIST)
+def dentist_dashboard(request):
+    return render(request, "dashboard/dentist/overview.html", _dentist_dashboard_context(request))
+
+
+@role_required(User.Role.DENTIST)
+def dentist_my_appointments(request):
+    dentist = get_dentist_profile(request.user)
+    appointments = Appointment.objects.none()
+    if dentist:
+        appointments = Appointment.objects.filter(dentist=dentist).select_related("patient__user", "service")
+
+    search = request.GET.get("q", "").strip()
     status_filter = request.GET.get("status", "")
     date_filter = request.GET.get("date", "")
 
-    filtered_appointments = all_appointments.order_by("-appointment_date", "-appointment_time")
     if search:
-        filtered_appointments = filtered_appointments.filter(
+        appointments = appointments.filter(
+            Q(patient__user__first_name__icontains=search)
+            | Q(patient__user__last_name__icontains=search)
+            | Q(patient__user__phone__icontains=search)
+            | Q(reason__icontains=search)
+        )
+    if status_filter:
+        appointments = appointments.filter(status=status_filter)
+    if date_filter:
+        appointments = appointments.filter(appointment_date=date_filter)
+
+    return render(request, "dashboard/dentist/my_appointments.html", {
+        "dentist": dentist,
+        "appointments": appointments.order_by("-appointment_date", "-appointment_time"),
+        "status_choices": Appointment.Status.choices,
+        "search": search,
+        "status_filter": status_filter,
+        "date_filter": date_filter,
+    })
+
+
+@role_required(User.Role.DENTIST)
+def dentist_appointment_detail(request, pk):
+    dentist = get_dentist_profile(request.user)
+    appointment = get_object_or_404(
+        Appointment.objects.select_related("patient__user", "dentist__user", "service"),
+        pk=pk,
+        dentist=dentist,
+    )
+    return render(request, "dashboard/dentist/appointment_detail.html", {"appointment": appointment})
+
+
+@role_required(User.Role.DENTIST)
+def dentist_my_patients(request):
+    dentist = get_dentist_profile(request.user)
+    patients = PatientProfile.objects.none()
+    if dentist:
+        patients = (
+            PatientProfile.objects.filter(appointments__dentist=dentist)
+            .select_related("user")
+            .annotate(appointment_count=Count("appointments", filter=Q(appointments__dentist=dentist), distinct=True))
+            .annotate(last_appointment=Max("appointments__appointment_date", filter=Q(appointments__dentist=dentist)))
+            .distinct()
+        )
+
+    search = request.GET.get("q", "").strip()
+    if search:
+        patients = patients.filter(
+            Q(user__first_name__icontains=search)
+            | Q(user__last_name__icontains=search)
+            | Q(user__phone__icontains=search)
+            | Q(user__email__icontains=search)
+        )
+
+    return render(request, "dashboard/dentist/my_patients.html", {
+        "dentist": dentist,
+        "patients": patients.order_by("-last_appointment", "user__first_name"),
+        "search": search,
+    })
+
+
+@role_required(User.Role.DENTIST)
+def dentist_patient_detail(request, pk):
+    dentist = get_dentist_profile(request.user)
+    patient = get_object_or_404(
+        PatientProfile.objects.filter(appointments__dentist=dentist).select_related("user").distinct(),
+        pk=pk,
+    )
+    appointments = Appointment.objects.filter(patient=patient, dentist=dentist).select_related("service").order_by("-appointment_date", "-appointment_time")
+    return render(request, "dashboard/dentist/patient_detail.html", {"patient": patient, "appointments": appointments})
+
+
+@role_required(User.Role.DENTIST)
+def dentist_ask_doctor_page(request):
+    from ask_doctor.models import DoctorConversation
+
+    conversations = _dentist_conversation_queryset(request.user).select_related("patient", "assigned_doctor").prefetch_related("messages")
+    status_filter = request.GET.get("status", "open")
+    if status_filter and status_filter != "all":
+        conversations = conversations.filter(status=status_filter)
+    base = _dentist_conversation_queryset(request.user)
+    return render(request, "dashboard/dentist/ask_doctor.html", {
+        "conversations": conversations.order_by("-updated_at"),
+        "status_filter": status_filter,
+        "status_choices": DoctorConversation.Status.choices,
+        "status_counts": {
+            "open": base.filter(status=DoctorConversation.Status.OPEN).count(),
+            "pending": base.filter(status=DoctorConversation.Status.PENDING).count(),
+            "answered": base.filter(status=DoctorConversation.Status.ANSWERED).count(),
+            "closed": base.filter(status=DoctorConversation.Status.CLOSED).count(),
+        },
+    })
+
+
+@role_required(User.Role.DENTIST)
+def dentist_articles_page(request):
+    from articles.models import Article, ArticleCategory
+
+    articles = (
+        Article.objects.filter(author=request.user)
+        .select_related("category")
+        .annotate(
+            views_count=Count("views", distinct=True),
+            likes_count=Count("likes", distinct=True),
+            comments_count=Count("comments", distinct=True),
+        )
+    )
+    q = request.GET.get("q", "").strip()
+    status_filter = request.GET.get("status", "")
+    category_filter = request.GET.get("category", "")
+    if q:
+        articles = articles.filter(title__icontains=q)
+    if status_filter == "published":
+        articles = articles.filter(is_published=True)
+    elif status_filter == "draft":
+        articles = articles.filter(is_published=False)
+    if category_filter:
+        articles = articles.filter(category__slug=category_filter)
+    return render(request, "dashboard/dentist/articles.html", {
+        "articles": articles.order_by("-created_at"),
+        "categories": ArticleCategory.objects.all(),
+        "q": q,
+        "status_filter": status_filter,
+        "category_filter": category_filter,
+    })
+
+
+@role_required(User.Role.DENTIST)
+def dentist_notifications_page(request):
+    from notifications.models import Notification, NotificationLog
+
+    dentist = get_dentist_profile(request.user)
+    logs = NotificationLog.objects.none()
+    if dentist:
+        logs = NotificationLog.objects.filter(
+            Q(appointment__dentist=dentist) | Q(patient__appointments__dentist=dentist)
+        ).select_related("patient__user", "appointment").distinct()
+
+    channel_filter = request.GET.get("channel", "")
+    status_filter = request.GET.get("status", "")
+    date_filter = request.GET.get("date", "")
+    if channel_filter:
+        logs = logs.filter(channel=channel_filter)
+    if status_filter:
+        logs = logs.filter(status=status_filter)
+    if date_filter:
+        logs = logs.filter(created_at__date=date_filter)
+
+    return render(request, "dashboard/dentist/notifications.html", {
+        "notifications": Notification.objects.filter(user=request.user)[:20],
+        "logs": logs.order_by("-created_at"),
+        "channel_choices": NotificationLog.Channel.choices,
+        "status_choices": NotificationLog.Status.choices,
+        "channel_filter": channel_filter,
+        "status_filter": status_filter,
+        "date_filter": date_filter,
+        "failed_count": logs.filter(status=NotificationLog.Status.FAILED).count(),
+    })
+
+
+@role_required(User.Role.DENTIST)
+def dentist_followups_page(request):
+    from followups.forms import FollowUpForm
+    from followups.views import _scope_followup_form
+    from followups.models import FollowUp
+
+    form = _scope_followup_form(FollowUpForm(), request)
+    if request.method == "POST":
+        form = _scope_followup_form(FollowUpForm(request.POST), request)
+        if form.is_valid():
+            followup = form.save(commit=False)
+            followup.assigned_to = request.user
+            followup.save()
+            messages.success(request, "Follow-up created successfully.")
+            return redirect("dashboard:dentist_followups")
+
+    followups = _dentist_followup_queryset(request.user)
+    status_filter = request.GET.get("status", "")
+    date_filter = request.GET.get("date", "")
+    search = request.GET.get("q", "").strip()
+    if status_filter:
+        followups = followups.filter(status=status_filter)
+    if date_filter:
+        followups = followups.filter(followup_date=date_filter)
+    if search:
+        followups = followups.filter(
             Q(patient__user__first_name__icontains=search)
             | Q(patient__user__last_name__icontains=search)
             | Q(reason__icontains=search)
         )
-    if status_filter:
-        filtered_appointments = filtered_appointments.filter(status=status_filter)
-    if date_filter:
-        filtered_appointments = filtered_appointments.filter(appointment_date=date_filter)
 
-    recent_patients = (
-        PatientProfile.objects.filter(appointments__dentist=dentist)
-        .select_related("user")
-        .distinct()
-        .order_by("-appointments__appointment_date")[:6]
-    )
+    return render(request, "dashboard/dentist/followups.html", {
+        "followups": followups.order_by("followup_date", "status"),
+        "form": form,
+        "status_choices": FollowUp.Status.choices,
+        "status_filter": status_filter,
+        "date_filter": date_filter,
+        "search": search,
+    })
 
-    chart_labels, chart_booked, chart_completed = [], [], []
-    for i in range(5, -1, -1):
-        month = today.month - i
-        year = today.year + (month - 1) // 12
-        month = ((month - 1) % 12) + 1
-        month_start = _date(year, month, 1)
-        month_end = _date(year + (month // 12), (month % 12) + 1, 1)
-        month_qs = all_appointments.filter(appointment_date__gte=month_start, appointment_date__lt=month_end)
-        chart_labels.append(month_start.strftime("%b"))
-        chart_booked.append(month_qs.count())
-        chart_completed.append(month_qs.filter(status=Appointment.Status.COMPLETED).count())
 
-    appt_status = all_appointments.aggregate(
-        pending=Count("id", filter=Q(status=Appointment.Status.PENDING)),
-        approved=Count("id", filter=Q(status=Appointment.Status.APPROVED)),
-        completed=Count("id", filter=Q(status=Appointment.Status.COMPLETED)),
-        cancelled=Count("id", filter=Q(status=Appointment.Status.CANCELLED)),
-    )
+@role_required(User.Role.DENTIST)
+def dentist_followup_edit(request, pk):
+    from followups.forms import FollowUpForm
+    from followups.views import _scope_followup_form
 
-    return render(
-        request,
-        "dashboard/dentist.html",
-        {
-            "dentist": dentist,
-            "today_appointments": today_appointments,
-            "filtered_appointments": filtered_appointments[:20],
-            "recent_patients": recent_patients,
-            "recent_ask_messages": recent_ask_messages,
-            "followup_queue": followup_queue,
-            "stats": [
-                {"label": "My Appointments Today", "value": today_count, "change": "Today", "tone": "green", "icon": "event_available"},
-                {"label": "Pending Appointments", "value": pending_count, "change": "Review", "tone": "amber", "icon": "pending_actions"},
-                {"label": "Completed Appointments", "value": completed_count, "change": "Done", "tone": "green", "icon": "task_alt"},
-                {"label": "Follow-ups Due", "value": followups_due, "change": "Due", "tone": "amber", "icon": "next_plan"},
-                {"label": "Ask Doctor Conversations", "value": dentist_conversations.count(), "change": "Inbox", "tone": "green", "icon": "mark_unread_chat_alt"},
-                {"label": "Notification Summary", "value": unread_count, "change": "Unread", "tone": "amber" if unread_count else "green", "icon": "notifications"},
-            ],
-            "notifications": notifications,
-            "unread_count": unread_count,
-            "search": search,
-            "status_filter": status_filter,
-            "date_filter": date_filter,
-            "today": today,
-            "status_choices": Appointment.Status.choices,
-            "appointment_chart": json.dumps({"labels": chart_labels, "booked": chart_booked, "completed": chart_completed}),
-            "status_chart": json.dumps({
-                "labels": ["Pending", "Confirmed", "Completed", "Cancelled"],
-                "values": [
-                    appt_status["pending"],
-                    appt_status["approved"],
-                    appt_status["completed"],
-                    appt_status["cancelled"],
-                ],
-            }),
-            "appt_status": appt_status,
-        },
-    )
+    followup = get_object_or_404(_dentist_followup_queryset(request.user), pk=pk)
+    form = _scope_followup_form(FollowUpForm(instance=followup), request)
+    if request.method == "POST":
+        form = _scope_followup_form(FollowUpForm(request.POST, instance=followup), request)
+        if form.is_valid():
+            item = form.save(commit=False)
+            item.assigned_to = request.user
+            item.save()
+            messages.success(request, "Follow-up updated successfully.")
+            return redirect("dashboard:dentist_followups")
+    return render(request, "dashboard/dentist/followup_edit.html", {"form": form, "followup": followup})
+
+
+@require_POST
+@role_required(User.Role.DENTIST)
+def dentist_followup_status(request, pk, status):
+    from followups.models import FollowUp
+
+    followup = get_object_or_404(_dentist_followup_queryset(request.user), pk=pk)
+    if status in FollowUp.Status.values:
+        followup.status = status
+        followup.save(update_fields=["status"])
+        messages.success(request, f"Follow-up marked as {followup.get_status_display().lower()}.")
+    return redirect("dashboard:dentist_followups")
 
 
 @require_POST
@@ -457,7 +626,7 @@ def update_appointment_status(request, pk, status):
         Appointment.Status.CANCELLED,
         Appointment.Status.COMPLETED,
     }
-    redirect_url = get_dashboard_url_for_user(request.user)
+    redirect_url = reverse("dashboard:dentist_my_appointments") if request.user.role == User.Role.DENTIST else get_dashboard_url_for_user(request.user)
 
     if request.user.role == User.Role.DENTIST:
         dentist = get_dentist_profile(request.user)

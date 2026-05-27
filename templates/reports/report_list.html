@@ -29,36 +29,36 @@
 </div>
 
 <section class="mt-6 rounded-2xl bg-white p-5 shadow-sm">
-  <form method="get" class="flex flex-wrap items-end gap-4">
-    <div class="min-w-[150px]">
-      <label class="block text-sm font-semibold text-gray-700">Date From</label>
-      <input class="mt-2" type="date" name="date_from" value="{{ request.GET.date_from }}">
+  <form method="get" class="flex flex-wrap items-center gap-4">
+    <div class="flex min-w-[210px] items-center gap-2">
+      <label class="whitespace-nowrap text-sm font-semibold text-gray-700">Date From</label>
+      <input type="date" name="date_from" value="{{ request.GET.date_from }}">
     </div>
-    <div class="min-w-[150px]">
-      <label class="block text-sm font-semibold text-gray-700">Date To</label>
-      <input class="mt-2" type="date" name="date_to" value="{{ request.GET.date_to }}">
+    <div class="flex min-w-[190px] items-center gap-2">
+      <label class="whitespace-nowrap text-sm font-semibold text-gray-700">Date To</label>
+      <input type="date" name="date_to" value="{{ request.GET.date_to }}">
     </div>
-    <div class="min-w-[220px]">
-      <label class="block text-sm font-semibold text-gray-700">Dentist</label>
-      <select class="mt-2" name="dentist">
+    <div class="flex min-w-[260px] items-center gap-2">
+      <label class="whitespace-nowrap text-sm font-semibold text-gray-700">Dentist</label>
+      <select name="dentist">
         <option value="">All dentists</option>
         {% for dentist in dentists %}
         <option value="{{ dentist.pk }}" {% if request.GET.dentist == dentist.pk|stringformat:"s" %}selected{% endif %}>{{ dentist }}</option>
         {% endfor %}
       </select>
     </div>
-    <div class="min-w-[180px]">
-      <label class="block text-sm font-semibold text-gray-700">Appointment Status</label>
-      <select class="mt-2" name="status">
+    <div class="flex min-w-[250px] items-center gap-2">
+      <label class="whitespace-nowrap text-sm font-semibold text-gray-700">Appointment Status</label>
+      <select name="status">
         <option value="">All statuses</option>
         {% for v, l in status_choices %}
         <option value="{{ v }}" {% if request.GET.status == v %}selected{% endif %}>{{ l }}</option>
         {% endfor %}
       </select>
     </div>
-    <div class="min-w-[170px]">
-      <label class="block text-sm font-semibold text-gray-700">Report Type</label>
-      <select class="mt-2" name="report_type">
+    <div class="flex min-w-[230px] items-center gap-2">
+      <label class="whitespace-nowrap text-sm font-semibold text-gray-700">Report Type</label>
+      <select name="report_type">
         <option value="">All Reports</option>
         <option value="appointments" {% if request.GET.report_type == "appointments" %}selected{% endif %}>Appointments</option>
         <option value="revenue" {% if request.GET.report_type == "revenue" %}selected{% endif %}>Revenue</option>
