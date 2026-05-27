@@ -1,10 +1,11 @@
 from pathlib import Path
 
 import dj_database_url
-from decouple import Csv, config
+from decouple import AutoConfig, Csv
 from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+config = AutoConfig(search_path=BASE_DIR)
 
 
 def cast_debug(value):
@@ -84,7 +85,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "dental_system.wsgi.application"
 
-DATABASE_URL = config("DATABASE_URL", default="")
+DATABASE_URL = config("DATABASE_URL", default="").strip()
+PLACEHOLDER_DATABASE_URLS = {
+    "postgres://username:password@host:5432/database_name",
+    "postgresql://username:password@host:5432/database_name",
+}
+
+if DATABASE_URL in PLACEHOLDER_DATABASE_URLS:
+    DATABASE_URL = ""
 
 if DATABASE_URL:
     DATABASES = {
