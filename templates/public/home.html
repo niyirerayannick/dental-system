@@ -4,11 +4,12 @@
 {% block title %}DentalCare Pro — Epicenter of Dental Health{% endblock %}
 
 {% block content %}
+{% include "public/partials/home_hero.html" %}
 
 <!-- ══════════════════════════════════════════
      HERO  (navbar floats above this section)
 ══════════════════════════════════════════ -->
-<section class="relative overflow-hidden"
+<section class="relative overflow-hidden hidden"
          style="min-height:100vh;
                 background:linear-gradient(145deg,#EAF7F1 0%,#f5faf7 38%,#ffffff 62%,#EAF7F1 100%);">
 
@@ -101,7 +102,7 @@
 <!-- ══════════════════════════════════════════
      STATS STRIP
 ══════════════════════════════════════════ -->
-<section style="background-color:#EAF7F1;border-top:1px solid rgba(11,122,75,.1);border-bottom:1px solid rgba(11,122,75,.1);">
+<section class="hidden" style="background-color:#EAF7F1;border-top:1px solid rgba(11,122,75,.1);border-bottom:1px solid rgba(11,122,75,.1);">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;">
 
@@ -131,7 +132,9 @@
 <!-- ══════════════════════════════════════════
      ABOUT PREVIEW SECTION
 ══════════════════════════════════════════ -->
-<section id="about" class="py-20 bg-white">
+{% include "public/partials/home_about.html" %}
+
+<section id="about-legacy" class="py-20 bg-white hidden">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="grid lg:grid-cols-2 gap-12 items-center">
 

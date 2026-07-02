@@ -1,0 +1,286 @@
+{% load static %}
+
+<section class="dc-home-hero relative overflow-hidden">
+  {% include "public/partials/public_navbar.html" with active_page="home" %}
+
+  <style>
+    .dc-home-hero {
+      min-height: 96vh;
+      background:
+        linear-gradient(180deg, rgba(3, 53, 58, .96) 0%, rgba(3, 64, 67, .98) 58%, rgba(7, 92, 91, .96) 100%),
+        #043f43;
+      color: #fff;
+      isolation: isolate;
+    }
+    .dc-home-hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, .035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, .035) 1px, transparent 1px);
+      background-size: 80px 80px;
+      opacity: .72;
+    }
+    .dc-home-hero::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0;
+      z-index: -1;
+      height: 34%;
+      background: linear-gradient(180deg, transparent, rgba(94, 230, 201, .13));
+    }
+    .dc-hero-block {
+      position: absolute;
+      border: 1px solid rgba(255, 255, 255, .035);
+      background: rgba(255, 255, 255, .025);
+    }
+    .dc-hero-block.one { width: 128px; height: 72px; top: 0; left: 10.5%; }
+    .dc-hero-block.two { width: 80px; height: 80px; top: 104px; left: 16.2%; }
+    .dc-hero-block.three { width: 78px; height: 80px; top: 86px; right: 9.2%; }
+    .dc-hero-block.four { width: 126px; height: 72px; top: 0; right: 20.6%; }
+    .dc-hero-wrap {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 170px 0 48px;
+    }
+    .dc-hero-title {
+      max-width: 900px;
+      margin: 0 auto;
+      font-size: clamp(2.35rem, 5.4vw, 4.6rem);
+      line-height: 1.08;
+      letter-spacing: 0;
+      text-align: center;
+      font-weight: 800;
+    }
+    .dc-hero-title strong {
+      display: inline-block;
+      color: #d9ff64;
+      font-weight: 800;
+    }
+    .dc-hero-copy {
+      max-width: 500px;
+      margin: 22px auto 0;
+      color: rgba(255, 255, 255, .76);
+      text-align: center;
+      font-size: .98rem;
+      line-height: 1.75;
+    }
+    .dc-hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+    .dc-hero-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 28px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: .92rem;
+      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+    }
+    .dc-hero-btn:hover { transform: translateY(-1px); }
+    .dc-hero-btn.outline {
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, .74);
+      background: rgba(255, 255, 255, .02);
+    }
+    .dc-hero-btn.outline:hover {
+      border-color: #d9ff64;
+      background: rgba(255, 255, 255, .08);
+    }
+    .dc-hero-btn.primary {
+      color: #073b3e;
+      background: #d9ff64;
+      box-shadow: 0 16px 34px rgba(217, 255, 100, .22);
+    }
+    .dc-hero-collage {
+      display: grid;
+      grid-template-columns: minmax(128px, 1fr) minmax(280px, 2.55fr) minmax(128px, 1fr);
+      grid-template-rows: 174px 174px;
+      gap: 16px;
+      align-items: stretch;
+      margin: 76px auto 0;
+      max-width: 1000px;
+    }
+    .dc-hero-card {
+      overflow: hidden;
+      border-radius: 8px;
+      box-shadow: 0 20px 40px rgba(0, 20, 22, .2);
+      animation: dcHeroCardIn .72s ease both, dcHeroFloat 6.5s ease-in-out infinite;
+      transform-origin: center;
+    }
+
+    .dc-hero-card:nth-child(1) { animation-delay: .08s, .9s; }
+    .dc-hero-card:nth-child(2) { animation-delay: .16s, 0s; }
+    .dc-hero-card:nth-child(3) { animation-delay: .24s, 1.4s; }
+    .dc-hero-card:nth-child(4) { animation-delay: .32s, 2.1s; }
+    .dc-hero-card:nth-child(5) { animation-delay: .4s, .55s; }
+
+    .dc-hero-card:hover {
+      animation-play-state: paused;
+      transform: translateY(-6px) scale(1.015);
+      box-shadow: 0 26px 52px rgba(0, 20, 22, .28);
+    }
+
+    .dc-hero-card img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      transform: scale(1.035);
+      transition: transform .7s ease, filter .7s ease;
+    }
+
+    .dc-hero-card:hover img {
+      transform: scale(1.08);
+      filter: saturate(1.06) contrast(1.03);
+    }
+    .dc-hero-photo-main { grid-row: span 2; }
+    .dc-hero-stat {
+      position: relative;
+      padding: 26px 22px;
+      background: #f6fbf4;
+      color: #073b3e;
+    }
+    .dc-hero-stat.lime { background: #d9ff64; }
+    .dc-hero-stat::after {
+      content: "";
+      position: absolute;
+      width: 58px;
+      height: 88px;
+      right: 10px;
+      top: 10px;
+      border-radius: 50%;
+      background: rgba(3, 63, 67, .08);
+      transform: rotate(10deg);
+    }
+    .dc-hero-stat.lime::after { background: rgba(255, 255, 255, .55); }
+    .dc-hero-stat-number {
+      position: relative;
+      z-index: 1;
+      font-size: clamp(2.4rem, 4.2vw, 3.65rem);
+      line-height: .95;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+    .dc-hero-stat-label {
+      position: relative;
+      z-index: 1;
+      max-width: 140px;
+      margin-top: 16px;
+      font-size: 1rem;
+      line-height: 1.55;
+      color: rgba(7, 59, 62, .82);
+      font-weight: 600;
+    }
+
+    @keyframes dcHeroCardIn {
+      from {
+        opacity: 0;
+        transform: translateY(28px) scale(.96);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes dcHeroFloat {
+      0%, 100% { translate: 0 0; }
+      50% { translate: 0 -10px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .dc-hero-card,
+      .dc-hero-card img {
+        animation: none !important;
+        transition: none !important;
+        transform: none !important;
+      }
+    }
+    @media (max-width: 860px) {
+      .dc-hero-wrap { padding-top: 150px; }
+      .dc-hero-collage {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 150px 220px 150px;
+        max-width: 640px;
+        margin-top: 48px;
+      }
+      .dc-hero-photo-main {
+        grid-column: 1 / -1;
+        grid-row: 2;
+      }
+    }
+    @media (max-width: 560px) {
+      .dc-hero-wrap {
+        width: min(100% - 24px, 420px);
+        padding-top: 132px;
+        padding-bottom: 32px;
+      }
+      .dc-hero-title { font-size: clamp(2.25rem, 11vw, 3.25rem); }
+      .dc-hero-copy { font-size: .92rem; }
+      .dc-hero-actions { gap: 10px; }
+      .dc-hero-btn {
+        flex: 1 1 150px;
+        padding: 0 18px;
+      }
+      .dc-hero-collage {
+        grid-template-columns: 1fr;
+        grid-template-rows: 132px 255px 132px 132px;
+        gap: 12px;
+      }
+      .dc-hero-photo-main {
+        grid-column: auto;
+        grid-row: auto;
+      }
+      .dc-hero-stat { padding: 22px 20px; }
+    }
+  </style>
+
+  <span class="dc-hero-block one" aria-hidden="true"></span>
+  <span class="dc-hero-block two" aria-hidden="true"></span>
+  <span class="dc-hero-block three" aria-hidden="true"></span>
+  <span class="dc-hero-block four" aria-hidden="true"></span>
+
+  <div class="dc-hero-wrap">
+    <h1 class="dc-hero-title">
+      Simplify Your Smiles With
+      <strong>Precision</strong> &amp; <strong>Care</strong>
+    </h1>
+    <p class="dc-hero-copy">
+      Experience modern dentistry designed for every smile, from routine checkups to advanced treatments.
+    </p>
+
+    <div class="dc-hero-actions">
+      <a href="#doctors" class="dc-hero-btn outline">See Schedule</a>
+      <a href="{% url 'pub_book' %}" class="dc-hero-btn primary">Book Appointment</a>
+    </div>
+
+    <div class="dc-hero-collage" aria-label="Dental care highlights">
+      <div class="dc-hero-card dc-hero-stat">
+        <div class="dc-hero-stat-number">3+</div>
+        <div class="dc-hero-stat-label">Years of Service Experience</div>
+      </div>
+      <div class="dc-hero-card dc-hero-photo-main">
+        <img src="https://images.unsplash.com/photo-1606811971618-4486d14f3f99?auto=format&amp;fit=crop&amp;w=900&amp;q=85" alt="Dentist examining a smiling patient" loading="eager" onerror="this.onerror=null;this.src='{% static 'images/default-service.svg' %}';">
+      </div>
+      <div class="dc-hero-card">
+        <img src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&amp;fit=crop&amp;w=520&amp;q=85" alt="Dentist treating a patient in a modern clinic" loading="lazy" onerror="this.onerror=null;this.src='{% static 'images/default-service.svg' %}';">
+      </div>
+      <div class="dc-hero-card">
+        <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&amp;fit=crop&amp;w=520&amp;q=85" alt="Patient smiling during a dental visit" loading="lazy" onerror="this.onerror=null;this.src='{% static 'images/default-service.svg' %}';">
+      </div>
+      <div class="dc-hero-card dc-hero-stat lime">
+        <div class="dc-hero-stat-number">2k+</div>
+        <div class="dc-hero-stat-label">Smiling Patients</div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -11,10 +11,138 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/styles.css' %}">
   <style>
+    :root {
+      --dc-hero-teal: #043f43;
+      --dc-hero-teal-2: #075c5b;
+      --dc-hero-lime: #d9ff64;
+      --dc-hero-ink: #073b3e;
+    }
+
     body { font-family: 'Inter', system-ui, sans-serif; }
     /* Dropdown reveal on hover */
     .pub-dropdown:hover > .pub-dropdown-menu { display: block; }
     .pub-dropdown-menu { display: none; }
+
+    .dc-page-hero {
+      position: relative;
+      isolation: isolate;
+      background:
+        linear-gradient(180deg, rgba(3, 53, 58, .96) 0%, rgba(3, 64, 67, .98) 58%, rgba(7, 92, 91, .96) 100%),
+        var(--dc-hero-teal) !important;
+      color: #fff;
+    }
+
+    .dc-page-hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, .035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, .035) 1px, transparent 1px);
+      background-size: 80px 80px;
+      opacity: .72;
+      pointer-events: none;
+    }
+
+    .dc-page-hero::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0;
+      z-index: -1;
+      height: 34%;
+      background: linear-gradient(180deg, transparent, rgba(94, 230, 201, .13));
+      pointer-events: none;
+    }
+
+    .dc-page-hero h1,
+    .dc-page-hero h2 {
+      color: #fff !important;
+    }
+
+    .dc-page-hero p,
+    .dc-page-hero nav,
+    .dc-page-hero nav span {
+      color: rgba(255, 255, 255, .76) !important;
+    }
+
+    .dc-page-hero [style*="color:#0B7A4B"],
+    .dc-page-hero [style*="color: #0B7A4B"],
+    .dc-page-hero nav a {
+      color: var(--dc-hero-lime) !important;
+    }
+
+    .dc-page-hero [style*="background:#0B7A4B"],
+    .dc-page-hero [style*="background: #0B7A4B"],
+    .dc-page-hero [style*="background-color:#0B7A4B"],
+    .dc-page-hero [style*="background-color: #0B7A4B"] {
+      background: var(--dc-hero-lime) !important;
+      color: var(--dc-hero-ink) !important;
+      box-shadow: 0 16px 34px rgba(217, 255, 100, .22) !important;
+    }
+
+    .dc-page-hero [style*="background:#EAF7F1"],
+    .dc-page-hero [style*="background: #EAF7F1"],
+    .dc-page-hero [style*="background:rgba(11,122,75"],
+    .dc-page-hero [style*="background: rgba(11,122,75"] {
+      background: rgba(217, 255, 100, .16) !important;
+      color: var(--dc-hero-lime) !important;
+    }
+
+    .dc-page-hero [style*="border:2px solid rgba(11,122,75"],
+    .dc-page-hero [style*="border: 2px solid rgba(11,122,75"] {
+      border-color: rgba(255, 255, 255, .74) !important;
+      color: #fff !important;
+    }
+
+    .dc-page-hero svg circle {
+      stroke: rgba(217, 255, 100, .28) !important;
+    }
+
+    header [style*="background-color:#0B7A4B"],
+    header [style*="background-color: #0B7A4B"] {
+      background-color: var(--dc-hero-teal) !important;
+    }
+
+    header [style*="border:2px solid #0B7A4B"] {
+      border-color: var(--dc-hero-teal) !important;
+      color: var(--dc-hero-teal) !important;
+    }
+
+    header a.bg-green-50,
+    header a.hover\:bg-green-50:hover,
+    header button.hover\:bg-green-50:hover {
+      background-color: rgba(217, 255, 100, .18) !important;
+      color: var(--dc-hero-teal) !important;
+    }
+
+    section[style*="background:linear-gradient(135deg,#0B7A4B"],
+    section[style*="background:linear-gradient(135deg, #0B7A4B"],
+    section[style*="background-color:#0B7A4B"],
+    section[style*="background-color: #0B7A4B"] {
+      background:
+        linear-gradient(180deg, rgba(3, 53, 58, .96) 0%, rgba(3, 64, 67, .98) 58%, rgba(7, 92, 91, .96) 100%),
+        var(--dc-hero-teal) !important;
+    }
+
+    a[style*="background:#0B7A4B"],
+    a[style*="background: #0B7A4B"],
+    button[style*="background:#0B7A4B"],
+    button[style*="background: #0B7A4B"],
+    a[style*="background-color:#0B7A4B"],
+    a[style*="background-color: #0B7A4B"],
+    button[style*="background-color:#0B7A4B"],
+    button[style*="background-color: #0B7A4B"] {
+      background: var(--dc-hero-teal) !important;
+    }
+
+    a[style*="background:#EAF7F1;color:#0B7A4B"],
+    a[style*="background: #EAF7F1;color:#0B7A4B"],
+    button[style*="background:#EAF7F1;color:#0B7A4B"],
+    button[style*="background: #EAF7F1;color:#0B7A4B"] {
+      background: var(--dc-hero-lime) !important;
+      color: var(--dc-hero-ink) !important;
+    }
   </style>
   {% block extra_head %}{% endblock %}
 </head>
