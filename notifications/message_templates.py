@@ -6,40 +6,46 @@ from patients.models import PatientProfile
 
 PATIENT_WELCOME_RW = """Muraho {full_name},
 
-Murakoze kwiyandikisha muri {clinic_name}. Ikipe yacu, irimo {dentist_name}, yiteguye kubafasha kwita ku buzima bw'amenyo no mu kanwa.
-"""
+Murakoze guhitamo serivisi z’ishami ryita ku buzima bw’amenyo n’indwara zo mu kanwa, murakirwa na {dentist_name}.
+Muri {clinic_name}, ubuzima bwiza bwanyu ni intego yacu. Murakoze kutugirira icyizere."""
 
 
-PATIENT_WELCOME_EN = """Hello {full_name},
-Thank you for registering with {clinic_name}. Our team, including {dentist_name}, is ready to support your dental and oral health care."""
+PATIENT_WELCOME_EN = """Hello {full_name
+Thank you for choosing our dental and oral health services. You will be welcomed by {dentist_name}.
+At {clinic_name}, your health and wellbeing are our priority. Thank you for trusting us."""
 
 
 NEXT_APPOINTMENT_RW = """Muraho {full_name},
-
-Gahunda yanyu muri {clinic_name} yakiriwe: {appointment_date} saa {appointment_time} hamwe na {dentist_name}. Tuzabamenyesha nimara kwemezwa."""
+Gahunda yanyu yo kubonana na muganga {dentist_name} ni kuwa {appointment_date} saa {appointment_time} muri {clinic_name}.
+Murakoze guhitamo serivisi z’ishami ryita ku buzima bw’amenyo n’indwara zo mu kanwa.
+Mugize impamvu ituma muhindura gahunda, mwaduhamagara kuri {clinic_phone}."""
 
 
 NEXT_APPOINTMENT_EN = """Hello {full_name},
-Your appointment request at {clinic_name} has been received: {appointment_date} at {appointment_time} with {dentist_name}. We will notify you once it is confirmed."""
+Your next appointment with {dentist_name} is on {appointment_date} at {appointment_time} at {clinic_name}.
+Thank you for choosing our dental and oral health services.
+If you need to reschedule, please call {clinic_phone}."""
 
 
 THANK_YOU_AFTER_SERVICE_RW = """Muraho {full_name},
-
-Murakoze kugana {clinic_name}. Twishimiye ko mwitaweho na {dentist_name}. Mugize ikibazo cyangwa mukeneye ubujyanama, mwaduhamagara kuri {clinic_phone}."""
-
+Murakoze guhitamo serivisi z’ishami ryita ku menyo n’indwara zo mu kanwa muri {clinic_name}. Mwitaweho na {dentist_name}.
+Ubuzima bwanyu ni intego yacu. Murakoze cyane.
+Mugize ikibazo cyangwa mukeneye ubujyanama, mwaduhamagara kuri {clinic_phone}."""
 
 THANK_YOU_AFTER_SERVICE_EN = """Hello {full_name},
-Thank you for visiting {clinic_name}. We are glad you were cared for by {dentist_name}. If you have any concern or need advice, please call {clinic_phone}."""
-
+Thank you for choosing dental and oral health services at {clinic_name}. You were cared for by {dentist_name}.
+Your health is our priority. Thank you very much.
+If you have any concern or need advice, please call {clinic_phone}."""
 
 APPOINTMENT_CONFIRMED_RW = """Muraho {full_name},
-
-Gahunda yanyu muri {clinic_name} yemejwe: {appointment_date} saa {appointment_time} hamwe na {dentist_name}. Niba mukeneye kuyihindura, muduhamagare kuri {clinic_phone}."""
-
+Gahunda mwasabye yo kubonana na muganga {dentist_name} kuwa {appointment_date} saa {appointment_time} yemejwe.
+Murakoze guhitamo serivisi z’ishami ryita ku buzima bw’amenyo n’indwara zo mu kanwa muri {clinic_name}.
+Mugize impamvu ituma muhindura gahunda, mwaduhamagara kuri {clinic_phone}."""
 
 APPOINTMENT_CONFIRMED_EN = """Hello {full_name},
-Your appointment at {clinic_name} is confirmed: {appointment_date} at {appointment_time} with {dentist_name}. To reschedule, please call {clinic_phone}."""
-
+Your appointment with {dentist_name} on {appointment_date} at {appointment_time} has been confirmed.
+Thank you for choosing dental and oral health services at {clinic_name}.
+If you need to reschedule, please call {clinic_phone}."""
 
 PATIENT_WELCOME = PATIENT_WELCOME_RW
 NEXT_APPOINTMENT = NEXT_APPOINTMENT_RW

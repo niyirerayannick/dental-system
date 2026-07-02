@@ -6,13 +6,19 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import OperationalError
 
+COOLIFY_MEDIA_HOST_PATH = "/var/www/dentalcare/media"
+COOLIFY_MEDIA_CONTAINER_PATH = "/app/media"
+
 
 class Command(BaseCommand):
-    help = "Diagnose uploaded media configuration, URLs, and missing files."
+    help = "Diagnose database, media storage, permissions, and uploaded file health."
 
     def handle(self, *args, **options):
         media_root = Path(settings.MEDIA_ROOT)
-        self._print_config(media_root)
+        self._print_database()
+        self._print_storage(media_root)
+        self._print_permissions(media_root)
+        self._print_sample_files(media_root)
 
         try:
             records = self._media_records()
@@ -24,12 +30,12 @@ class Command(BaseCommand):
         service_images = [record for record in records if record["group"] == "services"]
         broken = []
 
-        self.stdout.write("Database counts:")
-        self.stdout.write(f"  Service image references in DB: {len(service_images)}")
-        self.stdout.write(f"  All uploaded media references in DB: {len(records)}")
+        self.stdout.write("Database media references:")
+        self.stdout.write(f"  Service image references: {len(service_images)}")
+        self.stdout.write(f"  All uploaded media references: {len(records)}")
         self.stdout.write("")
 
-        self.stdout.write("Sample files:")
+        self.stdout.write("Sample DB records:")
         if not records:
             self.stdout.write("  No uploaded media references found.")
         for record in records[:20]:
@@ -50,18 +56,95 @@ class Command(BaseCommand):
             for record in broken:
                 self.stdout.write(self.style.ERROR(f"  {record['label']} -> {record['name']}"))
 
-    def _print_config(self, media_root):
-        self.stdout.write("Media configuration:")
+    def _print_database(self):
+        database = settings.DATABASES["default"]
+        engine = database.get("ENGINE", "")
+        name = database.get("NAME", "")
+        host = database.get("HOST", "") or "(local file)" if "sqlite" in engine else "(default)"
+
+        self.stdout.write("Database:")
+        self.stdout.write(f"  ENGINE: {engine}")
+        self.stdout.write(f"  NAME: {self._masked(name)}")
+        if "postgresql" in engine:
+            self.stdout.write(f"  HOST: {host}")
+            self.stdout.write(f"  PORT: {database.get('PORT', '') or '(default)'}")
+            self.stdout.write(f"  USER: {database.get('USER', '') or '(default)'}")
+        self.stdout.write(f"  PostgreSQL in production: {'yes' if 'postgresql' in engine else 'no'}")
+        self.stdout.write(f"  SQLite fallback active: {'yes' if 'sqlite' in engine else 'no'}")
+        self.stdout.write("")
+
+    def _print_storage(self, media_root):
+        self.stdout.write("Media storage:")
         self.stdout.write(f"  BASE_DIR: {settings.BASE_DIR}")
         self.stdout.write(f"  MEDIA_ROOT: {media_root}")
         self.stdout.write(f"  MEDIA_URL: {settings.MEDIA_URL}")
-        self.stdout.write(f"  MEDIA_ROOT exists: {'yes' if media_root.exists() else 'no'}")
         self.stdout.write(f"  STATIC_URL: {settings.STATIC_URL}")
         self.stdout.write(f"  STATIC_ROOT: {settings.STATIC_ROOT}")
         self.stdout.write(f"  SERVE_MEDIA: {getattr(settings, 'SERVE_MEDIA', False)}")
-        self.stdout.write(f"  Expected Coolify volume destination: /app/media")
-        self.stdout.write(f"  MEDIA_ROOT resolves to /app/media: {'yes' if str(media_root) == '/app/media' else 'no'}")
+        self.stdout.write(f"  Coolify host source path: {COOLIFY_MEDIA_HOST_PATH}")
+        self.stdout.write(f"  Coolify container destination: {COOLIFY_MEDIA_CONTAINER_PATH}")
+        self.stdout.write(
+            f"  MEDIA_ROOT matches container mount: {'yes' if str(media_root) == COOLIFY_MEDIA_CONTAINER_PATH else 'no'}"
+        )
         self.stdout.write("")
+
+    def _print_permissions(self, media_root):
+        exists = media_root.exists()
+        writable = self._is_writable(media_root) if exists or self._ensure_dir(media_root) else False
+
+        self.stdout.write("Media folder:")
+        self.stdout.write(f"  exists: {'yes' if exists or media_root.exists() else 'no'}")
+        self.stdout.write(f"  writable: {'yes' if writable else 'no'}")
+        self.stdout.write("")
+
+    def _print_sample_files(self, media_root):
+        services_dir = media_root / "services"
+        sample_files = []
+
+        if services_dir.is_dir():
+            sample_files.extend(sorted(services_dir.iterdir())[:5])
+
+        if not sample_files and media_root.exists():
+            for path in sorted(media_root.rglob("*")):
+                if path.is_file():
+                    sample_files.append(path)
+                if len(sample_files) >= 5:
+                    break
+
+        self.stdout.write("Sample files on disk:")
+        self.stdout.write(f"  services/ folder exists: {'yes' if services_dir.is_dir() else 'no'}")
+        self.stdout.write(f"  sample files exist: {'yes' if sample_files else 'no'}")
+        if sample_files:
+            for path in sample_files:
+                relative = path.relative_to(media_root)
+                self.stdout.write(f"    - {relative}")
+        self.stdout.write("")
+
+    def _ensure_dir(self, media_root):
+        try:
+            media_root.mkdir(parents=True, exist_ok=True)
+            return True
+        except OSError:
+            return False
+
+    def _is_writable(self, media_root):
+        probe = media_root / ".media_write_test"
+        try:
+            media_root.mkdir(parents=True, exist_ok=True)
+            probe.write_text("ok", encoding="utf-8")
+            probe.unlink(missing_ok=True)
+            return True
+        except OSError:
+            probe.unlink(missing_ok=True)
+            return False
+
+    def _masked(self, value):
+        value = str(value or "")
+        if not value:
+            return "(empty)"
+        if len(value) <= 8:
+            return value
+        return f"{value[:4]}...{value[-4:]}"
 
     def _media_records(self):
         from articles.models import Article

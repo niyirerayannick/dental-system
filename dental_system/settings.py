@@ -102,13 +102,20 @@ if DATABASE_URL:
             conn_health_checks=True,
         )
     }
-else:
+elif DEBUG:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": config("SQLITE_NAME", default=str(BASE_DIR / "db.sqlite3")),
         }
     }
+else:
+    raise ImproperlyConfigured(
+        "DATABASE_URL is required when DEBUG=False. Use the Coolify PostgreSQL connection string."
+    )
+
+if not DEBUG and DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
+    raise ImproperlyConfigured("SQLite is not allowed in production. Set DATABASE_URL to PostgreSQL.")
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -129,8 +136,11 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
-# WhiteNoise serves static files only. In single-container Coolify deployments,
-# keep this enabled so uploaded files under MEDIA_ROOT are reachable at /media/.
+# WhiteNoise serves static files only, never uploaded media.
+# In Coolify, mount host /var/www/dentalcare/media to container /app/media so uploads
+# survive redeploys. Serve /media/ via the reverse proxy (see deploy/) or Django below.
+# Private paths such as ask_doctor/attachments/ must route through Django when using
+# direct file serving at the proxy.
 SERVE_MEDIA = config("SERVE_MEDIA", default=True, cast=bool)
 
 LOGIN_URL = "accounts:login"

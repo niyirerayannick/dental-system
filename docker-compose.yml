@@ -23,7 +23,9 @@ services:
       CLINIC_NAME: ${CLINIC_NAME:-Plan Healthcare Clinic}
       CLINIC_PHONE: ${CLINIC_PHONE:-}
     volumes:
-      - media_data:/app/media
+      # Production Coolify bind mount example:
+      # /var/www/dentalcare/media:/app/media
+      - ${MEDIA_HOST_PATH:-./media}:/app/media
     depends_on:
       - postgres
 
@@ -38,4 +40,3 @@ services:
 
 volumes:
   postgres_data:
-  media_data:

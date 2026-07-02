@@ -1,0 +1,16 @@
+# Example Nginx snippet for dentcare.rw
+# Mount host /var/www/dentalcare/media and proxy private attachments to Django.
+
+location /media/ask_doctor/attachments/ {
+    proxy_pass http://127.0.0.1:8000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
+
+location /media/ {
+    alias /var/www/dentalcare/media/;
+    expires 7d;
+    add_header Cache-Control "public";
+    try_files $uri =404;
+}

@@ -1,0 +1,31 @@
+# Example edge Caddy config for dentcare.rw
+# Host uploads live at /var/www/dentalcare/media (same files Django writes via /app/media mount).
+#
+# Private Ask Doctor attachments must stay behind Django auth checks.
+# Public uploads (services, articles, logos, etc.) can be served directly by Caddy.
+
+dentcare.rw {
+	encode gzip
+
+	# Static files collected by collectstatic (optional if WhiteNoise serves them in-app)
+	handle /static/* {
+		root * /var/www/dentalcare/staticfiles
+		file_server
+	}
+
+	# Private media: route through Django/Gunicorn
+	handle /media/ask_doctor/attachments/* {
+		reverse_proxy 127.0.0.1:8000
+	}
+
+	# Public uploaded media: serve from persistent host folder
+	handle_path /media/* {
+		root * /var/www/dentalcare/media
+		file_server
+	}
+
+	# Application
+	handle {
+		reverse_proxy 127.0.0.1:8000
+	}
+}
