@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.core.exceptions import ValidationError
 from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -6,6 +7,7 @@ from django.views.decorators.http import require_POST
 
 from accounts.models import User
 from accounts.permissions import role_required
+from dental_system.upload_validation import validate_uploaded_image
 from .forms import DentalServiceForm, ServiceCategoryForm
 from .models import DentalService, ServiceCategory, ServiceImage
 
@@ -40,6 +42,14 @@ def _save_service_images(service, files):
             sort_order=start_order + offset,
             alt_text=service.name,
         )
+
+
+def _validate_service_images(files):
+    files = [file for file in files if file]
+    if len(files) > 10:
+        raise ValidationError("Upload no more than 10 service images at a time.")
+    for image in files:
+        validate_uploaded_image(image)
 
 
 def _service_image_url(service):
@@ -92,13 +102,19 @@ def service_list(request):
     form = DentalServiceForm()
     modal_open = False
     if request.method == "POST":
+        images = request.FILES.getlist("images")
         form = DentalServiceForm(request.POST, request.FILES)
         modal_open = True
         if form.is_valid():
-            service = form.save()
-            _save_service_images(service, request.FILES.getlist("images"))
-            messages.success(request, "Service created successfully.")
-            return redirect("services:list")
+            try:
+                _validate_service_images(images)
+            except ValidationError as exc:
+                form.add_error(None, exc)
+            else:
+                service = form.save()
+                _save_service_images(service, images)
+                messages.success(request, "Service created successfully.")
+                return redirect("services:list")
 
     ctx = _ctx()
     ctx.update({
@@ -118,9 +134,15 @@ def service_update(request, pk):
     svc = get_object_or_404(DentalService, pk=pk)
     form = DentalServiceForm(request.POST, request.FILES, instance=svc)
     if form.is_valid():
-        service = form.save()
-        _save_service_images(service, request.FILES.getlist("images"))
-        messages.success(request, "Service updated successfully.")
+        images = request.FILES.getlist("images")
+        try:
+            _validate_service_images(images)
+        except ValidationError as exc:
+            messages.error(request, " ".join(exc.messages))
+        else:
+            service = form.save()
+            _save_service_images(service, images)
+            messages.success(request, "Service updated successfully.")
     else:
         messages.error(request, "Could not save service. Please check the form.")
     return redirect("services:list")
@@ -149,6 +171,8 @@ def service_delete(request, pk):
 @role_required(User.Role.ADMIN)
 def service_image_delete(request, pk):
     image = get_object_or_404(ServiceImage, pk=pk)
+    if image.image:
+        image.image.delete(save=False)
     image.delete()
     messages.success(request, "Service image removed.")
     return redirect("services:list")

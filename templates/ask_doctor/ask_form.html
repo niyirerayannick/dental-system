@@ -49,6 +49,7 @@
           Subject <span class="text-red-400">*</span>
         </label>
         {{ form.subject }}
+        {% for error in form.subject.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
       </div>
 
       <div>
@@ -56,6 +57,7 @@
           Topic / Category
         </label>
         {{ form.category }}
+        {% for error in form.category.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
       </div>
 
       <div>
@@ -63,6 +65,7 @@
           Your Question <span class="text-red-400">*</span>
         </label>
         {{ form.message }}
+        {% for error in form.message.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
         <p class="mt-1 text-xs text-gray-400">Max 4,000 characters. Be as detailed as possible.</p>
       </div>
 
@@ -71,6 +74,7 @@
           Attachment <span class="text-xs font-normal text-gray-400">(optional — image, pdf, doc)</span>
         </label>
         {{ form.attachment }}
+        {% for error in form.attachment.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
         <p class="mt-1 text-xs text-gray-400">You can attach X-rays, photos, or documents up to 10MB.</p>
       </div>
 

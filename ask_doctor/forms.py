@@ -1,5 +1,6 @@
 from django import forms
 
+from dental_system.upload_validation import validate_uploaded_attachment
 from .models import DoctorConversation, DoctorMessage
 
 _INPUT = (
@@ -66,6 +67,11 @@ class AskDoctorForm(forms.Form):
         }),
     )
 
+    def clean_attachment(self):
+        attachment = self.cleaned_data.get("attachment")
+        validate_uploaded_attachment(attachment)
+        return attachment
+
 
 class SendMessageForm(forms.Form):
     """Simple message input used in the chat interface."""
@@ -87,3 +93,8 @@ class SendMessageForm(forms.Form):
             "accept": "image/*,.pdf,.doc,.docx",
         }),
     )
+
+    def clean_attachment(self):
+        attachment = self.cleaned_data.get("attachment")
+        validate_uploaded_attachment(attachment)
+        return attachment

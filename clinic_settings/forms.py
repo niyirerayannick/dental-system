@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 
+from dental_system.upload_validation import validate_uploaded_image
 from .models import ClinicSetting
 
 User = get_user_model()
@@ -13,6 +14,11 @@ class ClinicProfileForm(forms.ModelForm):
         widgets = {
             "clinic_address": forms.Textarea(attrs={"rows": 3}),
         }
+
+    def clean_logo(self):
+        logo = self.cleaned_data.get("logo")
+        validate_uploaded_image(logo)
+        return logo
 
 
 class AppointmentSettingsForm(forms.ModelForm):

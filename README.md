@@ -128,9 +128,34 @@ The compose file runs a `web` container and a local PostgreSQL container.
 ## Static And Media Files
 
 - Static files are collected to `staticfiles/`.
-- WhiteNoise serves static files in production.
-- Media uploads are stored in `media/`.
-- In Coolify, add persistent storage for `/app/media` if user-uploaded profile images must survive redeploys.
+- WhiteNoise serves static files in production. It does not serve uploaded media.
+- Media uploads are stored under `MEDIA_ROOT`, which resolves to `/app/media` inside the Docker container.
+- Uploaded files are served from `/media/` when `SERVE_MEDIA=True`.
+- In Coolify, add persistent storage with destination path `/app/media`. Without this volume, uploaded files can disappear after redeploy/restart.
+- Keep uploaded files out of `static/` and `staticfiles/`; those directories are for app assets collected by `collectstatic`.
+
+Production media checks:
+
+```bash
+python manage.py check_media_files
+```
+
+Expected production values:
+
+```text
+MEDIA_URL=/media/
+MEDIA_ROOT=/app/media
+SERVE_MEDIA=True
+Coolify persistent volume destination=/app/media
+```
+
+After uploading a service image, a URL like this should open directly:
+
+```text
+https://yourdomain.com/media/services/example.jpg
+```
+
+Ask Doctor attachments are stored under `/app/media/ask_doctor/attachments/` and are permission-checked by the Django media route.
 
 ## Troubleshooting Deployment
 

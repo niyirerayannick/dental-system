@@ -1,9 +1,9 @@
 from django.conf import settings
-from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
 
 from .views import health, home, public_book, public_contact, public_service_detail, public_services
+from .media_views import serve_media
 from notifications.views import twilio_status_callback
 
 urlpatterns = [
@@ -34,5 +34,7 @@ urlpatterns = [
     path("tinymce/", include("tinymce.urls")),
 ]
 
-if settings.DEBUG or getattr(settings, "SERVE_MEDIA", False):
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+if getattr(settings, "SERVE_MEDIA", False):
+    urlpatterns += [
+        re_path(r"^media/(?P<path>.*)$", serve_media, name="serve_media"),
+    ]

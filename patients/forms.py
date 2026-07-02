@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.utils.crypto import get_random_string
 
 from accounts.models import User
+from dental_system.upload_validation import validate_uploaded_image
 from .models import PatientProfile
 
 
@@ -22,8 +23,7 @@ class PatientProfileForm(forms.ModelForm):
 
     def clean_profile_image(self):
         image = self.cleaned_data.get("profile_image")
-        if image and hasattr(image, "size") and image.size > 2 * 1024 * 1024:
-            raise forms.ValidationError("Profile image must be 2 MB or less.")
+        validate_uploaded_image(image, max_size=2 * 1024 * 1024)
         return image
 
     def clean_date_of_birth(self):

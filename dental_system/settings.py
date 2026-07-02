@@ -129,7 +129,9 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
-SERVE_MEDIA = config("SERVE_MEDIA", default=DEBUG, cast=bool)
+# WhiteNoise serves static files only. In single-container Coolify deployments,
+# keep this enabled so uploaded files under MEDIA_ROOT are reachable at /media/.
+SERVE_MEDIA = config("SERVE_MEDIA", default=True, cast=bool)
 
 LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "dashboard:redirect"
@@ -162,8 +164,8 @@ TINYMCE_DEFAULT_CONFIG = {
     "automatic_uploads": True,
     "file_picker_types": "image",
     "media_live_embeds": True,
-    "extended_valid_elements": "iframe[src|frameborder|style|scrolling|class|width|height|name|align|allow|allowfullscreen]",
-    "valid_elements": "*[*]",
+    "extended_valid_elements": "iframe[src|frameborder|class|width|height|allow|allowfullscreen]",
+    "valid_elements": "p,br,strong/b,em/i,u,ul,ol,li,blockquote,code,pre,h2,h3,h4,a[href|target|rel],img[src|alt|width|height],table,thead,tbody,tr,th,td",
 }
 
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 365  # 1 year — session never times out; only logout clears it

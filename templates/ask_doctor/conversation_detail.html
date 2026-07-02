@@ -140,6 +140,7 @@
       <div style="display:flex;gap:12px;align-items:flex-end;">
         <div style="flex:1;">
           {{ form.message }}
+          {% for error in form.message.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
         </div>
         <button type="submit"
                 style="flex-shrink:0;width:44px;height:44px;border-radius:14px;
@@ -163,6 +164,7 @@
         </label>
         <span style="font-size:11px;color:#cbd5e1;">Max 10MB · image, pdf, doc</span>
       </div>
+      {% for error in form.attachment.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
     </form>
   </div>
   {% endif %}

@@ -16,8 +16,10 @@ RUN pip install --upgrade pip \
 
 COPY . .
 
+RUN mkdir -p /app/media /app/staticfiles
 RUN chmod +x /app/entrypoint.sh
 
 EXPOSE 8000
+VOLUME ["/app/media"]
 
 ENTRYPOINT ["/app/entrypoint.sh"]

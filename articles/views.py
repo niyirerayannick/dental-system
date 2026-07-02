@@ -1,6 +1,11 @@
 import os
+import uuid
 
 from django.contrib import messages
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.core.files.storage import default_storage
+from django.utils.text import get_valid_filename
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
 from django.http import JsonResponse
@@ -9,6 +14,7 @@ from django.views.decorators.http import require_POST
 
 from accounts.models import User
 from accounts.permissions import role_required
+from dental_system.upload_validation import validate_uploaded_image
 
 from .forms import ArticleForm, CommentForm, ReplyForm
 from .models import Article, ArticleCategory, ArticleComment, ArticleLike, ArticleView
@@ -340,16 +346,14 @@ def dashboard_article_image_upload(request):
     if not upload:
         return JsonResponse({"error": "No file provided"}, status=400)
 
-    allowed_types = {"image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"}
-    if upload.content_type not in allowed_types:
-        return JsonResponse({"error": "Invalid file type"}, status=400)
+    try:
+        validate_uploaded_image(upload)
+    except ValidationError as exc:
+        return JsonResponse({"error": " ".join(exc.messages)}, status=400)
 
-    from django.core.files.base import ContentFile
-    from django.core.files.storage import default_storage
-
-    filename = os.path.basename(upload.name)
-    path = default_storage.save(f"articles/uploads/{filename}", ContentFile(upload.read()))
-    url = request.build_absolute_uri(f"/media/{path}")
+    filename = get_valid_filename(os.path.basename(upload.name))
+    path = default_storage.save(f"articles/uploads/{uuid.uuid4().hex}-{filename}", upload)
+    url = request.build_absolute_uri(f"{settings.MEDIA_URL}{path}")
     return JsonResponse({"location": url})
 
 
