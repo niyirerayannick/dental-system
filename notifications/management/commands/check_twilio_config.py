@@ -25,6 +25,7 @@ class Command(BaseCommand):
         self.stdout.write(f"WhatsApp from loaded: {self._yes_no(settings.TWILIO_WHATSAPP_FROM)}{self._masked(settings.TWILIO_WHATSAPP_FROM)}")
         self.stdout.write(f"Status callback URL loaded: {self._yes_no(settings.TWILIO_STATUS_CALLBACK_URL)}")
         self.stdout.write(f"Signature validation: {'enabled' if settings.TWILIO_VALIDATE_SIGNATURE else 'disabled'}")
+        self.stdout.write(f"Preferred notification channel: {settings.NOTIFICATION_PREFERRED_CHANNEL}")
         self.stdout.write(f"Clinic name loaded: {self._yes_no(settings.CLINIC_NAME)}")
         self.stdout.write(f"Clinic phone loaded: {self._yes_no(settings.CLINIC_PHONE)}{self._masked(settings.CLINIC_PHONE)}")
 

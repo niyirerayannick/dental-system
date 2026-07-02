@@ -13,10 +13,18 @@
       {% else %}All articles across all authors.{% endif %}
     </p>
   </div>
-  <a href="{% url 'articles:dashboard_create' %}"
-     class="inline-flex items-center gap-2 rounded-2xl bg-green-700 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-green-800">
-    <span class="material-symbols-rounded text-base">add_circle</span> New Article
-  </a>
+  <div class="flex flex-wrap gap-2">
+    {% if not is_dentist %}
+    <a href="{% url 'articles:dashboard_categories' %}"
+       class="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50">
+      <span class="material-symbols-rounded text-base">category</span> Categories
+    </a>
+    {% endif %}
+    <a href="{% url 'articles:dashboard_create' %}"
+       class="inline-flex items-center gap-2 rounded-2xl bg-green-700 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-green-800">
+      <span class="material-symbols-rounded text-base">add_circle</span> New Article
+    </a>
+  </div>
 </div>
 
 {# ── SEARCH + FILTER ── #}

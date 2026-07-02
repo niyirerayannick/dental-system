@@ -7,6 +7,7 @@ from django.test import TestCase
 from PIL import Image
 
 from accounts.models import User
+from articles.models import Article, ArticleCategory
 
 
 def make_image_upload(name="photo.png", content_type="image/png"):
@@ -60,3 +61,74 @@ class PublicMediaServingTests(TestCase):
 
             self.assertEqual(response.status_code, 200)
             response.close()
+
+
+class ArticleDashboardTests(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_user(
+            phone="+250780000011",
+            password="pass12345",
+            first_name="Admin",
+            last_name="User",
+            role=User.Role.ADMIN,
+            is_staff=True,
+        )
+        self.dentist = User.objects.create_user(
+            phone="+250780000012",
+            password="pass12345",
+            first_name="Dentist",
+            last_name="Writer",
+            role=User.Role.DENTIST,
+            is_staff=True,
+        )
+        self.other_dentist = User.objects.create_user(
+            phone="+250780000013",
+            password="pass12345",
+            first_name="Other",
+            last_name="Writer",
+            role=User.Role.DENTIST,
+            is_staff=True,
+        )
+        self.category = ArticleCategory.objects.create(name="Oral Hygiene")
+        Article.objects.create(
+            title="Daily brushing guide",
+            category=self.category,
+            content="<p>Brush twice daily.</p>",
+            author=self.dentist,
+            is_published=True,
+        )
+        Article.objects.create(
+            title="Implant aftercare",
+            category=self.category,
+            content="<p>Care instructions.</p>",
+            author=self.other_dentist,
+        )
+
+    def test_admin_dashboard_lists_all_articles(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get("/education/dashboard/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Daily brushing guide")
+        self.assertContains(response, "Implant aftercare")
+
+    def test_dentist_dashboard_lists_only_own_articles(self):
+        self.client.force_login(self.dentist)
+
+        response = self.client.get("/education/dashboard/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Daily brushing guide")
+        self.assertNotContains(response, "Implant aftercare")
+
+    def test_admin_can_create_article_category(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            "/education/dashboard/categories/",
+            {"name": "Children Dentistry", "description": "Pediatric education", "color": "#0B7A4B"},
+        )
+
+        self.assertRedirects(response, "/education/dashboard/categories/")
+        self.assertTrue(ArticleCategory.objects.filter(name="Children Dentistry").exists())

@@ -16,7 +16,7 @@ from accounts.models import User
 from accounts.permissions import role_required
 from dental_system.upload_validation import validate_uploaded_image
 
-from .forms import ArticleForm, CommentForm, ReplyForm
+from .forms import ArticleCategoryForm, ArticleForm, CommentForm, ReplyForm
 from .models import Article, ArticleCategory, ArticleComment, ArticleLike, ArticleView
 
 
@@ -255,6 +255,57 @@ def dashboard_article_list(request):
         "total": qs.count(),
         "is_dentist": is_dentist,
     })
+
+
+@role_required(User.Role.ADMIN)
+def dashboard_category_list(request):
+    categories = (
+        ArticleCategory.objects
+        .annotate(article_count=Count("articles", distinct=True))
+        .order_by("name")
+    )
+    form = ArticleCategoryForm()
+
+    if request.method == "POST":
+        form = ArticleCategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Article category created successfully.")
+            return redirect("articles:dashboard_categories")
+
+    return render(
+        request,
+        "dashboard/articles/categories.html",
+        {"categories": categories, "form": form},
+    )
+
+
+@role_required(User.Role.ADMIN)
+def dashboard_category_edit(request, pk):
+    category = get_object_or_404(ArticleCategory, pk=pk)
+    if request.method == "POST":
+        form = ArticleCategoryForm(request.POST, instance=category)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Article category updated successfully.")
+            return redirect("articles:dashboard_categories")
+    else:
+        form = ArticleCategoryForm(instance=category)
+    return render(
+        request,
+        "dashboard/articles/category_form.html",
+        {"form": form, "category": category},
+    )
+
+
+@role_required(User.Role.ADMIN)
+@require_POST
+def dashboard_category_delete(request, pk):
+    category = get_object_or_404(ArticleCategory, pk=pk)
+    title = category.name
+    category.delete()
+    messages.success(request, f'Article category "{title}" deleted.')
+    return redirect("articles:dashboard_categories")
 
 
 @role_required(User.Role.ADMIN, User.Role.DENTIST)

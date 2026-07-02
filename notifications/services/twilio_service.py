@@ -78,6 +78,7 @@ TWILIO_STATUS_MAP = {
     "sending": NotificationLog.Status.QUEUED,
     "sent": NotificationLog.Status.SENT,
     "delivered": NotificationLog.Status.DELIVERED,
+    "read": NotificationLog.Status.DELIVERED,
     "failed": NotificationLog.Status.FAILED,
     "undelivered": NotificationLog.Status.UNDELIVERED,
 }
@@ -163,26 +164,84 @@ def send_whatsapp(phone, message, patient=None, appointment=None, parent_log=Non
 
 
 def send_preferred(phone, message, patient=None, appointment=None):
-    whatsapp_result = send_whatsapp(phone, message, patient=patient, appointment=appointment)
-    if whatsapp_result.get("ok"):
+    preferred_channel = getattr(settings, "NOTIFICATION_PREFERRED_CHANNEL", "sms")
+
+    if preferred_channel == NotificationLog.Channel.WHATSAPP:
+        whatsapp_result = send_whatsapp(phone, message, patient=patient, appointment=appointment)
+        if whatsapp_result.get("ok"):
+            return {
+                "ok": True,
+                "channel": NotificationLog.Channel.WHATSAPP,
+                "result": whatsapp_result,
+                "whatsapp": whatsapp_result,
+                "sms": None,
+            }
+
+        sms_result = send_sms(phone, message, patient=patient, appointment=appointment)
         return {
-            "ok": True,
-            "channel": NotificationLog.Channel.WHATSAPP,
-            "result": whatsapp_result,
+            "ok": sms_result.get("ok", False),
+            "channel": NotificationLog.Channel.SMS if sms_result.get("ok") else None,
+            "result": sms_result,
             "whatsapp": whatsapp_result,
-            "sms": None,
+            "sms": sms_result,
         }
 
     sms_result = send_sms(phone, message, patient=patient, appointment=appointment)
+    if sms_result.get("ok"):
+        return {
+            "ok": True,
+            "channel": NotificationLog.Channel.SMS,
+            "result": sms_result,
+            "whatsapp": None,
+            "sms": sms_result,
+        }
+
+    whatsapp_result = send_whatsapp(phone, message, patient=patient, appointment=appointment)
     return {
-        "ok": sms_result.get("ok", False),
-        "channel": NotificationLog.Channel.SMS if sms_result.get("ok") else None,
-        "result": sms_result,
+        "ok": whatsapp_result.get("ok", False),
+        "channel": NotificationLog.Channel.WHATSAPP if whatsapp_result.get("ok") else None,
+        "result": whatsapp_result,
         "whatsapp": whatsapp_result,
         "sms": sms_result,
     }
 
 
+def sync_twilio_log_status(log):
+    if not log.provider_sid:
+        return {"ok": False, "error": "NotificationLog has no provider SID.", "log_id": log.pk}
+    if _missing_credentials(log.channel):
+        return {"ok": False, "error": "Missing Twilio credentials.", "log_id": log.pk}
+
+    from twilio.rest import Client
+
+    client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+    message = client.messages(log.provider_sid).fetch()
+    status = normalize_twilio_status(getattr(message, "status", ""))
+    error_code = getattr(message, "error_code", None) or ""
+    error_message = getattr(message, "error_message", None) or ""
+    response_data = dict(log.response_data or {})
+    response_data.update(
+        {
+            "synced_status": getattr(message, "status", ""),
+            "synced_error_code": error_code,
+            "synced_error_message": error_message,
+        }
+    )
+    log.status = status
+    log.response_data = response_data
+    if error_code or error_message:
+        log.error_message = " ".join(str(part) for part in (error_code, error_message) if part)
+    elif status not in FINAL_FAILURE_STATUSES:
+        log.error_message = ""
+    log.save(update_fields=["status", "response_data", "error_message", "updated_at"])
+    return {
+        "ok": True,
+        "log_id": log.pk,
+        "status": status,
+        "twilio_status": getattr(message, "status", ""),
+        "error_code": error_code,
+        "error_message": error_message,
+    }
 def send_both(phone, message, patient=None, appointment=None):
     return {
         "sms": send_sms(phone, message, patient=patient, appointment=appointment),

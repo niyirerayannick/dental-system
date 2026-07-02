@@ -117,7 +117,7 @@ def _twilio_signature_is_valid(request):
     from twilio.request_validator import RequestValidator
 
     validator = RequestValidator(settings.TWILIO_AUTH_TOKEN)
-    url = request.build_absolute_uri()
+    url = settings.TWILIO_STATUS_CALLBACK_URL or request.build_absolute_uri()
     return validator.validate(url, request.POST.dict(), signature)
 
 

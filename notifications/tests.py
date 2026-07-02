@@ -3,6 +3,7 @@ from unittest.mock import patch
 from django.test import Client, TestCase, override_settings
 
 from notifications.models import NotificationLog
+from notifications.services.twilio_service import send_preferred
 
 
 class TwilioStatusCallbackTests(TestCase):
@@ -73,3 +74,30 @@ class TwilioStatusCallbackTests(TestCase):
         self.assertFalse(mocked_send_sms.called)
         log = NotificationLog.objects.get(provider_sid="SMDELIVERED123")
         self.assertEqual(log.status, NotificationLog.Status.DELIVERED)
+
+
+class PreferredChannelTests(TestCase):
+    @override_settings(NOTIFICATION_PREFERRED_CHANNEL="sms")
+    @patch("notifications.services.twilio_service.send_whatsapp")
+    @patch("notifications.services.twilio_service.send_sms")
+    def test_send_preferred_uses_sms_first_by_default(self, mocked_send_sms, mocked_send_whatsapp):
+        mocked_send_sms.return_value = {"ok": True, "status": "sent", "log_id": 1}
+
+        result = send_preferred("+250780474044", "Test message")
+
+        self.assertEqual(result["channel"], NotificationLog.Channel.SMS)
+        mocked_send_sms.assert_called_once()
+        mocked_send_whatsapp.assert_not_called()
+
+    @override_settings(NOTIFICATION_PREFERRED_CHANNEL="sms")
+    @patch("notifications.services.twilio_service.send_whatsapp")
+    @patch("notifications.services.twilio_service.send_sms")
+    def test_send_preferred_falls_back_to_whatsapp_if_sms_api_fails(self, mocked_send_sms, mocked_send_whatsapp):
+        mocked_send_sms.return_value = {"ok": False, "status": "failed", "error": "SMS failed", "log_id": 1}
+        mocked_send_whatsapp.return_value = {"ok": True, "status": "sent", "log_id": 2}
+
+        result = send_preferred("+250780474044", "Test message")
+
+        self.assertEqual(result["channel"], NotificationLog.Channel.WHATSAPP)
+        mocked_send_sms.assert_called_once()
+        mocked_send_whatsapp.assert_called_once()

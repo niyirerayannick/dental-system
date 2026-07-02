@@ -1,0 +1,41 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Edit Article Category{% endblock %}
+
+{% block dashboard_content %}
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <p class="text-xs font-semibold uppercase tracking-wide text-green-600">Content management</p>
+    <h1 class="mt-1 text-2xl font-bold text-gray-900">Edit Category</h1>
+    <p class="mt-1 text-sm text-gray-500">{{ category.name }}</p>
+  </div>
+  <a href="{% url 'articles:dashboard_categories' %}"
+     class="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
+    <span class="material-symbols-rounded text-base">arrow_back</span> Back
+  </a>
+</div>
+
+<section class="max-w-2xl rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    <div>
+      <label class="mb-1 block text-sm font-semibold text-gray-700">Name</label>
+      {{ form.name }}
+      {% for error in form.name.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+    </div>
+    <div>
+      <label class="mb-1 block text-sm font-semibold text-gray-700">Description</label>
+      {{ form.description }}
+      {% for error in form.description.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+    </div>
+    <div>
+      <label class="mb-1 block text-sm font-semibold text-gray-700">Color</label>
+      {{ form.color }}
+      {% for error in form.color.errors %}<p class="mt-1 text-xs text-red-600">{{ error }}</p>{% endfor %}
+    </div>
+    <div class="flex gap-3 pt-2">
+      <button class="rounded-2xl bg-green-700 px-5 py-2.5 text-sm font-bold text-white hover:bg-green-800">Save Category</button>
+      <a href="{% url 'articles:dashboard_categories' %}" class="rounded-2xl bg-gray-100 px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-200">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

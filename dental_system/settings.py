@@ -151,6 +151,7 @@ TWILIO_SMS_FROM = config("TWILIO_SMS_FROM", default="")
 TWILIO_WHATSAPP_FROM = config("TWILIO_WHATSAPP_FROM", default="whatsapp:+14155238886")
 TWILIO_STATUS_CALLBACK_URL = config("TWILIO_STATUS_CALLBACK_URL", default="")
 TWILIO_VALIDATE_SIGNATURE = config("TWILIO_VALIDATE_SIGNATURE", default=not DEBUG, cast=bool)
+NOTIFICATION_PREFERRED_CHANNEL = config("NOTIFICATION_PREFERRED_CHANNEL", default="sms").strip().lower()
 CLINIC_NAME = config("CLINIC_NAME", default="Plan Healthcare Clinic")
 CLINIC_PHONE = config("CLINIC_PHONE", default="0780474044")
 

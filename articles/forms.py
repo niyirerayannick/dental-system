@@ -49,6 +49,27 @@ class ArticleForm(forms.ModelForm):
         }
 
 
+class ArticleCategoryForm(forms.ModelForm):
+    class Meta:
+        model = ArticleCategory
+        fields = ["name", "description", "color"]
+        widgets = {
+            "name": forms.TextInput(attrs={
+                "class": "w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100",
+                "placeholder": "Category name",
+            }),
+            "description": forms.Textarea(attrs={
+                "class": "w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-100",
+                "rows": 3,
+                "placeholder": "Short description",
+            }),
+            "color": forms.TextInput(attrs={
+                "type": "color",
+                "class": "h-11 w-20 rounded-xl border border-gray-200 bg-white p-1",
+            }),
+        }
+
+
 _INPUT = (
     "width:100%;border:1.5px solid #e2e8f0;border-radius:10px;"
     "padding:12px 14px;font-size:14px;outline:none;box-sizing:border-box;"
