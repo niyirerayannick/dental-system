@@ -73,7 +73,10 @@ Route `/media/ask_doctor/attachments/` through Django so private files stay prot
 
 ```bash
 python manage.py check_media_files
+python manage.py check_media_files --deploy-check
 ```
+
+If `--deploy-check` fails with `persistent volume mounted: no`, uploads will disappear on redeploy.
 
 Manual test:
 
@@ -82,3 +85,45 @@ Manual test:
 3. Open `https://dentcare.rw/media/services/<filename>`
 4. Redeploy the app.
 5. Confirm the same URL still works.
+
+## Photos lost after redeploy?
+
+The database only stores the **file path** (for example `services/photo.jpg`). The actual image bytes live on disk under `/app/media`.
+
+Without a Coolify volume, redeploy replaces the container and deletes those files. PostgreSQL keeps the paths, so images look broken.
+
+### Fix (do this now)
+
+1. SSH into the Coolify server.
+2. Create the host folder:
+
+```bash
+sudo mkdir -p /var/www/dentalcare/media
+sudo chown -R 1000:1000 /var/www/dentalcare/media
+sudo chmod -R 775 /var/www/dentalcare/media
+```
+
+3. In Coolify → your app → **Persistent Storage** → add:
+
+| Source | Destination |
+|--------|-------------|
+| `/var/www/dentalcare/media` | `/app/media` |
+
+4. Redeploy.
+5. In Coolify terminal run:
+
+```bash
+python manage.py check_media_files --deploy-check
+```
+
+You should see `persistent volume mounted: yes`.
+
+6. Re-upload service images that were lost (unless you have a backup of `/var/www/dentalcare/media` to restore).
+
+### Confirm mount inside container
+
+```bash
+grep " /app/media " /proc/mounts
+```
+
+If this prints nothing, the volume is not attached.

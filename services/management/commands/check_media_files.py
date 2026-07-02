@@ -3,32 +3,49 @@ from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 from django.conf import settings
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db import OperationalError
 
-COOLIFY_MEDIA_HOST_PATH = "/var/www/dentalcare/media"
-COOLIFY_MEDIA_CONTAINER_PATH = "/app/media"
+from dental_system.media_storage import (
+    COOLIFY_MEDIA_CONTAINER_PATH,
+    COOLIFY_MEDIA_HOST_PATH,
+    is_media_mount_persistent,
+)
 
 
 class Command(BaseCommand):
     help = "Diagnose database, media storage, permissions, and uploaded file health."
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--deploy-check",
+            action="store_true",
+            help="Exit with an error when production media storage is not persistent or files are missing.",
+        )
+
     def handle(self, *args, **options):
+        deploy_check = options["deploy_check"]
         media_root = Path(settings.MEDIA_ROOT)
+        mount_persistent = is_media_mount_persistent(media_root)
+
         self._print_database()
-        self._print_storage(media_root)
+        self._print_storage(media_root, mount_persistent)
         self._print_permissions(media_root)
         self._print_sample_files(media_root)
+
+        broken = []
+        records = []
 
         try:
             records = self._media_records()
         except OperationalError as exc:
             self.stdout.write(self.style.ERROR("Could not query media records."))
             self.stdout.write(str(exc))
+            if deploy_check:
+                raise CommandError("Database media query failed.") from exc
             return
 
         service_images = [record for record in records if record["group"] == "services"]
-        broken = []
 
         self.stdout.write("Database media references:")
         self.stdout.write(f"  Service image references: {len(service_images)}")
@@ -56,6 +73,47 @@ class Command(BaseCommand):
             for record in broken:
                 self.stdout.write(self.style.ERROR(f"  {record['label']} -> {record['name']}"))
 
+        if deploy_check:
+            self._run_deploy_check(
+                media_root=media_root,
+                mount_persistent=mount_persistent,
+                broken_count=len(broken),
+                record_count=len(records),
+            )
+
+    def _run_deploy_check(self, media_root, mount_persistent, broken_count, record_count):
+        problems = []
+
+        if not settings.DEBUG and str(media_root) != COOLIFY_MEDIA_CONTAINER_PATH:
+            problems.append(f"MEDIA_ROOT should be {COOLIFY_MEDIA_CONTAINER_PATH} in production.")
+
+        if mount_persistent is False:
+            problems.append(
+                "Persistent volume is NOT mounted at /app/media. "
+                f"Add Coolify storage: {COOLIFY_MEDIA_HOST_PATH} -> {COOLIFY_MEDIA_CONTAINER_PATH}"
+            )
+
+        if not media_root.exists() or not self._is_writable(media_root):
+            problems.append("Media folder is missing or not writable.")
+
+        if broken_count:
+            problems.append(
+                f"{broken_count} database file reference(s) point to missing files on disk. "
+                "Re-upload images or restore /var/www/dentalcare/media from backup."
+            )
+
+        if problems:
+            self.stdout.write("")
+            self.stdout.write(self.style.ERROR("Deploy check failed:"))
+            for problem in problems:
+                self.stdout.write(self.style.ERROR(f"  - {problem}"))
+            raise CommandError("Media storage is not safe for production redeploys.")
+
+        self.stdout.write("")
+        self.stdout.write(self.style.SUCCESS("Deploy check passed: media storage looks persistent."))
+        if record_count == 0:
+            self.stdout.write("  No uploads in database yet. Upload a test image after deploy.")
+
     def _print_database(self):
         database = settings.DATABASES["default"]
         engine = database.get("ENGINE", "")
@@ -73,7 +131,7 @@ class Command(BaseCommand):
         self.stdout.write(f"  SQLite fallback active: {'yes' if 'sqlite' in engine else 'no'}")
         self.stdout.write("")
 
-    def _print_storage(self, media_root):
+    def _print_storage(self, media_root, mount_persistent):
         self.stdout.write("Media storage:")
         self.stdout.write(f"  BASE_DIR: {settings.BASE_DIR}")
         self.stdout.write(f"  MEDIA_ROOT: {media_root}")
@@ -86,6 +144,10 @@ class Command(BaseCommand):
         self.stdout.write(
             f"  MEDIA_ROOT matches container mount: {'yes' if str(media_root) == COOLIFY_MEDIA_CONTAINER_PATH else 'no'}"
         )
+        if mount_persistent is None:
+            self.stdout.write("  persistent volume mounted: unknown (not running in Linux container)")
+        else:
+            self.stdout.write(f"  persistent volume mounted: {'yes' if mount_persistent else 'no'}")
         self.stdout.write("")
 
     def _print_permissions(self, media_root):

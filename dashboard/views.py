@@ -504,35 +504,7 @@ def dentist_ask_doctor_page(request):
 
 @role_required(User.Role.DENTIST)
 def dentist_articles_page(request):
-    from articles.models import Article, ArticleCategory
-
-    articles = (
-        Article.objects.filter(author=request.user)
-        .select_related("category")
-        .annotate(
-            views_count=Count("views", distinct=True),
-            likes_count=Count("likes", distinct=True),
-            comments_count=Count("comments", distinct=True),
-        )
-    )
-    q = request.GET.get("q", "").strip()
-    status_filter = request.GET.get("status", "")
-    category_filter = request.GET.get("category", "")
-    if q:
-        articles = articles.filter(title__icontains=q)
-    if status_filter == "published":
-        articles = articles.filter(is_published=True)
-    elif status_filter == "draft":
-        articles = articles.filter(is_published=False)
-    if category_filter:
-        articles = articles.filter(category__slug=category_filter)
-    return render(request, "dashboard/dentist/articles.html", {
-        "articles": articles.order_by("-created_at"),
-        "categories": ArticleCategory.objects.all(),
-        "q": q,
-        "status_filter": status_filter,
-        "category_filter": category_filter,
-    })
+    return redirect("articles:dashboard_list")
 
 
 @role_required(User.Role.DENTIST)

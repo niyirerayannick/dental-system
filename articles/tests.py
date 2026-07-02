@@ -113,14 +113,14 @@ class ArticleDashboardTests(TestCase):
         self.assertContains(response, "Daily brushing guide")
         self.assertContains(response, "Implant aftercare")
 
-    def test_dentist_dashboard_lists_only_own_articles(self):
+    def test_dentist_dashboard_lists_all_articles(self):
         self.client.force_login(self.dentist)
 
         response = self.client.get("/education/dashboard/")
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Daily brushing guide")
-        self.assertNotContains(response, "Implant aftercare")
+        self.assertContains(response, "Implant aftercare")
 
     def test_admin_can_create_article_category(self):
         self.client.force_login(self.admin)

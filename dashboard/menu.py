@@ -33,7 +33,7 @@ ROLE_MENUS = {
         {"label": "My Appointments", "icon": "calendar_month", "url_name": "dashboard:dentist_my_appointments", "active_url_names": {"dentist_my_appointments", "dentist_appointment_detail"}},
         {"label": "My Patients", "icon": "groups", "url_name": "dashboard:dentist_my_patients", "active_url_names": {"dentist_my_patients", "dentist_patient_detail"}},
         {"label": "Ask Doctor Inbox", "icon": "mark_unread_chat_alt", "url_name": "dashboard:dentist_ask_doctor", "active_url_names": {"dentist_ask_doctor"}},
-        {"label": "My Dental Articles", "icon": "article", "url_name": "dashboard:dentist_articles", "active_url_names": {"dentist_articles"}},
+        {"label": "Dental Articles", "icon": "article", "url_name": "articles:dashboard_list", "active_namespaces": {"articles"}},
         {"label": "Notifications", "icon": "notifications", "url_name": "dashboard:dentist_notifications", "active_url_names": {"dentist_notifications"}},
         {"label": "Follow-ups", "icon": "next_plan", "url_name": "dashboard:dentist_followups", "active_url_names": {"dentist_followups", "dentist_followup_edit"}},
     ],
