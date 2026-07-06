@@ -35,13 +35,13 @@ class ArticleImageUploadTests(TestCase):
             content_type="image/svg+xml",
         )
 
-        response = self.client.post("/education/dashboard/image-upload/", {"file": upload})
+        response = self.client.post("/dashboard/articles/image-upload/", {"file": upload})
 
         self.assertEqual(response.status_code, 400)
         self.assertIn("error", response.json())
 
     def test_accepts_valid_raster_image(self):
-        response = self.client.post("/education/dashboard/image-upload/", {"file": make_image_upload()})
+        response = self.client.post("/dashboard/articles/image-upload/", {"file": make_image_upload()})
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("/media/articles/uploads/", response.json()["location"])
@@ -107,7 +107,7 @@ class ArticleDashboardTests(TestCase):
     def test_admin_dashboard_lists_all_articles(self):
         self.client.force_login(self.admin)
 
-        response = self.client.get("/education/dashboard/")
+        response = self.client.get("/dashboard/articles/")
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Daily brushing guide")
@@ -116,19 +116,44 @@ class ArticleDashboardTests(TestCase):
     def test_dentist_dashboard_lists_all_articles(self):
         self.client.force_login(self.dentist)
 
-        response = self.client.get("/education/dashboard/")
+        response = self.client.get("/dashboard/articles/")
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Daily brushing guide")
         self.assertContains(response, "Implant aftercare")
 
+    def test_receptionist_dashboard_lists_all_articles(self):
+        receptionist = User.objects.create_user(
+            phone="+250780000014",
+            password="pass12345",
+            first_name="Front",
+            last_name="Desk",
+            role=User.Role.RECEPTIONIST,
+            is_staff=True,
+        )
+        self.client.force_login(receptionist)
+
+        response = self.client.get("/dashboard/articles/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Daily brushing guide")
+        self.assertContains(response, "Implant aftercare")
+
+    def test_legacy_education_dashboard_url_still_works(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get("/education/dashboard/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Daily brushing guide")
+
     def test_admin_can_create_article_category(self):
         self.client.force_login(self.admin)
 
         response = self.client.post(
-            "/education/dashboard/categories/",
+            "/dashboard/articles/categories/",
             {"name": "Children Dentistry", "description": "Pediatric education", "color": "#0B7A4B"},
         )
 
-        self.assertRedirects(response, "/education/dashboard/categories/")
+        self.assertRedirects(response, "/dashboard/articles/categories/")
         self.assertTrue(ArticleCategory.objects.filter(name="Children Dentistry").exists())

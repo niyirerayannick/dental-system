@@ -6,7 +6,7 @@
 {# ── TOOLBAR ── #}
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
   <div class="flex items-center gap-3">
-    <a href="{% url 'articles:dashboard_list' %}"
+    <a href="{% url 'dashboard:articles_list' %}"
        class="inline-flex items-center gap-1.5 rounded-2xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
       <span class="material-symbols-rounded text-base">arrow_back</span> Back
     </a>
@@ -16,7 +16,7 @@
     </span>
   </div>
   <div class="flex gap-2">
-    <a href="{% url 'articles:dashboard_edit' article.pk %}"
+    <a href="{% url 'dashboard:articles_edit' article.pk %}"
        class="inline-flex items-center gap-2 rounded-2xl bg-green-700 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-green-800">
       <span class="material-symbols-rounded text-base">edit</span> Edit
     </a>
@@ -92,7 +92,7 @@
 
   {# Quick actions at bottom #}
   <div class="mt-4 flex flex-wrap gap-3 justify-end">
-    <form method="post" action="{% url 'articles:dashboard_toggle' article.pk %}">
+    <form method="post" action="{% url 'dashboard:articles_toggle' article.pk %}">
       {% csrf_token %}
       <button type="submit"
               class="rounded-2xl px-5 py-2.5 text-sm font-bold shadow-sm transition
@@ -101,7 +101,7 @@
         {% if article.is_published %}Unpublish{% else %}Publish Now{% endif %}
       </button>
     </form>
-    <a href="{% url 'articles:dashboard_delete' article.pk %}"
+    <a href="{% url 'dashboard:articles_delete' article.pk %}"
        class="rounded-2xl border border-red-200 bg-white px-5 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50">
       Delete Article
     </a>

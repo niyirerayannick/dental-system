@@ -16,6 +16,8 @@ from accounts.models import User
 from accounts.permissions import role_required
 from dental_system.upload_validation import validate_uploaded_image
 
+from .access import ARTICLE_DASHBOARD_ROLES, ARTICLE_EDITOR_ROLES, article_dashboard_flags, user_can_edit_article
+
 from .forms import ArticleCategoryForm, ArticleForm, CommentForm, ReplyForm
 from .models import Article, ArticleCategory, ArticleComment, ArticleLike, ArticleView
 
@@ -202,7 +204,7 @@ def article_comment(request, slug):
 
 # ── Dashboard views ────────────────────────────────────────────────────────────
 
-@role_required(User.Role.ADMIN, User.Role.DENTIST)
+@role_required(*ARTICLE_DASHBOARD_ROLES)
 def dashboard_article_list(request):
     qs = (
         Article.objects
@@ -224,8 +226,7 @@ def dashboard_article_list(request):
         .order_by("-created_at")
     )
 
-    is_dentist = request.user.role == User.Role.DENTIST
-    can_manage_all = request.user.role == User.Role.ADMIN or request.user.is_superuser
+    flags = article_dashboard_flags(request.user)
 
     q = request.GET.get("q", "").strip()
     status_filter = request.GET.get("status", "")
@@ -252,8 +253,7 @@ def dashboard_article_list(request):
         "category_filter": category_filter,
         "categories": categories,
         "total": paginator.count,
-        "is_dentist": is_dentist,
-        "can_manage_all": can_manage_all,
+        **flags,
     })
 
 
@@ -271,7 +271,7 @@ def dashboard_category_list(request):
         if form.is_valid():
             form.save()
             messages.success(request, "Article category created successfully.")
-            return redirect("articles:dashboard_categories")
+            return redirect("dashboard:articles_categories")
 
     return render(
         request,
@@ -288,7 +288,7 @@ def dashboard_category_edit(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, "Article category updated successfully.")
-            return redirect("articles:dashboard_categories")
+            return redirect("dashboard:articles_categories")
     else:
         form = ArticleCategoryForm(instance=category)
     return render(
@@ -305,10 +305,10 @@ def dashboard_category_delete(request, pk):
     title = category.name
     category.delete()
     messages.success(request, f'Article category "{title}" deleted.')
-    return redirect("articles:dashboard_categories")
+    return redirect("dashboard:articles_categories")
 
 
-@role_required(User.Role.ADMIN, User.Role.DENTIST)
+@role_required(*ARTICLE_EDITOR_ROLES)
 def dashboard_article_create(request):
     if request.method == "POST":
         form = ArticleForm(request.POST, request.FILES)
@@ -317,73 +317,73 @@ def dashboard_article_create(request):
             article.author = request.user
             article.save()
             messages.success(request, f'Article "{article.title}" created successfully.')
-            return redirect("articles:dashboard_list")
+            return redirect("dashboard:articles_list")
     else:
         form = ArticleForm()
 
     return render(request, "dashboard/articles/create.html", {"form": form})
 
 
-@role_required(User.Role.ADMIN, User.Role.DENTIST)
+@role_required(*ARTICLE_EDITOR_ROLES)
 def dashboard_article_edit(request, pk):
     article = get_object_or_404(Article, pk=pk)
 
-    if request.user.role == User.Role.DENTIST and article.author != request.user:
+    if not user_can_edit_article(request.user, article):
         messages.error(request, "You do not have permission to edit this article.")
-        return redirect("articles:dashboard_list")
+        return redirect("dashboard:articles_list")
 
     if request.method == "POST":
         form = ArticleForm(request.POST, request.FILES, instance=article)
         if form.is_valid():
             form.save()
             messages.success(request, f'Article "{article.title}" updated successfully.')
-            return redirect("articles:dashboard_list")
+            return redirect("dashboard:articles_list")
     else:
         form = ArticleForm(instance=article)
 
     return render(request, "dashboard/articles/edit.html", {"form": form, "article": article})
 
 
-@role_required(User.Role.ADMIN, User.Role.DENTIST)
+@role_required(*ARTICLE_EDITOR_ROLES)
 def dashboard_article_delete(request, pk):
     article = get_object_or_404(Article, pk=pk)
 
-    if request.user.role == User.Role.DENTIST and article.author != request.user:
+    if not user_can_edit_article(request.user, article):
         messages.error(request, "You do not have permission to delete this article.")
-        return redirect("articles:dashboard_list")
+        return redirect("dashboard:articles_list")
 
     if request.method == "POST":
         title = article.title
         article.delete()
         messages.success(request, f'Article "{title}" deleted.')
-        return redirect("articles:dashboard_list")
+        return redirect("dashboard:articles_list")
 
     return render(request, "dashboard/articles/delete.html", {"article": article})
 
 
-@role_required(User.Role.ADMIN, User.Role.DENTIST)
+@role_required(*ARTICLE_EDITOR_ROLES)
 @require_POST
 def dashboard_article_toggle_publish(request, pk):
     article = get_object_or_404(Article, pk=pk)
 
-    if request.user.role == User.Role.DENTIST and article.author != request.user:
+    if not user_can_edit_article(request.user, article):
         messages.error(request, "You do not have permission to modify this article.")
-        return redirect("articles:dashboard_list")
+        return redirect("dashboard:articles_list")
 
     article.is_published = not article.is_published
     article.save()
     state = "published" if article.is_published else "unpublished"
     messages.success(request, f'"{article.title}" {state}.')
-    return redirect("articles:dashboard_list")
+    return redirect("dashboard:articles_list")
 
 
-@role_required(User.Role.ADMIN, User.Role.DENTIST)
+@role_required(*ARTICLE_DASHBOARD_ROLES)
 def dashboard_article_preview(request, pk):
     article = get_object_or_404(Article, pk=pk)
     return render(request, "dashboard/articles/preview.html", {"article": article})
 
 
-@role_required(User.Role.ADMIN, User.Role.DENTIST)
+@role_required(*ARTICLE_EDITOR_ROLES)
 def dashboard_article_image_upload(request):
     if request.method != "POST":
         return JsonResponse({"error": "Method not allowed"}, status=405)
@@ -405,7 +405,7 @@ def dashboard_article_image_upload(request):
 
 # ── Dashboard comment management ───────────────────────────────────────────────
 
-@role_required(User.Role.ADMIN, User.Role.DENTIST)
+@role_required(*ARTICLE_DASHBOARD_ROLES)
 def dashboard_comment_list(request):
     qs = (
         ArticleComment.objects
@@ -456,30 +456,30 @@ def dashboard_comment_list(request):
     })
 
 
-@role_required(User.Role.ADMIN, User.Role.DENTIST)
+@role_required(*ARTICLE_EDITOR_ROLES)
 @require_POST
 def dashboard_comment_approve(request, pk):
     comment = get_object_or_404(ArticleComment, pk=pk)
 
     if request.user.role == User.Role.DENTIST and comment.article.author != request.user:
         messages.error(request, "Permission denied.")
-        return redirect("articles:dashboard_comments")
+        return redirect("dashboard:articles_comments")
 
     comment.is_approved = not comment.is_approved
     comment.save()
     state = "approved" if comment.is_approved else "hidden"
     messages.success(request, f'Comment {state}.')
-    return redirect(request.META.get("HTTP_REFERER", "articles:dashboard_comments"))
+    return redirect(request.META.get("HTTP_REFERER", "dashboard:articles_comments"))
 
 
-@role_required(User.Role.ADMIN, User.Role.DENTIST)
+@role_required(*ARTICLE_EDITOR_ROLES)
 @require_POST
 def dashboard_comment_reply(request, pk):
     parent = get_object_or_404(ArticleComment, pk=pk, parent__isnull=True)
 
     if request.user.role == User.Role.DENTIST and parent.article.author != request.user:
         messages.error(request, "Permission denied.")
-        return redirect("articles:dashboard_comments")
+        return redirect("dashboard:articles_comments")
 
     form = ReplyForm(request.POST)
     if form.is_valid():
@@ -496,18 +496,18 @@ def dashboard_comment_reply(request, pk):
     else:
         messages.error(request, "Reply cannot be empty.")
 
-    return redirect(request.META.get("HTTP_REFERER", "articles:dashboard_comments"))
+    return redirect(request.META.get("HTTP_REFERER", "dashboard:articles_comments"))
 
 
-@role_required(User.Role.ADMIN, User.Role.DENTIST)
+@role_required(*ARTICLE_EDITOR_ROLES)
 @require_POST
 def dashboard_comment_delete(request, pk):
     comment = get_object_or_404(ArticleComment, pk=pk)
 
     if request.user.role == User.Role.DENTIST and comment.article.author != request.user:
         messages.error(request, "Permission denied.")
-        return redirect("articles:dashboard_comments")
+        return redirect("dashboard:articles_comments")
 
     comment.delete()
     messages.success(request, "Comment deleted.")
-    return redirect(request.META.get("HTTP_REFERER", "articles:dashboard_comments"))
+    return redirect(request.META.get("HTTP_REFERER", "dashboard:articles_comments"))

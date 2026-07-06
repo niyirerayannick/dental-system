@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import include, path
 
 from .views import (
     admin_dashboard,
@@ -40,6 +40,7 @@ app_name = "dashboard"
 
 urlpatterns = [
     path("", role_dashboard_redirect, name="redirect"),
+    path("articles/", include("articles.dashboard_urls")),
     path("admin/", admin_dashboard, name="admin"),
     path("admin/users/", admin_users, name="admin_users"),
     path("admin/users/add/", admin_user_add, name="admin_user_add"),

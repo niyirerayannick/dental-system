@@ -8,7 +8,7 @@
     <h1 class="mt-1 text-2xl font-bold text-gray-900">Edit Category</h1>
     <p class="mt-1 text-sm text-gray-500">{{ category.name }}</p>
   </div>
-  <a href="{% url 'articles:dashboard_categories' %}"
+  <a href="{% url 'dashboard:articles_categories' %}"
      class="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
     <span class="material-symbols-rounded text-base">arrow_back</span> Back
   </a>
@@ -34,7 +34,7 @@
     </div>
     <div class="flex gap-3 pt-2">
       <button class="rounded-2xl bg-green-700 px-5 py-2.5 text-sm font-bold text-white hover:bg-green-800">Save Category</button>
-      <a href="{% url 'articles:dashboard_categories' %}" class="rounded-2xl bg-gray-100 px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-200">Cancel</a>
+      <a href="{% url 'dashboard:articles_categories' %}" class="rounded-2xl bg-gray-100 px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-200">Cancel</a>
     </div>
   </form>
 </section>

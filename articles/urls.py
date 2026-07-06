@@ -26,7 +26,7 @@ app_name = "articles"
 urlpatterns = [
     # Public list (exact)
     path("", education_list, name="list"),
-    # Dashboard article routes — must come before the slug catch-all
+    # Legacy dashboard URLs under /education/dashboard/ (same views as /dashboard/articles/)
     path("dashboard/", dashboard_article_list, name="dashboard_list"),
     path("dashboard/categories/", dashboard_category_list, name="dashboard_categories"),
     path("dashboard/categories/<int:pk>/edit/", dashboard_category_edit, name="dashboard_category_edit"),
@@ -37,7 +37,6 @@ urlpatterns = [
     path("dashboard/<int:pk>/edit/", dashboard_article_edit, name="dashboard_edit"),
     path("dashboard/<int:pk>/delete/", dashboard_article_delete, name="dashboard_delete"),
     path("dashboard/<int:pk>/toggle/", dashboard_article_toggle_publish, name="dashboard_toggle"),
-    # Dashboard comment management
     path("dashboard/comments/", dashboard_comment_list, name="dashboard_comments"),
     path("dashboard/comments/<int:pk>/approve/", dashboard_comment_approve, name="dashboard_comment_approve"),
     path("dashboard/comments/<int:pk>/reply/", dashboard_comment_reply, name="dashboard_comment_reply"),

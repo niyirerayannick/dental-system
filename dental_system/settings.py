@@ -170,7 +170,7 @@ TINYMCE_DEFAULT_CONFIG = {
     "plugins": "advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount",
     "toolbar": "undo redo | blocks | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image media | blockquote code | table | removeformat | help",
     "menubar": "file edit view insert format tools table help",
-    "images_upload_url": "/education/dashboard/image-upload/",
+    "images_upload_url": "/dashboard/articles/image-upload/",
     "images_upload_credentials": True,
     "automatic_uploads": True,
     "file_picker_types": "image",

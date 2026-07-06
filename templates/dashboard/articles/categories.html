@@ -8,7 +8,7 @@
     <h1 class="mt-1 text-2xl font-bold text-gray-900">Article Categories</h1>
     <p class="mt-1 text-sm text-gray-500">Organize dental education articles for the public listing.</p>
   </div>
-  <a href="{% url 'articles:dashboard_list' %}"
+  <a href="{% url 'dashboard:articles_list' %}"
      class="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
     <span class="material-symbols-rounded text-base">arrow_back</span> Back to Articles
   </a>
@@ -68,9 +68,9 @@
           {% endif %}
         </div>
         <div class="flex gap-2">
-          <a href="{% url 'articles:dashboard_category_edit' category.pk %}"
+          <a href="{% url 'dashboard:articles_category_edit' category.pk %}"
              class="rounded-xl border border-gray-200 px-3 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50">Edit</a>
-          <form method="post" action="{% url 'articles:dashboard_category_delete' category.pk %}"
+          <form method="post" action="{% url 'dashboard:articles_category_delete' category.pk %}"
                 onsubmit="return confirm('Delete this category? Articles will become uncategorized.')">
             {% csrf_token %}
             <button class="rounded-xl border border-red-200 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50">Delete</button>

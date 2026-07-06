@@ -504,7 +504,7 @@ def dentist_ask_doctor_page(request):
 
 @role_required(User.Role.DENTIST)
 def dentist_articles_page(request):
-    return redirect("articles:dashboard_list")
+    return redirect("dashboard:articles_list")
 
 
 @role_required(User.Role.DENTIST)

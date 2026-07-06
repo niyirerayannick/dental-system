@@ -13,6 +13,24 @@ ADMIN_USER_URLS = {
 }
 
 
+ARTICLE_DASHBOARD_URL_NAMES = {
+    "articles_list",
+    "articles_categories",
+    "articles_category_edit",
+    "articles_category_delete",
+    "articles_create",
+    "articles_image_upload",
+    "articles_preview",
+    "articles_edit",
+    "articles_delete",
+    "articles_toggle",
+    "articles_comments",
+    "articles_comment_approve",
+    "articles_comment_reply",
+    "articles_comment_delete",
+}
+
+
 ROLE_MENUS = {
     User.Role.ADMIN: [
         {"label": "Dashboard", "icon": "dashboard", "url_name": "dashboard:admin", "active_url_names": {"admin"}},
@@ -22,7 +40,7 @@ ROLE_MENUS = {
         {"label": "Users Management", "icon": "manage_accounts", "url_name": "dashboard:admin_users", "active_url_names": ADMIN_USER_URLS},
         {"label": "Services Management", "icon": "category", "url_name": "services:list", "active_namespaces": {"services"}},
         {"label": "Ask Doctor Inbox", "icon": "mark_unread_chat_alt", "url_name": "ask_doctor:inbox", "active_namespaces": {"ask_doctor"}},
-        {"label": "Dental Articles", "icon": "article", "url_name": "articles:dashboard_list", "active_namespaces": {"articles"}},
+        {"label": "Dental Articles", "icon": "article", "url_name": "dashboard:articles_list", "active_url_names": ARTICLE_DASHBOARD_URL_NAMES},
         {"label": "Notifications / SMS & WhatsApp Logs", "icon": "mark_chat_read", "url_name": "notifications:logs", "active_namespaces": {"notifications"}},
         {"label": "Follow-ups", "icon": "next_plan", "url_name": "followups:list", "active_namespaces": {"followups"}},
         {"label": "Reports", "icon": "analytics", "url_name": "reports:list", "active_namespaces": {"reports"}},
@@ -33,7 +51,7 @@ ROLE_MENUS = {
         {"label": "My Appointments", "icon": "calendar_month", "url_name": "dashboard:dentist_my_appointments", "active_url_names": {"dentist_my_appointments", "dentist_appointment_detail"}},
         {"label": "My Patients", "icon": "groups", "url_name": "dashboard:dentist_my_patients", "active_url_names": {"dentist_my_patients", "dentist_patient_detail"}},
         {"label": "Ask Doctor Inbox", "icon": "mark_unread_chat_alt", "url_name": "dashboard:dentist_ask_doctor", "active_url_names": {"dentist_ask_doctor"}},
-        {"label": "Dental Articles", "icon": "article", "url_name": "articles:dashboard_list", "active_namespaces": {"articles"}},
+        {"label": "Dental Articles", "icon": "article", "url_name": "dashboard:articles_list", "active_url_names": ARTICLE_DASHBOARD_URL_NAMES},
         {"label": "Notifications", "icon": "notifications", "url_name": "dashboard:dentist_notifications", "active_url_names": {"dentist_notifications"}},
         {"label": "Follow-ups", "icon": "next_plan", "url_name": "dashboard:dentist_followups", "active_url_names": {"dentist_followups", "dentist_followup_edit"}},
     ],
@@ -42,6 +60,7 @@ ROLE_MENUS = {
         {"label": "Appointments", "icon": "calendar_month", "url_name": "dashboard:receptionist_appointments", "active_url_names": {"receptionist_appointments"}},
         {"label": "Dentist Availability", "icon": "event_available", "url_name": "dashboard:receptionist_dentist_availability", "active_url_names": {"receptionist_dentist_availability"}},
         {"label": "Patients", "icon": "groups", "url_name": "patients:list", "active_namespaces": {"patients"}},
+        {"label": "Dental Articles", "icon": "article", "url_name": "dashboard:articles_list", "active_url_names": ARTICLE_DASHBOARD_URL_NAMES},
         {"label": "Notifications", "icon": "notifications", "url_name": "dashboard:receptionist_notifications", "active_url_names": {"receptionist_notifications"}},
         {"label": "Follow-ups", "icon": "next_plan", "url_name": "followups:list", "active_namespaces": {"followups"}},
     ],

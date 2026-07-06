@@ -8,7 +8,7 @@
         <h1 class="mt-1 text-3xl font-bold text-gray-900">My dental articles</h1>
         <p class="mt-2 text-sm text-gray-500">Create, edit, publish, and review your own articles.</p>
     </div>
-    <a href="{% url 'articles:dashboard_create' %}" class="inline-flex items-center gap-2 rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-700">
+    <a href="{% url 'dashboard:articles_create' %}" class="inline-flex items-center gap-2 rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-700">
         <span class="material-symbols-rounded text-lg">add</span>
         Create article
     </a>
@@ -43,11 +43,11 @@
             <p class="text-sm text-gray-600">{{ article.views_count }} views · {{ article.likes_count }} likes · {{ article.comments_count }} comments</p>
             <p class="text-sm text-gray-500">{{ article.created_at|date:"M j, Y" }}</p>
             <div class="flex flex-wrap justify-start gap-2 lg:justify-end">
-                <a href="{% url 'articles:dashboard_edit' article.pk %}" class="rounded-xl border border-gray-200 px-3 py-2 text-xs font-bold text-gray-700 hover:bg-white">Edit</a>
-                <form method="post" action="{% url 'articles:dashboard_toggle' article.pk %}">{% csrf_token %}
+                <a href="{% url 'dashboard:articles_edit' article.pk %}" class="rounded-xl border border-gray-200 px-3 py-2 text-xs font-bold text-gray-700 hover:bg-white">Edit</a>
+                <form method="post" action="{% url 'dashboard:articles_toggle' article.pk %}">{% csrf_token %}
                     <button class="rounded-xl border border-green-200 px-3 py-2 text-xs font-bold text-green-700 hover:bg-white">{{ article.is_published|yesno:"Unpublish,Publish" }}</button>
                 </form>
-                <a href="{% url 'articles:dashboard_delete' article.pk %}" class="rounded-xl border border-red-200 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50">Delete</a>
+                <a href="{% url 'dashboard:articles_delete' article.pk %}" class="rounded-xl border border-red-200 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50">Delete</a>
             </div>
         </div>
         {% empty %}

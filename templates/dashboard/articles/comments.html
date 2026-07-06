@@ -13,7 +13,7 @@
       {% if pending_count %}<span class="ml-1 font-semibold text-amber-600">{{ pending_count }} pending</span>{% endif %}
     </p>
   </div>
-  <a href="{% url 'articles:dashboard_list' %}"
+  <a href="{% url 'dashboard:articles_list' %}"
      class="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50">
     <span class="material-symbols-rounded text-base">arrow_back</span> Back to Articles
   </a>
@@ -129,7 +129,7 @@
     {# Actions bar #}
     <div class="border-t border-gray-100 bg-gray-50 px-5 py-3 flex items-center gap-2 flex-wrap">
       {# Approve / Unapprove #}
-      <form method="post" action="{% url 'articles:dashboard_comment_approve' comment.pk %}">
+      <form method="post" action="{% url 'dashboard:articles_comment_approve' comment.pk %}">
         {% csrf_token %}
         <button type="submit"
                 class="rounded-xl px-3 py-1.5 text-xs font-semibold transition
@@ -147,7 +147,7 @@
       </button>
 
       {# Delete #}
-      <form method="post" action="{% url 'articles:dashboard_comment_delete' comment.pk %}"
+      <form method="post" action="{% url 'dashboard:articles_comment_delete' comment.pk %}"
             onsubmit="return confirm('Delete this comment and all its replies?')">
         {% csrf_token %}
         <button type="submit"
@@ -160,7 +160,7 @@
     {# Inline reply form (hidden by default) #}
     <div id="reply-{{ comment.pk }}" style="display:none;"
          class="border-t border-gray-100 bg-white px-5 py-4">
-      <form method="post" action="{% url 'articles:dashboard_comment_reply' comment.pk %}">
+      <form method="post" action="{% url 'dashboard:articles_comment_reply' comment.pk %}">
         {% csrf_token %}
         <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Your Reply</label>
         {{ reply_form.reply }}
